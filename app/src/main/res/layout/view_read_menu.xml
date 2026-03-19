@@ -126,6 +126,11 @@
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent">
 
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/compose_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
         <LinearLayout
             android:id="@+id/ll_slider"
             android:layout_width="match_parent"
@@ -134,46 +139,9 @@
             android:layout_marginHorizontal="16dp"
             android:importantForAccessibility="no"
             android:gravity="center"
+            android:visibility="gone"
             android:orientation="horizontal">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/tv_pre"
-                style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:clickable="true"
-                android:enabled="false"
-                android:focusable="true"
-                app:icon="@drawable/ic_previous"
-                android:contentDescription="@string/previous_chapter"
-                tools:ignore="TouchTargetSizeCheck" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cd_slider"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                app:cardCornerRadius="32dp"
-                app:cardBackgroundColor="?attr/colorSurfaceContainer"
-                app:strokeWidth="0dp">
-                <com.google.android.material.slider.Slider
-                    android:id="@+id/seek_read_page"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"/>
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/tv_next"
-                style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:clickable="true"
-                android:enabled="false"
-                android:focusable="true"
-                app:icon="@drawable/ic_next"
-                android:contentDescription="@string/next_chapter"
-                tools:ignore="TouchTargetSizeCheck"/>
+            <!-- Existing content hidden -->
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButtonGroup
@@ -184,6 +152,7 @@
             app:overflowMode="menu"
             android:paddingVertical="8dp"
             android:paddingHorizontal="16dp"
+            android:visibility="gone"
             android:background="?attr/colorSurfaceContainer" />
 
     </LinearLayout>

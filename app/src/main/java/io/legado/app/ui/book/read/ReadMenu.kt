@@ -29,6 +29,8 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonGroup
 import com.google.android.material.overflow.OverflowLinearLayout
 import com.google.android.material.slider.Slider
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import io.legado.app.ui.theme.AppTheme
 import io.legado.app.R
 import io.legado.app.constant.PreferKey
 import io.legado.app.databinding.ViewReadMenuBinding
@@ -95,19 +97,10 @@ class ReadMenu @JvmOverloads constructor(
     }
 
     var colorSurfaceContainer: Int = context.themeColor(com.google.android.material.R.attr.colorSurfaceContainer)
-        set(value) {
-            field = value
-        }
 
     var colorSecondary: Int = context.themeColor(androidx.appcompat.R.attr.colorPrimary)
-        set(value) {
-            field = value
-        }
 
     var colorSecondaryContainer: Int = context.themeColor(com.google.android.material.R.attr.colorSecondaryContainer)
-        set(value) {
-            field = value
-        }
 
     private val bgColor: Int
         get() = when (AppConfig.readBarStyle) {
@@ -203,13 +196,16 @@ class ReadMenu @JvmOverloads constructor(
 
     init {
         doOnAttach {
+            binding.composeView.apply {
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            }
             initView()
             upBrightnessState()
             bindEvent()
         }
     }
 
-    private fun initView() = binding.run {
+    private fun initView() = binding.apply {
         initAnimation()
         updateSliderVisibility()
         val brightnessBackground = GradientDrawable()
@@ -229,37 +225,37 @@ class ReadMenu @JvmOverloads constructor(
         } else {
             titleBarAddition.gone()
         }
-        binding.bottomView.post {
+        bottomView.post {
             val allButtons = getUserButtons()
-            renderButtons(binding.bottomView, allButtons)
+            renderButtons(bottomView, allButtons)
         }
         val alpha = (AppConfig.menuAlpha / 100f * 255).toInt()
         titleBar.setBackgroundColor(ColorUtils.setAlphaComponent(bgColor, alpha))
-        cdSlider.setCardBackgroundColor(ColorUtils.setAlphaComponent(bgColor, alpha))
-        seekReadPage.trackInactiveTintList = ColorStateList.valueOf(bgcColor)
-        seekReadPage.trackActiveTintList = ColorStateList.valueOf(acColor)
-        seekReadPage.thumbTintList = ColorStateList.valueOf(acColor)
-        seekReadPage.tickActiveTintList = ColorStateList.valueOf(bgColor)
-        seekReadPage.tickInactiveTintList = ColorStateList.valueOf(acColor)
-        tvPre.iconTint = ColorStateList.valueOf(acColor)
-        tvNext.iconTint = ColorStateList.valueOf(acColor)
+        binding.cdSlider?.setCardBackgroundColor(ColorUtils.setAlphaComponent(bgColor, alpha))
+        binding.seekReadPage?.trackInactiveTintList = ColorStateList.valueOf(bgcColor)
+        binding.seekReadPage?.trackActiveTintList = ColorStateList.valueOf(acColor)
+        binding.seekReadPage?.thumbTintList = ColorStateList.valueOf(acColor)
+        binding.seekReadPage?.tickActiveTintList = ColorStateList.valueOf(bgColor)
+        binding.seekReadPage?.tickInactiveTintList = ColorStateList.valueOf(acColor)
+        binding.tvPre?.iconTint = ColorStateList.valueOf(acColor)
+        binding.tvNext?.iconTint = ColorStateList.valueOf(acColor)
         tvBookName.setTextColor(acColor)
         tvChapterName.setTextColor(acColor)
         tvChapterUrl.setTextColor(acColor)
         tvSourceAction.setTextColor(acColor)
-        tvPre.backgroundTintList = ColorStateList.valueOf(bgColor)
-        tvNext.backgroundTintList = ColorStateList.valueOf(bgColor)
-        tvPre.alpha = AppConfig.menuAlpha / 100f * 255
-        tvNext.alpha = AppConfig.menuAlpha / 100f * 255
+        binding.tvPre?.backgroundTintList = ColorStateList.valueOf(bgColor)
+        binding.tvNext?.backgroundTintList = ColorStateList.valueOf(bgColor)
+        binding.tvPre?.alpha = AppConfig.menuAlpha / 100f
+        binding.tvNext?.alpha = AppConfig.menuAlpha / 100f
         upBrightnessVwPos()
         /**
          * 确保视图不被导航栏遮挡
          */
         if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            binding.bottomMenu.applyNavigationBarPadding()
+            bottomMenu.applyNavigationBarPadding()
         } else {
             bottomView.setBackgroundColor(ColorUtils.setAlphaComponent(bgColor, alpha))
-            binding.bottomView.applyNavigationBarPadding()
+            bottomView.applyNavigationBarPadding()
         }
     }
 
@@ -385,7 +381,7 @@ class ReadMenu @JvmOverloads constructor(
         return context.getPrefBoolean("brightnessAuto", true) || !showBrightnessView
     }
 
-    private fun bindEvent() = binding.run {
+    private fun bindEvent() = binding.apply {
         vwMenuBg.setOnClickListener { runMenuOut() }
         titleBar.toolbar.setOnClickListener {
             callBack.openBookInfoActivity()
@@ -465,7 +461,7 @@ class ReadMenu @JvmOverloads constructor(
             upBrightnessVwPos()
         }
 
-        seekReadPage.addOnChangeListener { _, value, fromUser ->
+        binding.seekReadPage?.addOnChangeListener { _, value, fromUser ->
             if (fromUser) {
                 if (AppConfig.progressBarBehavior == "page")
                     ReadBook.skipToPage(value.toInt() - 1)
@@ -474,7 +470,7 @@ class ReadMenu @JvmOverloads constructor(
             }
         }
 
-        seekReadPage.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
+        binding.seekReadPage?.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
             override fun onStartTrackingTouch(slider: Slider) {
                 vwMenuBg.setOnClickListener(null)
                 //VibrationUtils.vibrate(context, 16)
@@ -505,10 +501,10 @@ class ReadMenu @JvmOverloads constructor(
         })
 
         //上一章
-        tvPre.setOnClickListener { ReadBook.moveToPrevChapter(upContent = true, toLast = false) }
+        binding.tvPre?.setOnClickListener { ReadBook.moveToPrevChapter(upContent = true, toLast = false) }
 
         //下一章
-        tvNext.setOnClickListener { ReadBook.moveToNextChapter(true) }
+        binding.tvNext?.setOnClickListener { ReadBook.moveToNextChapter(true) }
     }
 
     private fun updateSliderVisibility() {
@@ -516,48 +512,48 @@ class ReadMenu @JvmOverloads constructor(
             "0" -> {
                 binding.llSlider.gravity = Gravity.CENTER
                 binding.llSlider.isVisible = true
-                binding.cdSlider.isVisible = true
-                binding.tvPre.isVisible = true
-                binding.tvNext.isVisible = true
+                binding.cdSlider?.isVisible = true
+                binding.tvPre?.isVisible = true
+                binding.tvNext?.isVisible = true
             }
 
             "1" -> {
                 binding.llSlider.gravity = Gravity.CENTER
                 binding.llSlider.isVisible = false
-                binding.cdSlider.isVisible = false
-                binding.tvPre.isVisible = false
-                binding.tvNext.isVisible = false
+                binding.cdSlider?.isVisible = false
+                binding.tvPre?.isVisible = false
+                binding.tvNext?.isVisible = false
             }
 
             "2" -> {
                 binding.llSlider.gravity = Gravity.START
                 binding.llSlider.isVisible = true
-                binding.cdSlider.isVisible = false
-                binding.tvPre.isVisible = true
-                binding.tvNext.isVisible = true
+                binding.cdSlider?.isVisible = false
+                binding.tvPre?.isVisible = true
+                binding.tvNext?.isVisible = true
             }
 
             "3" -> {
                 binding.llSlider.gravity = Gravity.END
                 binding.llSlider.isVisible = true
-                binding.cdSlider.isVisible = false
-                binding.tvPre.isVisible = true
-                binding.tvNext.isVisible = true
+                binding.cdSlider?.isVisible = false
+                binding.tvPre?.isVisible = true
+                binding.tvNext?.isVisible = true
             }
 
             "4" -> {
                 binding.llSlider.gravity = Gravity.CENTER
                 binding.llSlider.isVisible = true
-                binding.cdSlider.isVisible = true
-                binding.tvPre.isVisible = false
-                binding.tvNext.isVisible = false
+                binding.cdSlider?.isVisible = true
+                binding.tvPre?.isVisible = false
+                binding.tvNext?.isVisible = false
             }
 
             else -> {
                 binding.llSlider.isVisible = true
-                binding.cdSlider.isVisible = true
-                binding.tvPre.isVisible = true
-                binding.tvNext.isVisible = true
+                binding.cdSlider?.isVisible = true
+                binding.tvPre?.isVisible = true
+                binding.tvNext?.isVisible = true
             }
         }
     }
@@ -630,6 +626,7 @@ class ReadMenu @JvmOverloads constructor(
             badgeMap[btn]?.let { BadgeUtils.detachBadgeDrawable(it, btn) }
             badgeMap.remove(btn)
         }
+        upComposeView()
     }
 
     @OptIn(ExperimentalBadgeUtils::class)
@@ -657,16 +654,16 @@ class ReadMenu @JvmOverloads constructor(
                 onClick = { runMenuOut{ callBack.openSearchActivity(null) } }
             ),
             ToolButton(
-                id = "auto_page",
-                iconRes = R.drawable.ic_auto_page,
-                description = context.getString(R.string.auto_next_page),
-                onClick = { runMenuOut { callBack.autoPage() } }
-            ),
-            ToolButton(
                 id = "catalog",
                 iconRes = R.drawable.ic_toc,
                 description = context.getString(R.string.chapter_list),
                 onClick = { runMenuOut { callBack.openChapterList() } }
+            ),
+            ToolButton(
+                id = "auto_page",
+                iconRes = R.drawable.ic_auto_page,
+                description = context.getString(R.string.auto_next_page),
+                onClick = { runMenuOut { callBack.autoPage() } }
             ),
             ToolButton(
                 id = "read_aloud",
@@ -694,16 +691,14 @@ class ReadMenu @JvmOverloads constructor(
                 onClick = {
                     AppConfig.isNightTheme = !AppConfig.isNightTheme
                     OldThemeConfig.applyDayNight(context)
-                    buttonMap["theme"]?.setIconResource(
-                        if (AppConfig.isNightTheme) R.drawable.ic_daytime else R.drawable.ic_brightness
-                    )
+                    upComposeView()
                 }
             ),
             ToolButton(
                 id = "prev_chapter",
                 iconRes = R.drawable.ic_previous,
                 description = context.getString(R.string.previous_chapter),
-                onClick = { ReadBook.moveToPrevChapter(upContent = true, toLast = false) }
+                onClick = { ReadBook.moveToPrevChapter(true, false) }
             ),
             ToolButton(
                 id = "next_chapter",
@@ -784,56 +779,59 @@ class ReadMenu @JvmOverloads constructor(
     }
 
     fun upBookView() {
+        upComposeView()
         val bookName = ReadBook.book?.name ?: ""
 
         val mode = AppConfig.titleBarMode?.toInt()
 
-        when (mode) {
-            0 -> { // 在应用栏上显示
-                binding.titleBar.title = bookName
-                binding.llBook.visible()
-                binding.tvBookName.gone()
-            }
-            1 -> { // 在独立行上显示
-                binding.titleBar.title = " "
-                binding.tvBookName.text = bookName
-                binding.llBook.visible()
-                binding.tvBookName.visible()
-            }
-            2 -> { // 仅显示标题
-                binding.titleBar.title = bookName
-                binding.llBook.gone()
-            }
-            3 -> { // 不显示
-                binding.titleBar.title = " "
-                binding.llBook.gone()
-            }
-            else -> {
-                binding.titleBar.title = " "
-                binding.tvBookName.text = bookName
-                binding.llBook.visible()
-            }
-        }
-
-        ReadBook.curTextChapter?.let {
-            binding.tvChapterName.text = it.title
-            if (!ReadBook.isLocalBook) {
-                binding.tvChapterUrl.text = it.chapter.getAbsoluteURL()
-                //binding.tvChapterUrl.visible()
-            } else {
-                binding.tvChapterUrl.gone()
+        binding.apply {
+            when (mode) {
+                0 -> { // 在应用栏上显示
+                    titleBar.title = bookName
+                    llBook.visible()
+                    tvBookName.gone()
+                }
+                1 -> { // 在独立行上显示
+                    titleBar.title = " "
+                    tvBookName.text = bookName
+                    llBook.visible()
+                    tvBookName.visible()
+                }
+                2 -> { // 仅显示标题
+                    titleBar.title = bookName
+                    llBook.gone()
+                }
+                3 -> { // 不显示
+                    titleBar.title = " "
+                    llBook.gone()
+                }
+                else -> {
+                    titleBar.title = " "
+                    tvBookName.text = bookName
+                    llBook.visible()
+                }
             }
 
-            upSeekBar()
-            binding.tvPre.isEnabled = ReadBook.durChapterIndex != 0
-            binding.tvNext.isEnabled = ReadBook.durChapterIndex != ReadBook.simulatedChapterSize - 1
-        } ?: run {
-            binding.tvChapterUrl.gone()
+            ReadBook.curTextChapter?.let {
+                tvChapterName.text = it.title
+                if (!ReadBook.isLocalBook) {
+                    tvChapterUrl.text = it.chapter.getAbsoluteURL()
+                    //tvChapterUrl.visible()
+                } else {
+                    tvChapterUrl.gone()
+                }
+
+                upSeekBar()
+                binding.tvPre?.isEnabled = ReadBook.durChapterIndex != 0
+                binding.tvNext?.isEnabled = ReadBook.durChapterIndex != ReadBook.simulatedChapterSize - 1
+            } ?: run {
+                tvChapterUrl.gone()
+            }
         }
     }
 
 
-    fun upSeekBar() = binding.seekReadPage.apply {
+    fun upSeekBar() = binding.seekReadPage?.apply {
 
         fun safeSet(rangeFrom: Float, rangeTo: Float, step: Float, rawValue: Float) {
             valueFrom = rangeFrom
@@ -894,7 +892,7 @@ class ReadMenu @JvmOverloads constructor(
 //    }
 
     fun setSeekPage(seek: Int) {
-        binding.seekReadPage.value = seek.toFloat() + 1
+        binding.seekReadPage?.value = seek.toFloat() + 1
     }
 
     private fun upBrightnessVwPos() {
@@ -908,6 +906,43 @@ class ReadMenu @JvmOverloads constructor(
                 .clear(R.id.ll_brightness, ConstraintModify.Anchor.RIGHT)
                 .leftToLeftOf(R.id.ll_brightness, R.id.vw_menu_root)
                 .commit()
+        }
+    }
+
+    private fun upComposeView() {
+        val toolButtons = getUserButtons()
+        binding.composeView.setContent {
+            AppTheme {
+                ReadMenuCompose(
+                    bookName = ReadBook.book?.name ?: "",
+                    chapterName = ReadBook.curTextChapter?.title ?: "",
+                    durChapterIndex = ReadBook.durChapterIndex,
+                    chapterSize = ReadBook.simulatedChapterSize,
+                    isNightTheme = AppConfig.isNightTheme,
+                    toolButtons = toolButtons,
+                    onEvent = { event ->
+                        when (event) {
+                            MenuEvent.OpenCatalog -> callBack.openChapterList()
+                            MenuEvent.AutoPage -> callBack.autoPage()
+                            MenuEvent.OpenSettings -> callBack.showReadStyle()
+                            MenuEvent.ToggleNightTheme -> {
+                                AppConfig.isNightTheme = !AppConfig.isNightTheme
+                                OldThemeConfig.applyDayNight(context)
+                                upComposeView()
+                            }
+                            MenuEvent.PrevChapter -> ReadBook.moveToPrevChapter(true)
+                            MenuEvent.NextChapter -> ReadBook.moveToNextChapter(true)
+                            is MenuEvent.SeekToChapter -> callBack.skipToChapter(event.index)
+                            is MenuEvent.ToolButtonClick -> {
+                                toolButtons.find { it.id == event.id }?.onClick?.invoke()
+                            }
+                            is MenuEvent.ToolButtonLongClick -> {
+                                toolButtons.find { it.id == event.id }?.onLongClick?.invoke()
+                            }
+                        }
+                    }
+                )
+            }
         }
     }
 
