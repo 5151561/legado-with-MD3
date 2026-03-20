@@ -163,6 +163,9 @@ fun ProgressMenu(
     onBack: () -> Unit,
     onEvent: (MenuEvent) -> Unit
 ) {
+    var tempChapterIndex by remember(durChapterIndex) { mutableStateOf(durChapterIndex.toFloat()) }
+    var tempPageIndex by remember(durPageIndex) { mutableStateOf(durPageIndex.toFloat()) }
+
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -198,7 +201,6 @@ fun ProgressMenu(
                 Icon(painterResource(R.drawable.ic_previous), contentDescription = stringResource(R.string.previous_chapter))
             }
 
-            var tempChapterIndex by remember(durChapterIndex) { mutableStateOf(durChapterIndex.toFloat()) }
             Slider(
                 value = tempChapterIndex,
                 onValueChange = { tempChapterIndex = it },
@@ -216,7 +218,7 @@ fun ProgressMenu(
         }
 
         Text(
-            text = stringResource(R.string.chapter_progress, durChapterIndex + 1, chapterSize),
+            text = stringResource(R.string.chapter_progress, tempChapterIndex.toInt() + 1, chapterSize),
             style = MaterialTheme.typography.labelSmall,
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
             textAlign = TextAlign.Center,
@@ -230,7 +232,6 @@ fun ProgressMenu(
         ) {
             Spacer(modifier = Modifier.width(48.dp)) // Align with sliders
 
-            var tempPageIndex by remember(durPageIndex) { mutableStateOf(durPageIndex.toFloat()) }
             Slider(
                 value = tempPageIndex,
                 onValueChange = { tempPageIndex = it },
@@ -244,7 +245,7 @@ fun ProgressMenu(
         }
         
         Text(
-            text = stringResource(R.string.page_progress, durPageIndex + 1, pageSize),
+            text = stringResource(R.string.page_progress, tempPageIndex.toInt() + 1, pageSize),
             style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center
