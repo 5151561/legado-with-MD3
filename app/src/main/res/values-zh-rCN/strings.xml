@@ -1390,4 +1390,9 @@
     <string name="enable_select_vibrator">选择文本时震动</string>
     <string name="re_sync_webdav">重新同步远程书籍</string>
     <string name="underline_padding">离字间距</string>
+    <string name="progress_control">进度控制</string>
+    <string name="control_progress">控制进度 ›</string>
+    <string name="page_progress">第 %1$d 页 / 共 %2$d 页</string>
+    <string name="chapter_progress">第 %1$d 章 / 共 %2$d 章</string>
+    <string name="style_developing">样式调节开发中...</string>
 </resources>

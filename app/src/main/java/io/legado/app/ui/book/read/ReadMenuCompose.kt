@@ -31,6 +31,8 @@ fun ReadMenuCompose(
     chapterName: String,
     durChapterIndex: Int,
     chapterSize: Int,
+    durPageIndex: Int,
+    pageSize: Int,
     isNightTheme: Boolean,
     toolButtons: List<ReadMenu.ToolButton>,
     onEvent: (MenuEvent) -> Unit
@@ -76,6 +78,8 @@ fun ReadMenuCompose(
                     MenuMode.Progress -> ProgressMenu(
                         durChapterIndex = durChapterIndex,
                         chapterSize = chapterSize,
+                        durPageIndex = durPageIndex,
+                        pageSize = pageSize,
                         onBack = { menuMode = MenuMode.Main },
                         onEvent = onEvent
                     )
@@ -125,7 +129,7 @@ fun MainMenu(
             }
         }
         TextButton(onClick = { onModeChange(MenuMode.Progress) }) {
-            Text("控制进度 >")
+            Text(stringResource(R.string.control_progress))
         }
     }
 
@@ -133,8 +137,9 @@ fun MainMenu(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
+            .padding(horizontal = 8.dp)
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Filter out 'search' as it's now in the top row
@@ -153,6 +158,8 @@ fun MainMenu(
 fun ProgressMenu(
     durChapterIndex: Int,
     chapterSize: Int,
+    durPageIndex: Int,
+    pageSize: Int,
     onBack: () -> Unit,
     onEvent: (MenuEvent) -> Unit
 ) {
@@ -165,11 +172,11 @@ fun ProgressMenu(
             IconButton(onClick = onBack) {
                 Icon(
                     imageVector = ImageVector.vectorResource(R.drawable.ic_arrow_back),
-                    contentDescription = "返回"
+                    contentDescription = stringResource(R.string.back)
                 )
             }
             Text(
-                text = "正在阅读",
+                text = stringResource(R.string.progress_control),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center
@@ -179,6 +186,7 @@ fun ProgressMenu(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Chapter Slider
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -187,13 +195,15 @@ fun ProgressMenu(
                 onClick = { onEvent(MenuEvent.PrevChapter) },
                 enabled = durChapterIndex > 0
             ) {
-                Icon(painterResource(R.drawable.ic_previous), contentDescription = null)
+                Icon(painterResource(R.drawable.ic_previous), contentDescription = stringResource(R.string.previous_chapter))
             }
 
+            var tempChapterIndex by remember(durChapterIndex) { mutableStateOf(durChapterIndex.toFloat()) }
             Slider(
-                value = durChapterIndex.toFloat(),
-                onValueChange = { onEvent(MenuEvent.SeekToChapter(it.toInt())) },
-                valueRange = 0f..(chapterSize - 1).coerceAtLeast(0).toFloat(),
+                value = tempChapterIndex,
+                onValueChange = { tempChapterIndex = it },
+                onValueChangeFinished = { onEvent(MenuEvent.SeekToChapter(tempChapterIndex.toInt())) },
+                valueRange = 0f..maxOf(0.001f, (chapterSize - 1).toFloat()),
                 modifier = Modifier.weight(1f)
             )
 
@@ -201,12 +211,40 @@ fun ProgressMenu(
                 onClick = { onEvent(MenuEvent.NextChapter) },
                 enabled = durChapterIndex < chapterSize - 1
             ) {
-                Icon(painterResource(R.drawable.ic_next), contentDescription = null)
+                Icon(painterResource(R.drawable.ic_next), contentDescription = stringResource(R.string.next_chapter))
             }
+        }
+
+        Text(
+            text = stringResource(R.string.chapter_progress, durChapterIndex + 1, chapterSize),
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+        )
+
+        // Page Slider
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Spacer(modifier = Modifier.width(48.dp)) // Align with sliders
+
+            var tempPageIndex by remember(durPageIndex) { mutableStateOf(durPageIndex.toFloat()) }
+            Slider(
+                value = tempPageIndex,
+                onValueChange = { tempPageIndex = it },
+                onValueChangeFinished = { onEvent(MenuEvent.SeekToPage(tempPageIndex.toInt())) },
+                valueRange = 0f..maxOf(0.001f, (pageSize - 1).toFloat()),
+                enabled = pageSize > 1,
+                modifier = Modifier.weight(1f)
+            )
+
+            Spacer(modifier = Modifier.width(48.dp))
         }
         
         Text(
-            text = "${durChapterIndex + 1} / $chapterSize",
+            text = stringResource(R.string.page_progress, durPageIndex + 1, pageSize),
             style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center
@@ -219,7 +257,23 @@ fun StyleMenu(
     onBack: () -> Unit,
     onEvent: (MenuEvent) -> Unit
 ) {
-    Text("样式调节开发中...")
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onBack) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(R.drawable.ic_arrow_back),
+                    contentDescription = stringResource(R.string.back)
+                )
+            }
+        }
+        Text(stringResource(R.string.style_developing))
+    }
 }
 
 @Composable
@@ -232,7 +286,7 @@ fun MenuIconButton(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(4.dp).width(56.dp)
+        modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp).width(56.dp)
     ) {
         BadgedBox(
             badge = {
@@ -282,6 +336,7 @@ sealed class MenuEvent {
     object PrevChapter : MenuEvent()
     object NextChapter : MenuEvent()
     data class SeekToChapter(val index: Int) : MenuEvent()
+    data class SeekToPage(val index: Int) : MenuEvent()
     data class ToolButtonClick(val id: String) : MenuEvent()
     data class ToolButtonLongClick(val id: String) : MenuEvent()
 }

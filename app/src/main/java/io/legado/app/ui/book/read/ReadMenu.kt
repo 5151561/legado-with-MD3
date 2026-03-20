@@ -831,68 +831,56 @@ class ReadMenu @JvmOverloads constructor(
     }
 
 
-    fun upSeekBar() = binding.seekReadPage?.apply {
+    fun upSeekBar() {
+        binding.seekReadPage?.apply {
 
-        fun safeSet(rangeFrom: Float, rangeTo: Float, step: Float, rawValue: Float) {
-            valueFrom = rangeFrom
-            valueTo = rangeTo
-            stepSize = step
-            val safeValue = rawValue.coerceIn(rangeFrom, rangeTo)
-            if (value != safeValue) value = safeValue
-        }
+            fun safeSet(rangeFrom: Float, rangeTo: Float, step: Float, rawValue: Float) {
+                valueFrom = rangeFrom
+                valueTo = rangeTo
+                stepSize = step
+                val safeValue = rawValue.coerceIn(rangeFrom, rangeTo)
+                if (value != safeValue) value = safeValue
+            }
 
-        when (AppConfig.progressBarBehavior) {
-            "page" -> {
-                ReadBook.curTextChapter?.let { chapter ->
-                    if (chapter.pageSize > 0 && ReadBook.durPageIndex >= 0) {
+            when (AppConfig.progressBarBehavior) {
+                "page" -> {
+                    ReadBook.curTextChapter?.let { chapter ->
+                        if (chapter.pageSize > 0 && ReadBook.durPageIndex >= 0) {
+                            safeSet(
+                                rangeFrom = 1f,
+                                rangeTo = chapter.pageSize.toFloat().coerceAtLeast(2f),
+                                step = 1f,
+                                rawValue = ReadBook.durPageIndex.toFloat()
+                            )
+                        } else {
+                            safeSet(0f, 100000f, 0f, 0f)
+                        }
+                    }
+                }
+
+                "chapter" -> {
+                    if (ReadBook.simulatedChapterSize > 0) {
                         safeSet(
                             rangeFrom = 1f,
-                            rangeTo = chapter.pageSize.toFloat().coerceAtLeast(2f),
+                            rangeTo = ReadBook.simulatedChapterSize.toFloat().coerceAtLeast(2f),
                             step = 1f,
-                            rawValue = ReadBook.durPageIndex.toFloat()
+                            rawValue = ReadBook.durChapterIndex.toFloat()
                         )
                     } else {
                         safeSet(0f, 100000f, 0f, 0f)
                     }
                 }
             }
-
-            "chapter" -> {
-                if (ReadBook.simulatedChapterSize > 0) {
-                    safeSet(
-                        rangeFrom = 1f,
-                        rangeTo = ReadBook.simulatedChapterSize.toFloat().coerceAtLeast(2f),
-                        step = 1f,
-                        rawValue = ReadBook.durChapterIndex.toFloat()
-                    )
-                } else {
-                    safeSet(0f, 100000f, 0f, 0f)
-                }
-            }
         }
+        upComposeView()
     }
 
 
-//    fun upSeekBar() {
-//        binding.seekReadPage.apply {
-//            when (AppConfig.progressBarBehavior) {
-//                "page" -> {
-//                    ReadBook.curTextChapter?.let {
-//                        max = it.pageSize.minus(1)
-//                        progress = ReadBook.durPageIndex
-//                    }
-//                }
-//
-//                "chapter" -> {
-//                    max = ReadBook.simulatedChapterSize - 1
-//                    progress = ReadBook.durChapterIndex
-//                }
-//            }
-//        }
-//    }
+
 
     fun setSeekPage(seek: Int) {
         binding.seekReadPage?.value = seek.toFloat() + 1
+        upComposeView()
     }
 
     private fun upBrightnessVwPos() {
@@ -918,6 +906,8 @@ class ReadMenu @JvmOverloads constructor(
                     chapterName = ReadBook.curTextChapter?.title ?: "",
                     durChapterIndex = ReadBook.durChapterIndex,
                     chapterSize = ReadBook.simulatedChapterSize,
+                    durPageIndex = ReadBook.durPageIndex,
+                    pageSize = ReadBook.curTextChapter?.pageSize ?: 1,
                     isNightTheme = AppConfig.isNightTheme,
                     toolButtons = toolButtons,
                     onEvent = { event ->
@@ -933,6 +923,7 @@ class ReadMenu @JvmOverloads constructor(
                             MenuEvent.PrevChapter -> ReadBook.moveToPrevChapter(true)
                             MenuEvent.NextChapter -> ReadBook.moveToNextChapter(true)
                             is MenuEvent.SeekToChapter -> callBack.skipToChapter(event.index)
+                            is MenuEvent.SeekToPage -> ReadBook.skipToPage(event.index)
                             is MenuEvent.ToolButtonClick -> {
                                 toolButtons.find { it.id == event.id }?.onClick?.invoke()
                             }
