@@ -34,6 +34,8 @@ fun ReadMenuCompose(
     durPageIndex: Int,
     pageSize: Int,
     isNightTheme: Boolean,
+    menuAlpha: Float,
+    backgroundColor: Int,
     toolButtons: List<ReadMenu.ToolButton>,
     onEvent: (MenuEvent) -> Unit
 ) {
@@ -43,15 +45,10 @@ fun ReadMenuCompose(
         modifier = modifier
             .padding(horizontal = 16.dp, vertical = 12.dp)
             .fillMaxWidth()
-            .shadow(
-                elevation = 6.dp,
-                shape = MaterialTheme.shapes.extraLarge,
-                clip = false
-            )
             .animateContentSize(animationSpec = tween(durationMillis = 300)),
         shape = MaterialTheme.shapes.extraLarge,
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        tonalElevation = 3.dp
+        color = androidx.compose.ui.graphics.Color(backgroundColor).copy(alpha = menuAlpha),
+        tonalElevation = 0.dp
     ) {
         AnimatedContent(
             targetState = menuMode,
@@ -306,7 +303,7 @@ fun MenuIconButton(
                         onLongClick = onLongClick
                     ),
                 shape = MaterialTheme.shapes.medium,
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                color = androidx.compose.ui.graphics.Color.Transparent
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(

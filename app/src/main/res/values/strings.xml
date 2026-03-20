@@ -1399,4 +1399,6 @@
     <string name="page_progress">Page: %1$d / %2$d</string>
     <string name="chapter_progress">Chapter: %1$d / %2$d</string>
     <string name="style_developing">Style adjustment is under development...</string>
+    <string name="skip_to_chapter_confirmation">Confirm chapter jump</string>
+    <string name="sure_to_skip_to_chapter">Are you sure you want to jump to the selected chapter?</string>
 </resources>

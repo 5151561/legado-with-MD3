@@ -73,6 +73,21 @@ class ReadMenu @JvmOverloads constructor(
     private var confirmSkipToChapter: Boolean = false
     private var isMenuOutAnimating = false
 
+    private val menuAlpha: Float
+        get() = AppConfig.menuAlpha / 100f
+
+    private val colorWithAlpha: Int
+        get() = ColorUtils.setAlphaComponent(bgColor, (menuAlpha * 255).toInt())
+
+    private var _toolButtons: List<ToolButton>? = null
+    private val toolButtons: List<ToolButton>
+        get() {
+            if (_toolButtons == null) {
+                _toolButtons = getUserButtons()
+            }
+            return _toolButtons!!
+        }
+
     private val menuTopIn: Animation by lazy {
         loadAnimation(context, R.anim.anim_readbook_top_in)
     }
@@ -208,8 +223,10 @@ class ReadMenu @JvmOverloads constructor(
     private fun initView() = binding.apply {
         initAnimation()
         updateSliderVisibility()
+
         val brightnessBackground = GradientDrawable()
         brightnessBackground.cornerRadius = 5F.dpToPx()
+        brightnessBackground.setColor(colorWithAlpha)
         llBrightness.background = brightnessBackground
 
 //        if (AppConfig.isEInkMode) {
@@ -226,12 +243,11 @@ class ReadMenu @JvmOverloads constructor(
             titleBarAddition.gone()
         }
         bottomView.post {
-            val allButtons = getUserButtons()
-            renderButtons(bottomView, allButtons)
+            renderButtons(bottomView, toolButtons)
         }
-        val alpha = (AppConfig.menuAlpha / 100f * 255).toInt()
-        titleBar.setBackgroundColor(ColorUtils.setAlphaComponent(bgColor, alpha))
-        binding.cdSlider?.setCardBackgroundColor(ColorUtils.setAlphaComponent(bgColor, alpha))
+        titleBar.setBackgroundColor(colorWithAlpha)
+        binding.cdSlider?.setCardBackgroundColor(colorWithAlpha)
+        binding.cdBottomMenu?.setCardBackgroundColor(colorWithAlpha)
         binding.seekReadPage?.trackInactiveTintList = ColorStateList.valueOf(bgcColor)
         binding.seekReadPage?.trackActiveTintList = ColorStateList.valueOf(acColor)
         binding.seekReadPage?.thumbTintList = ColorStateList.valueOf(acColor)
@@ -245,8 +261,8 @@ class ReadMenu @JvmOverloads constructor(
         tvSourceAction.setTextColor(acColor)
         binding.tvPre?.backgroundTintList = ColorStateList.valueOf(bgColor)
         binding.tvNext?.backgroundTintList = ColorStateList.valueOf(bgColor)
-        binding.tvPre?.alpha = AppConfig.menuAlpha / 100f
-        binding.tvNext?.alpha = AppConfig.menuAlpha / 100f
+        binding.tvPre?.alpha = menuAlpha
+        binding.tvNext?.alpha = menuAlpha
         upBrightnessVwPos()
         /**
          * 确保视图不被导航栏遮挡
@@ -254,7 +270,7 @@ class ReadMenu @JvmOverloads constructor(
         if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             bottomMenu.applyNavigationBarPadding()
         } else {
-            bottomView.setBackgroundColor(ColorUtils.setAlphaComponent(bgColor, alpha))
+            bottomView.setBackgroundColor(colorWithAlpha)
             bottomView.applyNavigationBarPadding()
         }
     }
@@ -272,6 +288,7 @@ class ReadMenu @JvmOverloads constructor(
     }
 
     fun reset() {
+        _toolButtons = null
         upColorConfig()
         initView()
         upBookView()
@@ -486,7 +503,7 @@ class ReadMenu @JvmOverloads constructor(
                         if (confirmSkipToChapter) {
                             callBack.skipToChapter(progress - 1)
                         } else {
-                            context.alert("章节跳转确认", "确定要跳转章节吗？") {
+                            context.alert(R.string.skip_to_chapter_confirmation, R.string.sure_to_skip_to_chapter) {
                                 yesButton {
                                     confirmSkipToChapter = true
                                     callBack.skipToChapter(progress - 1)
@@ -898,7 +915,6 @@ class ReadMenu @JvmOverloads constructor(
     }
 
     private fun upComposeView() {
-        val toolButtons = getUserButtons()
         binding.composeView.setContent {
             AppTheme {
                 ReadMenuCompose(
@@ -909,6 +925,8 @@ class ReadMenu @JvmOverloads constructor(
                     durPageIndex = ReadBook.durPageIndex,
                     pageSize = ReadBook.curTextChapter?.pageSize ?: 1,
                     isNightTheme = AppConfig.isNightTheme,
+                    menuAlpha = menuAlpha,
+                    backgroundColor = bgColor,
                     toolButtons = toolButtons,
                     onEvent = { event ->
                         when (event) {
