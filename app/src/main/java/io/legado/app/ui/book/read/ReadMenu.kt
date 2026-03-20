@@ -918,13 +918,10 @@ class ReadMenu @JvmOverloads constructor(
         binding.composeView.setContent {
             AppTheme {
                 ReadMenuCompose(
-                    bookName = ReadBook.book?.name ?: "",
-                    chapterName = ReadBook.curTextChapter?.title ?: "",
                     durChapterIndex = ReadBook.durChapterIndex,
                     chapterSize = ReadBook.simulatedChapterSize,
                     durPageIndex = ReadBook.durPageIndex,
                     pageSize = ReadBook.curTextChapter?.pageSize ?: 1,
-                    isNightTheme = AppConfig.isNightTheme,
                     menuAlpha = menuAlpha,
                     backgroundColor = bgColor,
                     toolButtons = toolButtons,

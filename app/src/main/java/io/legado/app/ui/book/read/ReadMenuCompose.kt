@@ -10,7 +10,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -27,13 +26,10 @@ enum class MenuMode {
 @Composable
 fun ReadMenuCompose(
     modifier: Modifier = Modifier,
-    bookName: String,
-    chapterName: String,
     durChapterIndex: Int,
     chapterSize: Int,
     durPageIndex: Int,
     pageSize: Int,
-    isNightTheme: Boolean,
     menuAlpha: Float,
     backgroundColor: Int,
     toolButtons: List<ReadMenu.ToolButton>,
@@ -66,8 +62,6 @@ fun ReadMenuCompose(
             ) {
                 when (targetMode) {
                     MenuMode.Main -> MainMenu(
-                        bookName = bookName,
-                        chapterName = chapterName,
                         toolButtons = toolButtons,
                         onModeChange = { menuMode = it },
                         onEvent = onEvent
@@ -81,8 +75,7 @@ fun ReadMenuCompose(
                         onEvent = onEvent
                     )
                     MenuMode.Style -> StyleMenu(
-                        onBack = { menuMode = MenuMode.Main },
-                        onEvent = onEvent
+                        onBack = { menuMode = MenuMode.Main }
                     )
                 }
             }
@@ -92,8 +85,6 @@ fun ReadMenuCompose(
 
 @Composable
 fun MainMenu(
-    bookName: String,
-    chapterName: String,
     toolButtons: List<ReadMenu.ToolButton>,
     onModeChange: (MenuMode) -> Unit,
     onEvent: (MenuEvent) -> Unit
@@ -252,8 +243,7 @@ fun ProgressMenu(
 
 @Composable
 fun StyleMenu(
-    onBack: () -> Unit,
-    onEvent: (MenuEvent) -> Unit
+    onBack: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),

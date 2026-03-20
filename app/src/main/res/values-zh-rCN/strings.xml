@@ -1394,7 +1394,7 @@
     <string name="control_progress">控制进度 ›</string>
     <string name="page_progress">第 %1$d 页 / 共 %2$d 页</string>
     <string name="chapter_progress">第 %1$d 章 / 共 %2$d 章</string>
-    <string name="style_developing">样式调节开发中...</string>
+    <string name="style_developing">样式调节开发中…</string>
     <string name="skip_to_chapter_confirmation">章节跳转确认</string>
     <string name="sure_to_skip_to_chapter">确定要跳转章节吗？</string>
 </resources>
