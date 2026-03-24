@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -18,16 +17,17 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import io.legado.app.R
 import io.legado.app.base.BaseComposeActivity
+import io.legado.app.ui.config.backupConfig.BackupConfigScreen
 import io.legado.app.ui.config.coverConfig.CoverConfigScreen
 import io.legado.app.ui.config.otherConfig.OtherConfigScreen
 import io.legado.app.ui.config.readConfig.ReadConfigScreen
-import io.legado.app.ui.config.themeConfig.ThemeConfig
+import io.legado.app.ui.config.themeConfig.ThemeConfigScreen
+import io.legado.app.ui.widget.components.AppScaffold
 import io.legado.app.ui.widget.components.GlassMediumFlexibleTopAppBar
 import io.legado.app.ui.widget.components.GlassTopAppBarDefaults
 import io.legado.app.ui.widget.components.SplicedColumnGroup
 import io.legado.app.ui.widget.components.button.TopbarNavigationButton
 import io.legado.app.ui.widget.components.settingItem.ClickableSettingItem
-import io.legado.app.ui.widget.components.settingItem.SwitchSettingItem
 import kotlinx.serialization.Serializable
 
 class TestConfigActivity : BaseComposeActivity() {
@@ -44,6 +44,12 @@ class TestConfigActivity : BaseComposeActivity() {
     @Serializable
     object CoverConfigRoute
 
+    @Serializable
+    object ThemeConfigRoute
+
+    @Serializable
+    object BackupConfigRoute
+
     @Composable
     override fun Content() {
         val navController = rememberNavController()
@@ -57,7 +63,9 @@ class TestConfigActivity : BaseComposeActivity() {
                     onBackClick = { finish() },
                     onNavigateToOther = { navController.navigate(OtherConfigRoute) },
                     onNavigateToRead = { navController.navigate(ReadConfigRoute) },
-                    onNavigateToCover = { navController.navigate(CoverConfigRoute) }
+                    onNavigateToCover = { navController.navigate(CoverConfigRoute) },
+                    onNavigateToTheme = { navController.navigate(ThemeConfigRoute) },
+                    onNavigateToBackup = { navController.navigate(BackupConfigRoute) }
                 )
             }
 
@@ -72,6 +80,16 @@ class TestConfigActivity : BaseComposeActivity() {
             composable<CoverConfigRoute> {
                 CoverConfigScreen(onBackClick = { navController.popBackStack() })
             }
+
+            composable<ThemeConfigRoute> {
+                ThemeConfigScreen(
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
+
+            composable<BackupConfigRoute> {
+                BackupConfigScreen(onBackClick = { navController.popBackStack() })
+            }
         }
     }
 
@@ -81,11 +99,13 @@ class TestConfigActivity : BaseComposeActivity() {
         onBackClick: () -> Unit,
         onNavigateToOther: () -> Unit,
         onNavigateToRead: () -> Unit,
-        onNavigateToCover: () -> Unit
+        onNavigateToCover: () -> Unit,
+        onNavigateToTheme: () -> Unit,
+        onNavigateToBackup: () -> Unit
     ) {
         val scrollBehavior = GlassTopAppBarDefaults.defaultScrollBehavior()
 
-        Scaffold(
+        AppScaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
                 GlassMediumFlexibleTopAppBar(
@@ -105,10 +125,9 @@ class TestConfigActivity : BaseComposeActivity() {
                     .padding(16.dp)
             ) {
                 SplicedColumnGroup {
-                    SwitchSettingItem(
-                        title = "使用折叠应用栏",
-                        checked = ThemeConfig.useFlexibleTopAppBar,
-                        onCheckedChange = { ThemeConfig.useFlexibleTopAppBar = it }
+                    ClickableSettingItem(
+                        title = stringResource(R.string.theme_setting),
+                        onClick = onNavigateToTheme
                     )
                     ClickableSettingItem(
                         title = stringResource(R.string.other_setting),
@@ -121,6 +140,10 @@ class TestConfigActivity : BaseComposeActivity() {
                     ClickableSettingItem(
                         title = stringResource(R.string.cover_config),
                         onClick = onNavigateToCover
+                    )
+                    ClickableSettingItem(
+                        title = stringResource(R.string.backup_restore),
+                        onClick = onNavigateToBackup
                     )
                 }
             }

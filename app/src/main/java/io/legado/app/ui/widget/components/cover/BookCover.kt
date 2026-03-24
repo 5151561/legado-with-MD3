@@ -51,19 +51,41 @@ fun BookCover(
     badgeText: String? = null,
     showBadgeDot: Boolean = false,
     sourceOrigin: String? = null,
-    onLoadFinish: (() -> Unit)? = null
+    onLoadFinish: (() -> Unit)? = null,
+    ignoreUseDefaultCover: Boolean = false
 ) {
     val context = LocalContext.current
     val isNight = isSystemInDarkTheme()
 
-    val useDefault = CoverConfig.useDefaultCover
+    val useDefault = !ignoreUseDefaultCover && CoverConfig.useDefaultCover
     val finalPath = if (useDefault) null else path
 
-    // 为每个 BookCover 组件实例基于其书名或路径生成一个随机封面
-    // 这样书架上的每个默认封面都会不同，但对于同一本书又是固定的
-    val randomDefault = remember(name, author, path) {
-        BookCover.getRandomDefaultDrawable(seed = name ?: author ?: path ?: "")
+    // 获取随机封面路径（字符串），增加配置项作为 Key，确保设置更改后立即刷新
+    val randomPath = remember(
+        name, author, path, isNight,
+        CoverConfig.defaultCover,
+        CoverConfig.defaultCoverDark
+    ) {
+        BookCover.getRandomDefaultPath(
+            seed = name ?: author ?: path ?: "",
+            isNight = isNight
+        )
     }
+
+    // 获取随机封面 Drawable，用于占位图
+    val randomDrawable = remember(
+        name, author, path, isNight,
+        CoverConfig.defaultCover,
+        CoverConfig.defaultCoverDark
+    ) {
+        BookCover.getRandomDefaultDrawable(
+            seed = name ?: author ?: path ?: "",
+            isNight = isNight
+        )
+    }
+
+    // 检查是否有自定义随机封面设置
+    val hasCustomDefault = !randomPath.isNullOrBlank()
 
     var isOnlineCoverLoaded by remember(path) { mutableStateOf(false) }
 
@@ -76,25 +98,34 @@ fun BookCover(
                 } else Modifier
             )
             .clip(RoundedCornerShape(4.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerLow)
-        /*
-        .then(
-            if (CoverConfig.coverShowStroke) {
-                Modifier.border(
-                    0.5.dp,
-                    MaterialTheme.colorScheme.outlineVariant,
-                    RoundedCornerShape(4.dp)
-                )
-            } else Modifier
-        )
-         */
+            .then(
+                if (!hasCustomDefault) {
+                    Modifier.background(MaterialTheme.colorScheme.surfaceContainer)
+                } else Modifier
+            )
     ) {
-        // 1. 封面底图
+        // 如果没有自定义随机封面，显示书本图标作为底图
+        // TODO:暂时先用猫猫头
+        /*
+        if (!hasCustomDefault) {
+            Icon(
+                Icons.Default.Book,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier
+                    .size(32.dp)
+                    .align(Alignment.Center)
+            )
+        }
+         */
+
+
+        // 1. 封面图层
         AsyncImage(
             model = ImageRequest.Builder(context)
-                .data(finalPath ?: randomDefault)
-                .placeholder(randomDefault)
-                .error(randomDefault)
+                .data(finalPath ?: randomPath)
+                .placeholder(randomDrawable)
+                .error(randomDrawable)
                 .crossfade(true)
                 .setParameter("sourceOrigin", sourceOrigin)
                 .setParameter("loadOnlyWifi", CoverConfig.loadCoverOnlyWifi)
@@ -115,7 +146,7 @@ fun BookCover(
             }
         )
 
-        // 2. 文字叠加层（当没有在线封面或者加载失败时显示）
+        // 2. 文字叠加层：当没有书籍自身封面（或加载失败）时，在随机底图上绘制书名/作者
         if (!isOnlineCoverLoaded) {
             CoverTextOverlay(
                 name = name,
@@ -152,7 +183,6 @@ private fun CoverTextOverlay(
     val showAuthor =
         (if (isNight) CoverConfig.coverShowAuthorN else CoverConfig.coverShowAuthor) && showName
 
-    // 如果都不显示，直接返回
     if (!showName && !showAuthor) return
 
     val secondaryColor = MaterialTheme.colorScheme.secondary.toArgb()
@@ -171,7 +201,6 @@ private fun CoverTextOverlay(
         drawIntoCanvas { canvas ->
             val nativeCanvas = canvas.nativeCanvas
 
-            // 绘制书名
             if (showName && !name.isNullOrBlank()) {
                 val paint = Paint().apply {
                     isAntiAlias = true
@@ -200,9 +229,7 @@ private fun CoverTextOverlay(
                     nativeCanvas.withSave {
                         val textX = (viewWidth - maxWidth) / 2f
                         val textY = viewHeight * 0.08f
-
                         translate(textX, textY)
-
                         if (CoverConfig.coverShowStroke) {
                             textPaint.style = Paint.Style.STROKE
                             textPaint.strokeWidth = textPaint.textSize / 12
@@ -210,8 +237,6 @@ private fun CoverTextOverlay(
                             textPaint.color = Color.White.toArgb()
                             textPaint.clearShadowLayer()
                             layout.draw(this)
-
-                            // 还原
                             textPaint.style = Paint.Style.FILL
                             textPaint.color = originalColor
                             if (CoverConfig.coverShowShadow) {
@@ -225,7 +250,6 @@ private fun CoverTextOverlay(
                     var startY = viewHeight * 0.16f
                     val fm = paint.fontMetrics
                     val charHeight = fm.bottom - fm.top
-
                     name.forEach { char ->
                         if (CoverConfig.coverShowStroke) {
                             val strokePaint = Paint(paint).apply {
@@ -246,7 +270,6 @@ private fun CoverTextOverlay(
                 }
             }
 
-            // 绘制作者
             if (showAuthor && !author.isNullOrBlank()) {
                 val paint = Paint().apply {
                     isAntiAlias = true
@@ -257,7 +280,6 @@ private fun CoverTextOverlay(
                         setShadowLayer(4f, 1f, 1f, shadowColor)
                     }
                 }
-
                 if (isHorizontal) {
                     val authorText = TextUtils.ellipsize(
                         author,
@@ -265,7 +287,6 @@ private fun CoverTextOverlay(
                         viewWidth * 0.9f,
                         TextUtils.TruncateAt.END
                     )
-
                     if (CoverConfig.coverShowStroke) {
                         val strokePaint = Paint(paint).apply {
                             color = Color.White.toArgb()
@@ -292,7 +313,6 @@ private fun CoverTextOverlay(
                     val charHeight = fm.bottom - fm.top
                     var startY = viewHeight * 0.16f - (author.length * charHeight)
                     startY = startY.coerceAtLeast(viewHeight * 0.2f)
-
                     author.forEach { char ->
                         nativeCanvas.drawText(char.toString(), startX, startY, paint)
                         startY += charHeight

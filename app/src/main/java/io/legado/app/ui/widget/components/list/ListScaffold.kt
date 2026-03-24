@@ -19,7 +19,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingToolbarDefaults.ScreenOffset
 import androidx.compose.material3.Icon
 import androidx.compose.material3.PlainTooltip
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -36,9 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import dev.chrisbanes.haze.HazeState
-import io.legado.app.ui.theme.responsiveHazeEffect
-import io.legado.app.ui.theme.responsiveHazeSource
+import io.legado.app.ui.widget.components.AppScaffold
 import io.legado.app.ui.widget.components.GlassTopAppBarDefaults
 import io.legado.app.ui.widget.components.SelectionActions
 import io.legado.app.ui.widget.components.SelectionBottomBar
@@ -84,35 +81,36 @@ fun <T> ListScaffold(
     content: @Composable (PaddingValues) -> Unit
 ) {
     val scrollBehavior = GlassTopAppBarDefaults.defaultScrollBehavior()
-    val hazeState = remember { HazeState() }
 
-    Scaffold(
+    AppScaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier
+                    .padding(bottom = 72.dp)
+            )
+        },
         topBar = {
-            Box(modifier = Modifier.responsiveHazeEffect(state = hazeState)) {
-                DynamicTopAppBar(
-                    title = title,
-                    subtitle = subtitle,
-                    state = state,
-                    scrollBehavior = scrollBehavior,
-                    onBackClick = onBackClick,
-                    onSearchToggle = onSearchToggle,
-                    onSearchQueryChange = onSearchQueryChange,
-                    searchPlaceholder = searchPlaceholder,
-                    onClearSelection = { selectionActions?.onSelectInvert?.invoke() },
-                    topBarActions = topBarActions,
-                    dropDownMenuContent = dropDownMenuContent,
-                    bottomContent = bottomContent
-                )
-            }
+            DynamicTopAppBar(
+                title = title,
+                subtitle = subtitle,
+                state = state,
+                scrollBehavior = scrollBehavior,
+                onBackClick = onBackClick,
+                onSearchToggle = onSearchToggle,
+                onSearchQueryChange = onSearchQueryChange,
+                searchPlaceholder = searchPlaceholder,
+                onClearSelection = { selectionActions?.onSelectInvert?.invoke() },
+                topBarActions = topBarActions,
+                dropDownMenuContent = dropDownMenuContent,
+                bottomContent = bottomContent
+            )
         },
         floatingActionButton = floatingActionButton
     ) { paddingValues ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .responsiveHazeSource(hazeState)
+            modifier = Modifier.fillMaxSize()
         ) {
             content(paddingValues)
 

@@ -53,11 +53,16 @@ fun <T> prefDelegate(
 
         @Suppress("UNCHECKED_CAST")
         private fun readInitialValue(): T {
-            return when (defaultValue) {
-                is String -> appCtx.getPrefString(key, defaultValue) as T
-                is Int -> appCtx.getPrefInt(key, defaultValue) as T
-                is Boolean -> appCtx.getPrefBoolean(key, defaultValue) as T
-                is Long -> appCtx.getPrefLong(key, defaultValue) as T
+            val prefs = appCtx.defaultSharedPreferences
+            return when {
+                defaultValue is String -> appCtx.getPrefString(key, defaultValue) as T
+                defaultValue == null && prefs.contains(key) -> {
+                    appCtx.getPrefString(key, null) as T
+                }
+
+                defaultValue is Int -> appCtx.getPrefInt(key, defaultValue) as T
+                defaultValue is Boolean -> appCtx.getPrefBoolean(key, defaultValue) as T
+                defaultValue is Long -> appCtx.getPrefLong(key, defaultValue) as T
                 else -> defaultValue
             }
         }
@@ -69,7 +74,7 @@ fun <T> prefDelegate(
         override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
             if (_value.value != value) {
                 when (value) {
-                    is String -> appCtx.putPrefString(key, value)
+                    is String? -> appCtx.putPrefString(key, value)
                     is Int -> appCtx.putPrefInt(key, value)
                     is Boolean -> appCtx.putPrefBoolean(key, value)
                     is Long -> appCtx.putPrefLong(key, value)

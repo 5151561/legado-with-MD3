@@ -1,10 +1,12 @@
 package io.legado.app.ui.main.bookshelf
 
 import android.app.Application
+import android.net.Uri
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.viewModelScope
 import com.google.gson.stream.JsonWriter
 import io.legado.app.R
+import io.legado.app.base.BaseRuleEvent
 import io.legado.app.base.BaseViewModel
 import io.legado.app.constant.AppConst
 import io.legado.app.constant.AppLog
@@ -16,6 +18,7 @@ import io.legado.app.data.entities.BookGroup
 import io.legado.app.data.entities.BookSource
 import io.legado.app.data.entities.BookSourcePart
 import io.legado.app.data.repository.BookGroupRepository
+import io.legado.app.data.repository.UploadRepository
 import io.legado.app.exception.NoStackTraceException
 import io.legado.app.help.book.BookHelp
 import io.legado.app.help.book.addType
@@ -51,6 +54,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
@@ -69,11 +73,13 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
@@ -85,7 +91,8 @@ import kotlin.math.min
 
 class BookshelfViewModel(
     application: Application,
-    private val bookGroupRepository: BookGroupRepository
+    private val bookGroupRepository: BookGroupRepository,
+    private val uploadRepository: UploadRepository
 ) : BaseViewModel(application) {
     var addBookJob: Coroutine<*>? = null
 
@@ -107,6 +114,9 @@ class BookshelfViewModel(
 
     val scrollTrigger = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
+    protected val _eventChannel = Channel<BaseRuleEvent>()
+    val events = _eventChannel.receiveAsFlow()
+
     val groupsFlow: StateFlow<List<BookGroup>> = bookGroupRepository.flowShow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -127,12 +137,52 @@ class BookshelfViewModel(
         combine(groupsFlow, allBooksFlow, refreshTrigger) { groups, allBooks, _ ->
         if (BookshelfConfig.bookGroupStyle in 2..3) {
             groups.associate { group ->
-                val groupBooks = if (group.groupId == BookGroup.IdAll) {
-                    allBooks.take(4)
-                } else {
-                    allBooks.filter { (it.group and group.groupId) != 0L }.take(4)
+                val groupBooks = when (group.groupId) {
+                    BookGroup.IdRoot -> {
+                        val sumUserGroupIds = groups.filter { it.groupId > 0 }.sumOf { it.groupId }
+                        allBooks.filter { book ->
+                            (book.type and BookType.text) > 0 &&
+                                    (book.type and BookType.local) == 0 &&
+                                    (sumUserGroupIds and book.group) == 0L
+                        }
+                    }
+
+                    BookGroup.IdAll -> allBooks
+                    BookGroup.IdLocal -> allBooks.filter { (it.type and BookType.local) > 0 }
+                    BookGroup.IdAudio -> allBooks.filter { (it.type and BookType.audio) > 0 }
+                    BookGroup.IdNetNone -> {
+                        val sumUserGroupIds = groups.filter { it.groupId > 0 }.sumOf { it.groupId }
+                        allBooks.filter { book ->
+                            (book.type and BookType.audio) == 0 &&
+                                    (book.type and BookType.local) == 0 &&
+                                    (sumUserGroupIds and book.group) == 0L
+                        }
+                    }
+
+                    BookGroup.IdLocalNone -> {
+                        val sumUserGroupIds = groups.filter { it.groupId > 0 }.sumOf { it.groupId }
+                        allBooks.filter { book ->
+                            (book.type and BookType.local) > 0 &&
+                                    (sumUserGroupIds and book.group) == 0L
+                        }
+                    }
+
+                    BookGroup.IdManga -> allBooks.filter { (it.type and BookType.image) > 0 }
+                    BookGroup.IdText -> allBooks.filter { (it.type and BookType.text) > 0 }
+                    BookGroup.IdError -> allBooks.filter { (it.type and BookType.updateError) > 0 }
+                    BookGroup.IdUnread -> allBooks.filter { it.durChapterIndex == 0 && it.durChapterPos == 0 }
+                    BookGroup.IdReading -> allBooks.filter { it.totalChapterNum > 0 && it.durChapterIndex > 0 && it.durChapterIndex < it.totalChapterNum - 1 }
+                    BookGroup.IdReadFinished -> allBooks.filter { it.totalChapterNum > 0 && it.durChapterIndex >= it.totalChapterNum - 1 }
+                    else -> allBooks.filter { (it.group and group.groupId) != 0L }
                 }
-                group.groupId to groupBooks
+                val sortedBooks = sortBooks(groupBooks, group)
+                val booksWithCover = sortedBooks.filter { it.getDisplayCover() != null }
+                val result = if (booksWithCover.size >= 4) {
+                    booksWithCover.take(4)
+                } else {
+                    (booksWithCover + sortedBooks.filter { it.getDisplayCover() == null }).take(4)
+                }
+                group.groupId to result
             }
         } else {
             emptyMap()
@@ -509,6 +559,63 @@ class BookshelfViewModel(
             AppLog.put("添加网址出错\n${it.localizedMessage}", it, true)
         }.onFinally {
             loadingTextFlow.value = null
+        }
+    }
+
+    fun exportToUri(uri: Uri, books: List<Book>) {
+        execute {
+            context.contentResolver.openOutputStream(uri)?.use { out ->
+                val writer = JsonWriter(OutputStreamWriter(out, "UTF-8"))
+                writer.setIndent("  ")
+                writer.beginArray()
+                books.forEach {
+                    val bookMap = hashMapOf<String, String?>()
+                    bookMap["name"] = it.name
+                    bookMap["author"] = it.author
+                    bookMap["intro"] = it.getDisplayIntro()
+                    GSON.toJson(bookMap, bookMap::class.java, writer)
+                }
+                writer.endArray()
+                writer.close()
+            }
+        }.onSuccess {
+            _eventChannel.trySend(BaseRuleEvent.ShowSnackbar("导出成功"))
+        }.onError {
+            _eventChannel.trySend(BaseRuleEvent.ShowSnackbar("导出失败\n${it.localizedMessage}"))
+        }
+    }
+
+    fun uploadBookshelf(books: List<Book>) {
+        execute {
+            val json = withContext(Dispatchers.Default) {
+                val list = books.map {
+                    val bookMap = hashMapOf<String, String?>()
+                    bookMap["name"] = it.name
+                    bookMap["author"] = it.author
+                    bookMap["intro"] = it.getDisplayIntro()
+                    bookMap
+                }
+                GSON.toJson(list)
+            }
+            uploadRepository.upload(
+                fileName = "bookshelf.json",
+                file = json,
+                contentType = "application/json"
+            )
+        }.onSuccess { url ->
+            _eventChannel.trySend(
+                BaseRuleEvent.ShowSnackbar(
+                    message = "上传成功: $url",
+                    actionLabel = "复制链接",
+                    url = url
+                )
+            )
+        }.onError {
+            _eventChannel.trySend(
+                BaseRuleEvent.ShowSnackbar(
+                    message = "上传失败: ${it.localizedMessage}"
+                )
+            )
         }
     }
 
