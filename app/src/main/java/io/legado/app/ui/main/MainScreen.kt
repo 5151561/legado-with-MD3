@@ -4,6 +4,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -11,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -30,6 +34,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.WideNavigationRail
 import androidx.compose.material3.WideNavigationRailItem
@@ -43,11 +48,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.chrisbanes.haze.HazeState
@@ -235,101 +242,126 @@ fun MainScreen(
                 if (!useRail && MainConfig.showBottomView) {
                     val labelVisibilityMode = MainConfig.labelVisibilityMode
                     val isUnlabeled = labelVisibilityMode == "unlabeled"
-                    NavigationBar(
+                    Box(
                         modifier = Modifier
-                            .regularHazeEffect(state = hazeState)
-                            .height(if (isUnlabeled) 64.dp else 80.dp),
-                        containerColor = GlassDefaults.glassColor(
-                            noBlurColor = BottomAppBarDefaults.containerColor,
-                            blurAlpha = GlassDefaults.DefaultBlurAlpha
-                        )
+                            .fillMaxWidth()
+                            .navigationBarsPadding()
+                            .padding(horizontal = 24.dp, vertical = 6.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        val alwaysShowLabel = when (labelVisibilityMode) {
-                            "labeled" -> true
-                            "selected" -> false
-                            "unlabeled" -> false
-                            else -> false
-                        }
-                        destinations.forEachIndexed { index, destination ->
-                            val selected = pagerState.targetPage == index
-                            var showGroupMenu by remember { mutableStateOf(false) }
-                            val haptic = LocalHapticFeedback.current
+                        Surface(
+                            modifier = Modifier
+                                .widthIn(max = 420.dp)
+                                .regularHazeEffect(state = hazeState),
+                            shape = RoundedCornerShape(28.dp),
+                            color = GlassDefaults.glassColor(
+                                noBlurColor = BottomAppBarDefaults.containerColor,
+                                blurAlpha = GlassDefaults.DefaultBlurAlpha
+                            ),
+                            tonalElevation = 0.dp,
+                            shadowElevation = 6.dp
+                        ) {
+                            NavigationBar(
+                                modifier = Modifier
+                                    .height(if (isUnlabeled) 60.dp else 64.dp)
+                                    .padding(horizontal = 6.dp),
+                                containerColor = androidx.compose.ui.graphics.Color.Transparent
+                            ) {
+                                val alwaysShowLabel = when (labelVisibilityMode) {
+                                    "labeled" -> true
+                                    "selected" -> false
+                                    "unlabeled" -> false
+                                    else -> false
+                                }
+                                destinations.forEachIndexed { index, destination ->
+                                    val selected = pagerState.targetPage == index
+                                    var showGroupMenu by remember { mutableStateOf(false) }
+                                    val haptic = LocalHapticFeedback.current
 
-                            NavigationBarItem(
-                                selected = selected,
-                                onClick = {
-                                    coroutineScope.launch {
-                                        pagerState.animateScrollToPage(index)
-                                    }
-                                },
-                                icon = {
-                                    Box {
-                                        NavigationIcon(
-                                            destination = destination,
-                                            selected = selected,
-                                            upBooksCount = uiState.upBooksCount,
-                                            modifier = if (destination == MainDestination.Bookshelf) {
-                                                Modifier.combinedClickable(
-                                                    onClick = {
-                                                        coroutineScope.launch {
-                                                            pagerState.animateScrollToPage(index)
-                                                        }
-                                                    },
-                                                    onLongClick = {
-                                                        haptic.performHapticFeedback(
-                                                            HapticFeedbackType.LongPress
-                                                        )
-                                                        showGroupMenu = true
-                                                    }
-                                                )
-                                            } else Modifier
-                                        )
-
-                                        if (destination == MainDestination.Bookshelf && showGroupMenu) {
-                                            RoundDropdownMenu(
-                                                expanded = showGroupMenu,
-                                                onDismissRequest = { showGroupMenu = false }
-                                            ) { dismiss ->
-                                                bookshelfUiState.groups.forEachIndexed { groupIndex, group ->
-                                                    RoundDropdownMenuItem(
-                                                        text = { Text(group.groupName) },
-                                                        onClick = {
-                                                            coroutineScope.launch {
-                                                                if (pagerState.currentPage != index) {
-                                                                    pagerState.scrollToPage(index)
+                                    NavigationBarItem(
+                                        selected = selected,
+                                        onClick = {
+                                            coroutineScope.launch {
+                                                pagerState.animateScrollToPage(index)
+                                            }
+                                        },
+                                        icon = {
+                                            Box {
+                                                NavigationIcon(
+                                                    destination = destination,
+                                                    selected = selected,
+                                                    upBooksCount = uiState.upBooksCount,
+                                                    modifier = if (destination == MainDestination.Bookshelf) {
+                                                        Modifier.combinedClickable(
+                                                            onClick = {
+                                                                coroutineScope.launch {
+                                                                    pagerState.animateScrollToPage(index)
                                                                 }
-                                                                bookshelfViewModel.changeGroup(
-                                                                    group.groupId
+                                                            },
+                                                            onLongClick = {
+                                                                haptic.performHapticFeedback(
+                                                                    HapticFeedbackType.LongPress
                                                                 )
-                                                                dismiss()
+                                                                showGroupMenu = true
                                                             }
-                                                        },
-                                                        trailingIcon = {
-                                                            if (bookshelfUiState.selectedGroupIndex == groupIndex) {
-                                                                Icon(
-                                                                    Icons.Default.Check,
-                                                                    null,
-                                                                    modifier = Modifier.size(18.dp)
-                                                                )
-                                                            }
+                                                        )
+                                                    } else Modifier
+                                                )
+
+                                                if (destination == MainDestination.Bookshelf && showGroupMenu) {
+                                                    RoundDropdownMenu(
+                                                        expanded = showGroupMenu,
+                                                        onDismissRequest = { showGroupMenu = false }
+                                                    ) { dismiss ->
+                                                        bookshelfUiState.groups.forEachIndexed { groupIndex, group ->
+                                                            RoundDropdownMenuItem(
+                                                                text = { Text(group.groupName) },
+                                                                onClick = {
+                                                                    coroutineScope.launch {
+                                                                        if (pagerState.currentPage != index) {
+                                                                            pagerState.scrollToPage(index)
+                                                                        }
+                                                                        bookshelfViewModel.changeGroup(
+                                                                            group.groupId
+                                                                        )
+                                                                        dismiss()
+                                                                    }
+                                                                },
+                                                                trailingIcon = {
+                                                                    if (bookshelfUiState.selectedGroupIndex == groupIndex) {
+                                                                        Icon(
+                                                                            Icons.Default.Check,
+                                                                            null,
+                                                                            modifier = Modifier.size(18.dp)
+                                                                        )
+                                                                    }
+                                                                }
+                                                            )
                                                         }
-                                                    )
+                                                    }
                                                 }
                                             }
-                                        }
-                                    }
-                                },
-                                colors = NavigationBarItemDefaults.colors(
-                                    indicatorColor = GlassDefaults.glassColor(
-                                        noBlurColor = MaterialTheme.colorScheme.secondaryContainer,
-                                        blurAlpha = GlassDefaults.ThickBlurAlpha
-                                    ),
-                                ),
-                                label = if (labelVisibilityMode != "unlabeled") {
-                                    { Text(stringResource(destination.labelId)) }
-                                } else null,
-                                alwaysShowLabel = alwaysShowLabel
-                            )
+                                        },
+                                        colors = NavigationBarItemDefaults.colors(
+                                            indicatorColor = GlassDefaults.glassColor(
+                                                noBlurColor = MaterialTheme.colorScheme.secondaryContainer,
+                                                blurAlpha = GlassDefaults.ThickBlurAlpha
+                                            ),
+                                        ),
+                                        label = if (labelVisibilityMode != "unlabeled") {
+                                            {
+                                                Text(
+                                                    text = stringResource(destination.labelId),
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis
+                                                )
+                                            }
+                                        } else null,
+                                        alwaysShowLabel = alwaysShowLabel
+                                    )
+                                }
+                            }
                         }
                     }
                 }
