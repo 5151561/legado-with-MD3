@@ -278,6 +278,107 @@ tint→`ColorFilter`、`Role.Image` 语义。
 
 ---
 
+## F. 换成官方组件后外观会变吗？逐项数值对照
+
+结论先行：**没有一个是严格 1:1 的**——每个手搓组件都编码了刻意或非刻意偏离 M3 默认值的地方，
+直接换成官方组件、全用默认参数，外观一定会变。但绝大多数偏离都能通过 M3 组件暴露的参数
+（`colors`/`shape`/`contentPadding`/`border`/`Modifier.size`）显式传回来做到零视觉变化，
+真正无法还原、必须做设计取舍的只有下面 5 处。
+
+以下 M3 侧数值取自 `androidx-main` 的 token 源码（`ButtonSmallTokens`/`ButtonXSmallTokens`/
+`ListTokens`/`FilledCardTokens`/`AssistChipTokens`/`ShapeTokens`），**非 alpha23 精确 tag**，
+个别数值可能有细微出入，动手前建议用项目实际依赖的 aar 复核一遍。
+
+### F1. `Small*`/`Medium*Button` 系列——意外地接近 M3，但名字对错了档位
+
+| | 项目 `MediumTonalButton` | M3 `ButtonSmallTokens` | 是否吻合 |
+|---|---|---|---|
+| 容器高度 | 40.dp | **40.dp** | ✓ |
+| 水平内容内距 | 16.dp | **16.dp**（`LeadingSpace`/`TrailingSpace`） | ✓ |
+| 图标-文字间距 | 8.dp | **8.dp**（`IconLabelSpace`） | ✓ |
+| 形状 | `extraSmallRoundShape`（圆） | `ContainerShapeRound = CornerFull` | ✓ |
+| Outlined 描边宽度 | 1.dp | **1.dp**（`OutlinedOutlineWidth`） | ✓ |
+| 图标尺寸 | 24.dp | 20.dp（`IconSize`） | ✗ |
+
+`Small*Button`（32×32、圆形、水平内距 8dp）同样精确对上 M3 **ExtraSmall**（`ButtonXSmallTokens.ContainerHeight = 32.dp`，`LeadingSpace`/`TrailingSpace = 16.dp` 与项目 8dp 内距不同但同量级，形状同为 `CornerFull`）。
+
+**这里有一个真陷阱**：项目命名的 Small/Medium 数值上实际对应 M3 的 **ExtraSmall/Small**。
+若按名字直译迁移（项目 Medium → M3 `Button()` 默认档），容器高度会从 40dp 直接跳到 56dp，
+整体按钮明显变大；必须按**数值**对应（项目 Small→M3 ExtraSmall，项目 Medium→M3 Small）才能保持零变化。
+
+其余偏离（容器色 `surfaceContainerLow` vs `secondaryContainer`、内容色 `onSurfaceVariant` vs
+`onSecondaryContainer`、禁用态容器色 `outlineVariant` 不透明 vs `onSurface × 0.12f` 半透明）
+全部可以通过 `ButtonDefaults.filledTonalButtonColors(containerColor=, contentColor=,
+disabledContainerColor=, disabledContentColor=)` 显式传回来还原，图标尺寸也只是一个
+`Modifier.size(24.dp)` 的事——都不是 M3 强制的。
+
+### F2. `GlassCard`/`NormalCard`——elevation 本来就一致，颜色可传参还原
+
+| | 项目 | M3 `FilledCardTokens` | 是否吻合 |
+|---|---|---|---|
+| elevation | 0.dp | `ContainerElevation = Level0` = **0.dp** | ✓（本来就一致） |
+| 圆角 | 16.dp（继承 Miuix 默认）；94 处调用点显式传值（12dp×40、8dp×19、4dp×19、16dp×9…） | `CornerMedium` = 12.dp | 大部分调用点已显式传值，可控 |
+| 容器色 | `surfaceContainer` | `SurfaceContainerHighest` | 可通过 `CardDefaults.cardColors(containerColor=)` 还原 |
+| 内容色（`GlassCard` 分支） | **`onSecondaryContainer`**（可疑默认值，非 `contentColorFor(containerColor)`） | `contentColorFor(container)` = 通常是 `onSurface` | 可传参还原，但当前默认值本身值得单独核查是不是笔误 |
+| 按压/悬停 elevation | 无（`Surface` + `combinedClickable`，elevation 恒定） | filled card hover = `Level1` | 换成 `Card(onClick=)` 会**引入**这个抬升——是 M3 会新增的行为，不是丢失 |
+
+### F3. `TinySettingItem` → `ListItem`——唯一「传参也救不回来」的尺寸变化
+
+项目固定 `Modifier.height(56.dp)`，不管有没有 description 都是 56dp。
+M3 `ListItem` 按 one/two/three-line **强制最小高度**（`ItemOneLineContainerHeight = 56.dp`、
+`ItemTwoLineContainerHeight = 72.dp`、`ItemThreeLineContainerHeight = 88.dp`），这是布局层面
+强制的，不是默认参数，**传不进去**。
+
+影响面：单行设置项（无 description）56dp 恰好吻合，**零变化**；带 description 的两行设置项
+会从 56dp 强制变成 72dp——这是全审计范围内唯一一处「即使显式传参也无法保持原尺寸」的情况。
+
+alpha23 的新 `ListItem` overload 好消息更多：暴露了 `contentPadding`（可传 12dp 保持内距）、
+**不强制** leading icon 尺寸（可保 18dp，不会被拉到 M3 默认的 24dp/`ItemLeadingIconSize`）、
+有 `shapes`/`colors` 参数（可保 12dp 圆角与 `surfaceContainerLow` 容器色）。所以除了两行行高，
+其余视觉几乎都能保留。
+
+### F4. `CardTabRow` → `SegmentedButton`——不是换皮，是重新设计
+
+现状是 8dp 间隙分离的独立卡片（`Arrangement.spacedBy(8.dp)`）；M3 `SegmentedButton` 是
+**连体、零间隙、带描边、选中态默认带 `Check` 图标**的分段控件。选中色 `secondaryContainer`
+正好和项目现值吻合，但整体几何、描边、勾选图标都是当前设计里没有的元素，属于外观上的
+主动改版，不是「换个实现细节」。
+
+### F5. `TextCard` → `AssistChip`——尺寸被强制拉大
+
+| | 项目 `TextCard` | M3 `AssistChipTokens` | 是否吻合 |
+|---|---|---|---|
+| 圆角 | 8.dp | `CornerSmall` = **8.dp** | ✓ |
+| 内容色 | `onSurface` | `LabelTextColor = OnSurface` | ✓ |
+| 容器高度 | ~24dp（无固定高度，由文字+2×4dp内距撑开） | `ContainerHeight = 32.0.dp`（**强制**） | ✗ 会变高 |
+| 标签字号 | `labelSmallEmphasized`（11sp/Medium） | `LabelLarge`（14sp） | ✗ 会变大 |
+| 图标尺寸 | 14.dp | `IconSize = 18.0.dp` | ✗ 会变大 |
+| 描边 | 无 | 默认 flat 态带 `1.dp OutlineVariant` 描边 | ✗ 新增描边（可传 `border = null` 去掉） |
+
+`TextCard` 目前用作紧凑的「当前值」标签（如设置项尾部的取值展示），`AssistChip` 的 32dp
+强制高度和 14sp 字号明显偏大，不适合这个场景；换成 `AssistChip` 前需要先确认视觉预算能接受，
+或考虑用 `Badge` 承载不可点场景。
+
+### F6. `TimePickerDialog` → M3 `TimePickerDialog`
+
+对话框容器规格换成 M3 标准（内距、圆角、按钮布局跟随 M3 dialog token），且会**多出一个
+时钟/输入模式切换按钮**（`DisplayModeToggle`）——这是当前手搓实现缺失、换过去后新增的功能，
+而非丢失，但仍属于外观变化，需要在切换前对齐产品预期。
+
+### 小结
+
+| 组件 | 换成 M3 后是否可做到零视觉变化 |
+|---|---|
+| `Small*`/`Medium*Button` 系列 | **可以**（六项参数里五项数值本来就吻合，其余可传参还原；注意按数值而非名字对应档位） |
+| `GlassCard`/`NormalCard` | **可以**（elevation 本就一致，颜色/圆角可传参；按压 elevation 会新增，非负面变化） |
+| `TinySettingItem`（无 description） | **可以** |
+| `TinySettingItem`（带 description） | **不可以**——56dp 强制变 72dp |
+| `CardTabRow` → `SegmentedButton` | **不可以**——几何设计不同，是改版而非替换 |
+| `TextCard` → `AssistChip` | **不可以**——32dp 高度 + 14sp 字号被强制拉大 |
+| `TimePickerDialog` | **基本可以**，但会新增模式切换按钮 |
+
+---
+
 ## 若要动手
 
 按 A1 → A2 → A3 顺序收益最高（都是改内部实现、调用点零改动）。每步：
