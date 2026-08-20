@@ -548,19 +548,6 @@ private fun GlobalMenuTab(
                         )
                     },
                 )
-                TinySwitchSettingItem(
-                    title = stringResource(R.string.read_menu_bar_liquid_glass_buttons),
-                    checked = preferences.readMenuFloatingIconLiquidGlass,
-                    onCheckedChange = {
-                        onIntent(
-                            ReadBookIntent.UpdateConfig(
-                                ConfigUpdate.MenuFloatingIconLiquidGlass(
-                                    it
-                                )
-                            )
-                        )
-                    },
-                )
             }
         }
     }
@@ -719,36 +706,6 @@ private fun BottomBarTab(
                 },
             )
         }
-        AnimatedVisibility(visible = floatingBottomBar) {
-            TinySwitchSettingItem(
-                title = stringResource(R.string.read_menu_bar_liquid_glass),
-                description = stringResource(R.string.read_menu_bar_liquid_glass_summary),
-                checked = preferences.readMenuBottomBarBlurMode == ReadMenuBlurMode.LiquidGlass,
-                onCheckedChange = {
-                    onIntent(
-                        ReadBookIntent.UpdateConfig(
-                            ConfigUpdate.MenuBottomBarBlurMode(
-                                if (it) {
-                                    ReadMenuBlurMode.LiquidGlass
-                                } else if (bottomBarBlurMode != ReadMenuBlurMode.None) {
-                                    ReadMenuBlurMode.Haze
-                                } else {
-                                    ReadMenuBlurMode.None
-                                }
-                            )
-                        )
-                    )
-                },
-            )
-        }
-        TinySwitchSettingItem(
-            title = stringResource(R.string.read_menu_bar_liquid_glass_buttons),
-            description = stringResource(R.string.read_menu_bottom_bar_liquid_glass_buttons_summary),
-            checked = preferences.readMenuBottomBarLiquidGlassButtons,
-            onCheckedChange = {
-                onIntent(ReadBookIntent.UpdateConfig(ConfigUpdate.MenuBottomBarLiquidGlassButtons(it)))
-            },
-        )
     }
 }
 
@@ -845,20 +802,6 @@ private fun TopBarTab(
                         ConfigUpdate.MenuTopBarBlurSelection(
                             mode = preferences.readMenuTopBarBlurMode,
                             style = it.toInt(),
-                        )
-                    )
-                )
-            },
-        )
-        TinySwitchSettingItem(
-            title = stringResource(R.string.read_menu_bar_liquid_glass_buttons),
-            description = stringResource(R.string.read_menu_top_bar_liquid_glass_buttons_summary),
-            checked = preferences.readMenuTopBarLiquidGlassButtons,
-            onCheckedChange = {
-                onIntent(
-                    ReadBookIntent.UpdateConfig(
-                        ConfigUpdate.MenuTopBarLiquidGlassButtons(
-                            it
                         )
                     )
                 )

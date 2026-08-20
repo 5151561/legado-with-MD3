@@ -7,7 +7,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import io.legado.app.domain.model.settings.hasBackgroundImage
-import io.legado.app.ui.theme.ThemeEngine.getColorScheme
 
 @Composable
 fun rememberOpaqueColorScheme(): ColorScheme {
@@ -35,19 +34,6 @@ fun rememberOpaqueColorScheme(): ColorScheme {
         materialVersion,
         seedColorInt
     ) {
-        if (appThemeMode != AppThemeMode.Transparent) {
-            currentTheme.colorScheme
-        } else {
-            getColorScheme(
-                context = context,
-                mode = appThemeMode,
-                darkTheme = isDark,
-                isAmoled = isPureBlack,
-                paletteStyle = paletteStyle,
-                materialVersion = materialVersion,
-                forceOpaque = true,
-                customSeedColor = seedColorInt
-            )
-        }
+        currentTheme.colorScheme
     }
 }

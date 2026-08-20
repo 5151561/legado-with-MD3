@@ -418,23 +418,6 @@ fun ThemeConfigScreen(
                     }
                 }
 
-                SplicedColumnGroup(title = stringResource(R.string.blur_effects)) {
-                    SwitchSettingItem(
-                        title = stringResource(R.string.is_blur_enable),
-                        checked = theme.enableBlur,
-                        onCheckedChange = { onIntent(ThemeConfigIntent.SetBlurEnabled(it)) }
-                    )
-                    AnimatedVisibility(visible = theme.enableBlur) {
-                        SwitchSettingItem(
-                            title = stringResource(R.string.is_blur_progressive_enable),
-                            checked = theme.enableProgressiveBlur,
-                            onCheckedChange = { value ->
-                                updateTheme { it.copy(enableProgressiveBlur = value) }
-                            }
-                        )
-                    }
-                }
-
             }
 
             // Container settings
@@ -492,19 +475,6 @@ fun ThemeConfigScreen(
                             )
                         }
                     }
-                    SliderSettingItem(
-                            title = stringResource(R.string.container_opacity),
-                            description = stringResource(
-                                R.string.container_opacity_summary,
-                                theme.containerOpacity
-                            ),
-                            value = theme.containerOpacity.toFloat(),
-                            defaultValue = 100f,
-                            valueRange = 0f..100f,
-                            onValueChange = { value ->
-                                updateTheme { it.copy(containerOpacity = value.toInt()) }
-                            }
-                    )
                     SwitchSettingItem(
                         title = stringResource(R.string.disable_spliced_group_corner_radius),
                         description = stringResource(R.string.disable_spliced_group_corner_radius_summary),

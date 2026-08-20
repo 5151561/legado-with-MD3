@@ -61,8 +61,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.kyant.backdrop.Backdrop
-import dev.chrisbanes.haze.HazeState
 import io.legado.app.R
 import io.legado.app.constant.ReadMenuBlurMode
 import io.legado.app.ui.theme.LegadoTheme
@@ -86,8 +84,8 @@ internal fun MenuTitleBar(
     state: ReadBookUiState,
     colors: ReadMenuColors,
     onIntent: (ReadBookIntent) -> Unit,
-    backdrop: Backdrop?,
-    hazeState: HazeState?,
+    backdrop: Any?,
+    hazeState: Any?,
     titleBarMode: String,
 ) {
 
@@ -415,7 +413,7 @@ private fun MenuTitleGlassButton(
     icon: ImageVector,
     state: ReadBookUiState,
     colors: ReadMenuColors,
-    backdrop: Backdrop?,
+    backdrop: Any?,
     modifier: Modifier = Modifier,
     onLongClick: (() -> Unit)? = null,
     contentDescription: String? = null,
@@ -442,7 +440,7 @@ internal fun ReadMenuGlassIconButton(
     onClick: () -> Unit,
     icon: ImageVector,
     colors: ReadMenuColors,
-    backdrop: Backdrop?,
+    backdrop: Any?,
     menuConfig: ReadMenuConfig,
     glassEnabled: Boolean,
     iconStyle: Int = menuConfig.readMenuIconStyle,
@@ -479,7 +477,7 @@ internal fun ReadMenuGlassIconButton(
 internal fun ReadMenuGlassButtonSurface(
     onClick: () -> Unit,
     colors: ReadMenuColors,
-    backdrop: Backdrop?,
+    backdrop: Any?,
     menuConfig: ReadMenuConfig,
     glassEnabled: Boolean,
     iconStyle: Int = menuConfig.readMenuIconStyle,
@@ -565,7 +563,7 @@ private fun RowScope.TitleCapsuleGlassLayout(
     state: ReadBookUiState,
     colors: ReadMenuColors,
     onIntent: (ReadBookIntent) -> Unit,
-    backdrop: Backdrop?,
+    backdrop: Any?,
     titleTextColor: Color,
 ) {
     val pillShape = RoundedCornerShape(50)
@@ -738,7 +736,7 @@ private fun MenuTitleBarMergedGlassButton(
     state: ReadBookUiState,
     colors: ReadMenuColors,
     onIntent: (ReadBookIntent) -> Unit,
-    backdrop: Backdrop?,
+    backdrop: Any?,
     glassEnabled: Boolean,
 ) {
     var sourceExpanded by remember { mutableStateOf(false) }
@@ -900,7 +898,7 @@ private fun SourceCustomActionButton(
     state: ReadBookUiState,
     colors: ReadMenuColors,
     onIntent: (ReadBookIntent) -> Unit,
-    backdrop: Backdrop?,
+    backdrop: Any?,
 ) {
     MenuTitleGlassButton(
         onClick = { onIntent(ReadBookIntent.SourceCustomButton(false)) },
@@ -918,7 +916,7 @@ private fun SourceActionButton(
     state: ReadBookUiState,
     colors: ReadMenuColors,
     onIntent: (ReadBookIntent) -> Unit,
-    backdrop: Backdrop?,
+    backdrop: Any?,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -951,7 +949,7 @@ private fun RefreshActionButton(
     state: ReadBookUiState,
     colors: ReadMenuColors,
     onIntent: (ReadBookIntent) -> Unit,
-    backdrop: Backdrop?,
+    backdrop: Any?,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -984,7 +982,7 @@ private fun DownloadActionButton(
     state: ReadBookUiState,
     colors: ReadMenuColors,
     onIntent: (ReadBookIntent) -> Unit,
-    backdrop: Backdrop?,
+    backdrop: Any?,
 ) {
     MenuTitleGlassButton(
         onClick = { onIntent(ReadBookIntent.ShowSheet(ReadBookSheet.Download)) },
@@ -1001,7 +999,7 @@ private fun TxtTocRuleActionButton(
     state: ReadBookUiState,
     colors: ReadMenuColors,
     onIntent: (ReadBookIntent) -> Unit,
-    backdrop: Backdrop?,
+    backdrop: Any?,
 ) {
     MenuTitleGlassButton(
         onClick = { onIntent(ReadBookIntent.MenuTocRegex) },
@@ -1018,7 +1016,7 @@ private fun CharsetActionButton(
     state: ReadBookUiState,
     colors: ReadMenuColors,
     onIntent: (ReadBookIntent) -> Unit,
-    backdrop: Backdrop?,
+    backdrop: Any?,
 ) {
     MenuTitleGlassButton(
         onClick = { onIntent(ReadBookIntent.ShowSheet(ReadBookSheet.Charset)) },
@@ -1031,7 +1029,7 @@ private fun CharsetActionButton(
 }
 
 private fun readMenuTopBarButtonLiquidGlassEnabled(
-    backdrop: Backdrop?,
+    backdrop: Any?,
     menuConfig: ReadMenuConfig,
 ): Boolean {
     return menuConfig.readMenuTopBarLiquidGlassButtons &&
@@ -1039,7 +1037,7 @@ private fun readMenuTopBarButtonLiquidGlassEnabled(
 }
 
 private fun readMenuTopBarHazeEnabled(
-    hazeState: HazeState?,
+    hazeState: Any?,
     menuConfig: ReadMenuConfig,
 ): Boolean {
     return hazeState != null && menuConfig.readMenuTopBarBlurMode == ReadMenuBlurMode.Haze

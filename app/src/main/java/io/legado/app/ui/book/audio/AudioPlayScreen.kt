@@ -65,18 +65,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import dev.chrisbanes.haze.HazeProgressive
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import io.legado.app.R
 import io.legado.app.constant.ReadAloudBgMode
 import io.legado.app.constant.Status
 import io.legado.app.domain.model.PlaybackTimer
 import io.legado.app.model.AudioPlay
 import io.legado.app.ui.theme.LegadoTheme
-import io.legado.app.ui.theme.hazeStyle.HazeLegado
 import io.legado.app.ui.widget.components.AppScaffold
 import io.legado.app.ui.widget.components.button.series.MediumPlainButton
 import io.legado.app.ui.widget.components.button.series.MediumTonalButton
@@ -99,7 +93,6 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
 fun AudioPlayScreenContent(
     state: AudioPlayUiState,
@@ -118,12 +111,6 @@ fun AudioPlayScreenContent(
         mutableFloatStateOf(state.timerMinutes.toFloat())
     }
     var menuExpanded by remember { mutableStateOf(false) }
-    val pagerHazeState = remember { HazeState() }
-    val hazeEnabled =
-        state.bgMode != ReadAloudBgMode.Solid && state.bgMode != ReadAloudBgMode.Transparent
-    val overlayHazeStyle = HazeLegado.ultraThinPlus(
-        containerColor = LegadoTheme.colorScheme.surface,
-    )
     val pageContentPadding = PaddingValues(
         top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 88.dp,
         bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + when (
@@ -137,24 +124,12 @@ fun AudioPlayScreenContent(
     AppScaffold(
         modifier = Modifier.fillMaxSize(),
         alwaysDrawBehindBars = true,
-        disableHazeSource = true,
         contentWindowInsets = WindowInsets(0),
         topBar = {
-            val hazeModifier = if (hazeEnabled) {
-                Modifier.hazeEffect(state = pagerHazeState, style = overlayHazeStyle) {
-                    progressive = HazeProgressive.verticalGradient(
-                        startIntensity = 1f,
-                        endIntensity = 0f,
-                    )
-                }
-            } else {
-                Modifier
-            }
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RectangleShape)
-                    .then(hazeModifier)
                     .pointerInput(Unit) { detectTapGestures(onTap = {}) }
                     .windowInsetsPadding(WindowInsets.statusBars),
             ) {
@@ -281,21 +256,10 @@ fun AudioPlayScreenContent(
             }
         },
         bottomBar = {
-            val hazeModifier = if (hazeEnabled) {
-                Modifier.hazeEffect(state = pagerHazeState, style = overlayHazeStyle) {
-                    progressive = HazeProgressive.verticalGradient(
-                        startIntensity = 0f,
-                        endIntensity = 1f,
-                    )
-                }
-            } else {
-                Modifier
-            }
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RectangleShape)
-                    .then(hazeModifier)
                     .pointerInput(Unit) { detectTapGestures(onTap = {}) }
                     .windowInsetsPadding(WindowInsets.navigationBars)
                     .padding(vertical = 8.dp),
@@ -480,11 +444,7 @@ fun AudioPlayScreenContent(
             }
         },
     ) {
-        Box(
-            Modifier
-                .fillMaxSize()
-                .then(if (hazeEnabled) Modifier.hazeSource(pagerHazeState) else Modifier)
-        ) {
+        Box(Modifier.fillMaxSize()) {
             PlayerBackground(
                 name = state.bookName,
                 author = state.author,

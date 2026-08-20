@@ -171,7 +171,6 @@
         <item>隐海修会</item>
         <item>乐队</item>
         <item>自定义</item>
-        <item>透明</item>
     </string-array>
 
     <string-array name="tabletInterface">
@@ -222,16 +221,12 @@
         <item>普通</item>
         <item>填充</item>
         <item>描边</item>
-        <item>半透明</item>
-        <item>液态玻璃</item>
     </string-array>
 
     <string-array name="top_bar_button_style_value">
         <item>plain</item>
         <item>tonal</item>
         <item>outlined</item>
-        <item>glass</item>
-        <item>liquid</item>
     </string-array>
 
     <string-array name="title_bar_mode">

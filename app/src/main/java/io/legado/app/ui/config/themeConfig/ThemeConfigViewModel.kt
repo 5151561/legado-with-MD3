@@ -116,12 +116,6 @@ class ThemeConfigViewModel(
             is ThemeConfigIntent.SetShowBottomView -> updateAppShell {
                 it.copy(showBottomView = intent.visible)
             }
-            is ThemeConfigIntent.SetUseFloatingBottomBar -> updateAppShell {
-                it.copy(useFloatingBottomBar = intent.enabled)
-            }
-            is ThemeConfigIntent.SetUseFloatingBottomBarLiquidGlass -> updateAppShell {
-                it.copy(useFloatingBottomBarLiquidGlass = intent.enabled)
-            }
             is ThemeConfigIntent.SetTabletInterface -> updateAppShell {
                 it.copy(tabletInterface = intent.value)
             }
@@ -129,7 +123,6 @@ class ThemeConfigViewModel(
                 it.copy(labelVisibilityMode = intent.value)
             }
             is ThemeConfigIntent.SetDynamicColors -> setDynamicColors(intent.enabled)
-            is ThemeConfigIntent.SetBlurEnabled -> setBlurEnabled(intent.enabled)
             is ThemeConfigIntent.SetMainDestinationVisible -> setMainDestinationVisible(intent)
             is ThemeConfigIntent.SetMainNavigationOrder -> updateAppShell {
                 it.copy(mainNavigationOrder = intent.routes)
@@ -231,19 +224,9 @@ class ThemeConfigViewModel(
     }
 
     private fun selectTheme(value: String) {
-        val theme = _uiState.value.theme
-        if (value == "13" &&
-            (theme.backgroundImageLight.isNullOrEmpty() || theme.backgroundImageDark.isNullOrEmpty())
-        ) {
-            _effects.tryEmit(ThemeConfigEffect.ShowToast(R.string.transparent_theme_alarm))
-            return
-        }
         viewModelScope.launch {
             themeSettingsGateway.update {
-                it.copy(
-                    appTheme = value,
-                    containerOpacity = if (value == "13") 0 else it.containerOpacity,
-                )
+                it.copy(appTheme = value)
             }
         }
     }
@@ -251,21 +234,6 @@ class ThemeConfigViewModel(
     private fun setDynamicColors(enabled: Boolean) {
         val value = if (enabled) "0" else "12"
         if (value != _uiState.value.theme.appTheme) selectTheme(value)
-    }
-
-    private fun setBlurEnabled(enabled: Boolean) {
-        viewModelScope.launch {
-            themeSettingsGateway.update {
-                it.copy(
-                    enableBlur = enabled,
-                    enableProgressiveBlur = if (enabled) {
-                        it.enableProgressiveBlur
-                    } else {
-                        false
-                    },
-                )
-            }
-        }
     }
 
     private fun setMainDestinationVisible(intent: ThemeConfigIntent.SetMainDestinationVisible) {

@@ -39,7 +39,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.kyant.backdrop.Backdrop
 import io.legado.app.R
 import io.legado.app.ui.theme.LegadoTheme
 import io.legado.app.ui.widget.components.AppVerticalSlider
@@ -55,7 +54,7 @@ internal fun MenuBottomBar(
     context: Context,
     bottomPadding: Dp = 0.dp,
     buttonGlassEnabled: Boolean = false,
-    backdrop: Backdrop? = null,
+    backdrop: Any? = null,
     labelColor: Color = LegadoTheme.colorScheme.onSurface,
     progressBarBehavior: String,
     onBrightnessPreview: (Int) -> Unit,
@@ -271,7 +270,7 @@ private fun BottomBarGlassIconButton(
     onClick: () -> Unit,
     icon: ImageVector,
     colors: ReadMenuColors,
-    backdrop: Backdrop?,
+    backdrop: Any?,
     menuConfig: ReadMenuConfig,
     glassEnabled: Boolean,
     contentDescription: String? = null,
@@ -298,7 +297,7 @@ internal fun BrightnessBar(
     vertical: Boolean = false,
     colors: ReadMenuColors,
     menuConfig: ReadMenuConfig,
-    backdrop: Backdrop? = null,
+    backdrop: Any? = null,
     buttonGlassEnabled: Boolean = false,
     glassThumbEnabled: Boolean = false,
     onBrightnessPreview: (Int) -> Unit,

@@ -1,6 +1,5 @@
 package io.legado.app.ui.widget.components.topbar
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -22,8 +21,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.legado.app.ui.theme.LegadoTheme
 import io.legado.app.ui.theme.LocalAppUiConfiguration
-import io.legado.app.ui.theme.LocalHazeState
-import io.legado.app.ui.theme.responsiveHazeEffect
 import io.legado.app.ui.widget.components.GlassDefaults
 import io.legado.app.ui.widget.components.text.AdaptiveAnimatedText
 import io.legado.app.ui.widget.components.text.AnimatedTextLine
@@ -44,28 +41,19 @@ fun GlassMediumFlexibleTopAppBar(
     bottomContent: @Composable (ColumnScope.() -> Unit)? = null
 ) {
 
-    val hazeState = LocalHazeState.current
     val themeSettings = LocalAppUiConfiguration.current.theme
     val containerColor = GlassDefaults.secondaryColorOr { GlassTopAppBarDefaults.containerColor() }
     val scrolledColor = GlassDefaults.secondaryColorOr { GlassTopAppBarDefaults.scrolledContainerColor() }
     val animatedColor = lerp(containerColor, scrolledColor, scrollBehavior?.collapsedFraction ?: 0f)
 
-    val finalModifier = if (hazeState != null) {
-        modifier
-            .background(color = animatedColor)
-            .responsiveHazeEffect(state = hazeState)
-    } else {
-        modifier.background(color = animatedColor)
-    }
-
-    val transparentColors = TopAppBarDefaults.topAppBarColors(
-        containerColor = Color.Transparent,
-        scrolledContainerColor = Color.Transparent
+    val topBarColors = TopAppBarDefaults.topAppBarColors(
+        containerColor = animatedColor,
+        scrolledContainerColor = animatedColor,
     )
     val subtitleText = subtitle?.takeIf { it.isNotBlank() }
 
     Column(
-        modifier = finalModifier
+        modifier = modifier
     ) {
         if (themeSettings.useFlexibleTopAppBar) {
                     MediumFlexibleTopAppBar(
@@ -90,7 +78,7 @@ fun GlassMediumFlexibleTopAppBar(
                             }
                         },
                         scrollBehavior = (scrollBehavior as? M3GlassScrollBehavior)?.m3Behavior,
-                        colors = transparentColors
+                        colors = topBarColors
                     )
         } else {
                     TopAppBar(
@@ -121,7 +109,7 @@ fun GlassMediumFlexibleTopAppBar(
                             }
                         },
                         scrollBehavior = (scrollBehavior as? M3GlassScrollBehavior)?.m3Behavior,
-                        colors = transparentColors
+                        colors = topBarColors
                     )
         }
 
@@ -158,11 +146,7 @@ object GlassTopAppBarDefaults {
         val scrolledBaseColor = GlassDefaults.secondaryColorOr {
             MaterialTheme.colorScheme.surfaceContainer
         }
-        val scrolledContainerColor = if (LocalAppUiConfiguration.current.theme.enableBlur) {
-            scrolledBaseColor.copy(alpha = GlassDefaults.TransparentAlpha)
-        } else {
-            scrolledBaseColor
-        }
+        val scrolledContainerColor = scrolledBaseColor
 
         return TopAppBarDefaults.topAppBarColors(
             containerColor = applyTopBarOpacity(containerColor),
@@ -202,8 +186,5 @@ object GlassTopAppBarDefaults {
     }
 
     @Composable
-    private fun applyTopBarOpacity(color: Color): Color {
-        val opacity = (LocalAppUiConfiguration.current.theme.topBarOpacity.coerceIn(0, 100)) / 100f
-        return color.copy(alpha = (color.alpha * opacity).coerceIn(0f, 1f))
-    }
+    private fun applyTopBarOpacity(color: Color): Color = color
 }

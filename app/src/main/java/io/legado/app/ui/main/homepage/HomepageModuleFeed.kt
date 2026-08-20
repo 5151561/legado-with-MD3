@@ -121,10 +121,7 @@ fun HomepageModuleFeed(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = adaptiveContentPadding(
                 top = paddingValues.calculateTopPadding(),
-                bottom = if (
-                    LocalAppUiConfiguration.current.appShell.useFloatingBottomBar ||
-                    LocalAppUiConfiguration.current.theme.enableBlur
-                ) {
+                bottom = if (LocalAppUiConfiguration.current.theme.enableBlur) {
                     120.dp
                 } else {
                     8.dp

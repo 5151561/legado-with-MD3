@@ -82,7 +82,6 @@
 		<item>Hidden Sea Order</item>
 		<item>Band</item>
 		<item>Custom</item>
-		<item>Transparent</item>
 	</string-array>
 
 	<string-array name="NavBarColors">
@@ -230,16 +229,12 @@
         <item>Plain</item>
         <item>Tonal</item>
         <item>Outlined</item>
-        <item>Semi-transparent</item>
-        <item>Liquid Glass</item>
     </string-array>
 
     <string-array name="top_bar_button_style_value">
         <item>plain</item>
         <item>tonal</item>
         <item>outlined</item>
-        <item>glass</item>
-        <item>liquid</item>
     </string-array>
 
     <string-array name="paletteStyle">

@@ -85,7 +85,6 @@ import io.legado.app.data.entities.SearchBook
 import io.legado.app.help.coil.CoverExtras
 import io.legado.app.ui.main.homepage.modules.BannerModule
 import io.legado.app.ui.theme.LegadoTheme
-import io.legado.app.ui.theme.LocalHazeState
 import io.legado.app.ui.theme.LocalLegadoThemeColors
 import io.legado.app.ui.theme.ProvideColorSchemeOverride
 import io.legado.app.ui.theme.ThemeOverrideState
@@ -93,7 +92,6 @@ import io.legado.app.ui.theme.animateColorSchemeAsState
 import io.legado.app.ui.theme.fadingEdge
 import io.legado.app.ui.theme.rememberImageSeedColor
 import io.legado.app.ui.theme.rememberThemeOverride
-import io.legado.app.ui.theme.responsiveHazeEffectFixedStyle
 import io.legado.app.ui.widget.components.AppPullToRefresh
 import io.legado.app.ui.widget.components.AppScaffold
 import io.legado.app.ui.widget.components.AppTextField
@@ -490,17 +488,14 @@ private fun BookInfoTransparentTopAppBar(
     onBackPressed: () -> Unit,
     scrollBehavior: GlassTopAppBarScrollBehavior,
 ) {
-    val hazeState = LocalHazeState.current
     val collapsedColor = GlassTopAppBarDefaults.scrolledContainerColor()
-    val isAtTop = scrollBehavior.collapsedFraction <= 0.001f
-    val resolvedColor = if (isAtTop) Color.Transparent else collapsedColor
     val topBarColors = TopAppBarDefaults.topAppBarColors(
-        containerColor = resolvedColor,
-        scrolledContainerColor = resolvedColor,
+        containerColor = collapsedColor,
+        scrolledContainerColor = collapsedColor,
     )
 
     MediumFlexibleTopAppBar(
-            modifier = hazeState?.let { Modifier.responsiveHazeEffectFixedStyle(it) } ?: Modifier,
+            modifier = Modifier,
             title = { Text(text = "", maxLines = 1) },
             navigationIcon = {
                 TopBarNavigationButton(onClick = onBackPressed)

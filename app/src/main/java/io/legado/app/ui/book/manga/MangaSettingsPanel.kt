@@ -629,34 +629,10 @@ private fun MenuSettingsContent(
         onValueChange = { onIntent(MangaReaderIntent.UpdateMenuPaletteStyle(it)) },
     )
     TinySwitchSettingItem(
-        title = stringResource(R.string.manga_reader_menu_top_bar_liquid_glass),
-        description = stringResource(R.string.manga_reader_menu_top_bar_liquid_glass_summary),
-        checked = settings.menuTopBarLiquidGlass,
-        onCheckedChange = {
-            updateBoolean(onIntent, MangaReaderSettingKey.MENU_TOP_BAR_LIQUID_GLASS, it)
-        },
-    )
-    TinySwitchSettingItem(
-        title = stringResource(R.string.manga_reader_menu_bottom_bar_liquid_glass),
-        description = stringResource(R.string.manga_reader_menu_bottom_bar_liquid_glass_summary),
-        checked = settings.menuBottomBarLiquidGlass,
-        onCheckedChange = {
-            updateBoolean(onIntent, MangaReaderSettingKey.MENU_BOTTOM_BAR_LIQUID_GLASS, it)
-        },
-    )
-    TinySwitchSettingItem(
         title = stringResource(R.string.manga_reader_menu_bottom_bar_floating),
         checked = settings.menuBottomBarFloating,
         onCheckedChange = {
             updateBoolean(onIntent, MangaReaderSettingKey.MENU_BOTTOM_BAR_FLOATING, it)
-        },
-    )
-    TinySwitchSettingItem(
-        title = stringResource(R.string.manga_reader_menu_bottom_bar_blur),
-        description = stringResource(R.string.manga_reader_menu_bottom_bar_blur_summary),
-        checked = settings.menuBottomBarBlur,
-        onCheckedChange = {
-            updateBoolean(onIntent, MangaReaderSettingKey.MENU_BOTTOM_BAR_BLUR, it)
         },
     )
     TinySwitchSettingItem(

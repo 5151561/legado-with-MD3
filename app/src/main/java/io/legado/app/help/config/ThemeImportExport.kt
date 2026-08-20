@@ -312,8 +312,6 @@ object ThemeImportExport {
             showStatusBar = root.boolean("O", true),
             swipeAnimation = root.boolean("P", true),
             showBottomView = root.boolean("Q", true),
-            useFloatingBottomBar = root.boolean("R"),
-            useFloatingBottomBarLiquidGlass = root.boolean("S"),
             tabletInterface = root.string("T", "auto"),
             labelVisibilityMode = root.string("U", "auto"),
             defaultHomePage = root.string("V", "bookshelf"),

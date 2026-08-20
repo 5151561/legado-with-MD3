@@ -46,15 +46,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import io.legado.app.data.entities.SearchBook
 import io.legado.app.R
 import io.legado.app.domain.model.BookShelfState
 import io.legado.app.ui.main.bookCoverSharedElementKey
 import io.legado.app.ui.theme.LegadoTheme
-import io.legado.app.ui.theme.responsiveHazeEffect
-import io.legado.app.ui.theme.responsiveHazeSource
 import io.legado.app.ui.widget.components.AppPullToRefresh
 import io.legado.app.ui.widget.components.AppScaffold
 import io.legado.app.ui.widget.components.AppSlider
@@ -85,7 +81,7 @@ private enum class BookFilterState(val id: Int) {
 
 @SuppressLint("LocalContextConfigurationRead", "ConfigurationScreenWidthHeight")
 @OptIn(
-    ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class,
+    ExperimentalMaterial3Api::class,
     ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class
 )
 @Composable
@@ -131,7 +127,7 @@ fun ExploreShowRouteScreen(
 
 @SuppressLint("LocalContextConfigurationRead", "ConfigurationScreenWidthHeight")
 @OptIn(
-    ExperimentalMaterial3Api::class, ExperimentalHazeMaterialsApi::class,
+    ExperimentalMaterial3Api::class,
     ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class
 )
 @Composable
@@ -162,7 +158,6 @@ fun ExploreShowScreen(
     val gridState = rememberLazyGridState()
     val scrollBehavior = GlassTopAppBarDefaults.defaultScrollBehavior()
     val isGridMode = state.layoutState == 1
-    val hazeState = remember { HazeState() }
     val showLoadMoreFooter = !state.isRefreshing &&
         (state.isLoading || state.errorMsg != null || state.isEnd)
     val canLoadMore = state.books.isNotEmpty() &&
@@ -271,7 +266,6 @@ fun ExploreShowScreen(
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             GlassMediumFlexibleTopAppBar(
-                modifier = Modifier.responsiveHazeEffect(state = hazeState),
                 title = state.selectedKindTitle ?: title,
                 navigationIcon = {
                     TopBarNavigationButton(onClick = onBack)
@@ -327,9 +321,7 @@ fun ExploreShowScreen(
                 if (isGrid) {
                     LazyVerticalGrid(
                         state = gridState,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .responsiveHazeSource(hazeState),
+                        modifier = Modifier.fillMaxSize(),
                         columns = GridCells.Fixed(state.gridCount),
                         contentPadding = PaddingValues(
                             top = paddingValues.calculateTopPadding() + 12.dp,
@@ -382,9 +374,7 @@ fun ExploreShowScreen(
                     }
                 } else {
                     LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .responsiveHazeSource(hazeState),
+                        modifier = Modifier.fillMaxSize(),
                         state = listState,
                         contentPadding = PaddingValues(
                             top = paddingValues.calculateTopPadding(),

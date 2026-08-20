@@ -1,14 +1,12 @@
 package io.legado.app.ui.main
 
 import android.content.Intent
-import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -17,12 +15,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
@@ -53,16 +47,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
@@ -72,10 +63,6 @@ import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
-import com.kyant.backdrop.backdrops.layerBackdrop
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeSource
 import io.legado.app.R
 import io.legado.app.ui.main.bookshelf.BookShelfItem
 import io.legado.app.ui.main.bookshelf.BookshelfRouteScreen
@@ -87,9 +74,6 @@ import io.legado.app.ui.main.my.PrefClickEvent
 import io.legado.app.ui.main.rss.RssRouteScreen
 import io.legado.app.ui.theme.LegadoTheme
 import io.legado.app.ui.widget.components.AppScaffold
-import io.legado.app.ui.widget.components.FloatingBottomBar
-import io.legado.app.ui.widget.components.FloatingBottomBarItem
-import io.legado.app.ui.widget.components.GlassDefaults
 import io.legado.app.ui.widget.components.icon.AppIcon
 import io.legado.app.ui.widget.components.icon.AppIcons
 import io.legado.app.ui.widget.components.menuItem.RoundDropdownMenu
@@ -192,22 +176,6 @@ fun MainScreen(
         }
     }
 
-    val hazeState = remember { HazeState() }
-    val customSecondaryColor = if (LegadoTheme.isDark) {
-        mainUiState.secondaryThemeColorNight.takeIf { it != 0 }
-            ?: mainUiState.secondaryThemeColor
-    } else {
-        mainUiState.secondaryThemeColor
-    }
-    val floatingBarSurfaceColor = if (mainUiState.deepPersonalizationActive && customSecondaryColor != 0) {
-        Color(customSecondaryColor)
-    } else {
-        LegadoTheme.colorScheme.surface
-    }
-    val floatingBarBackdrop = rememberLayerBackdrop {
-        drawRect(floatingBarSurfaceColor)
-        drawContent()
-    }
     val destinations = mainUiState.destinations
 
     val initialPage = remember(destinations, mainUiState.defaultHomePage) {
@@ -246,11 +214,6 @@ fun MainScreen(
     }
     val labelVisibilityMode = mainUiState.labelVisibilityMode
     val isUnlabeled = labelVisibilityMode == "unlabeled"
-    val useFloatingBottomBar =
-        !useRail && mainUiState.showBottomView && mainUiState.useFloatingBottomBar
-    val useLiquidGlass = useFloatingBottomBar &&
-            mainUiState.useFloatingBottomBarLiquidGlass &&
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
     val alwaysShowLabel = labelVisibilityMode == "labeled"
     val showLabel = !isUnlabeled
 
@@ -363,7 +326,7 @@ fun MainScreen(
         AppScaffold(
             modifier = Modifier.weight(1f),
             bottomBar = {
-                if (!useRail && mainUiState.showBottomView && !useFloatingBottomBar) {
+                if (!useRail && mainUiState.showBottomView) {
                     AppNavigationBar(
                         showLabel = showLabel,
                         alwaysShowLabel = alwaysShowLabel
@@ -393,10 +356,7 @@ fun MainScreen(
                                         } else customIconPath,
                                     )
                                 },
-                                m3IndicatorColor = GlassDefaults.glassColor(
-                                    noBlurColor = LegadoTheme.colorScheme.secondaryContainer,
-                                    blurAlpha = GlassDefaults.ThickBlurAlpha
-                                ),
+                                m3IndicatorColor = LegadoTheme.colorScheme.secondaryContainer,
                                 m3ShowLabel = showLabel,
                                 m3AlwaysShowLabel = alwaysShowLabel,
                                 useCustomIcon =
@@ -411,17 +371,7 @@ fun MainScreen(
             Box(
                 modifier = Modifier.fillMaxSize()
             ) {
-                Box(
-                    modifier = Modifier.then(
-                        if (useLiquidGlass) {
-                            Modifier
-                                .hazeSource(hazeState)
-                                .layerBackdrop(floatingBarBackdrop)
-                        } else {
-                            Modifier
-                        }
-                    )
-                ) {
+                Box {
                     HorizontalPager(
                         state = pagerState,
                         pageNestedScrollConnection = pagerNestedScrollConnection,
@@ -537,81 +487,6 @@ fun MainScreen(
                     }
                 }
 
-                if (!useRail && mainUiState.showBottomView && useFloatingBottomBar) {
-                    Box(modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                    ) {
-                        FloatingBottomBar(
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
-                                    onClick = {}
-                                )
-                                .padding(
-                                    start = 16.dp,
-                                    end = 16.dp,
-                                    bottom = 12.dp + WindowInsets.navigationBars
-                                        .asPaddingValues()
-                                        .calculateBottomPadding()
-                                ),
-                            selectedIndex = { pagerState.targetPage },
-                            onSelected = { index ->
-                                destinations.getOrNull(index)?.let { destination ->
-                                    handleMainDestinationClick(index, destination)
-                                }
-                            },
-                            onReselected = { index ->
-                                destinations.getOrNull(index)?.let { destination ->
-                                    handleMainDestinationClick(index, destination)
-                                }
-                            },
-                            backdrop = floatingBarBackdrop,
-                            tabsCount = destinations.size,
-                            isBlurEnabled = useLiquidGlass,
-                            hasCustomIcons = destinations.any { dest ->
-                                mainUiState.customIconPath(dest).isNotEmpty() ||
-                                        mainUiState.selectedCustomIconPath(dest).isNotEmpty()
-                            }
-                        ) {
-                            destinations.forEachIndexed { index, destination ->
-                                val selected = pagerState.targetPage == index
-                                val customIconPath = mainUiState.customIconPath(destination)
-                                val selectedCustomIconPath =
-                                    mainUiState.selectedCustomIconPath(destination)
-                                val destinationLabel = stringResource(destination.labelId)
-                                FloatingBottomBarItem(
-                                    onClick = {
-                                        handleMainDestinationClick(index, destination)
-                                    },
-                                    modifier = Modifier
-                                        .defaultMinSize(minWidth = 76.dp)
-                                        .semantics(mergeDescendants = true) {
-                                            contentDescription = destinationLabel
-                                        }
-                                ) {
-                                    NavigationIcon(
-                                        destination = destination,
-                                        customIconPath = if (selected) {
-                                            selectedCustomIconPath.ifEmpty { customIconPath }
-                                        } else customIconPath,
-                                        selected = selected
-                                    )
-                                    if (showLabel && (alwaysShowLabel || selected)) {
-                                        AppText(
-                                            text = stringResource(destination.labelId),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
             }
         }
     }

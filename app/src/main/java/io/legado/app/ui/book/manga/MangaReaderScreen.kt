@@ -84,10 +84,6 @@ import coil3.request.allowHardware
 import coil3.request.crossfade
 import coil3.request.transformations
 import coil3.toBitmap
-import com.kyant.backdrop.backdrops.layerBackdrop
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeSource
 import io.legado.app.R
 import io.legado.app.help.coil.CoverExtras
 import io.legado.app.ui.book.manga.config.MangaDoublePageMode
@@ -160,7 +156,7 @@ fun MangaReaderScreen(
     onIntent: (MangaReaderIntent) -> Unit,
     modifier: Modifier = Modifier,
     imageLoader: ImageLoader = koinInject(),
-    hazeState: HazeState? = null,
+    hazeState: Any? = null,
 ) {
     BackHandler { onIntent(MangaReaderIntent.BackPressed) }
     var viewportSize by remember { mutableStateOf(IntSize.Zero) }
@@ -252,7 +248,6 @@ fun MangaReaderScreen(
         LocalMangaAspectRatios provides aspectRatios,
         LocalMangaBackgroundColors provides automaticBackgrounds,
     ) {
-        val menuBackdrop = rememberLayerBackdrop()
         Box(
             modifier = modifier
                 .fillMaxSize()
@@ -260,19 +255,7 @@ fun MangaReaderScreen(
                 .onGloballyPositioned { viewportOrigin = it.positionInRoot() }
                 .background(readerBackground)
         ) {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .then(
-                        if (hazeState != null) {
-                            Modifier.hazeSource(hazeState)
-                        } else {
-                            Modifier
-                        }
-                    )
-                    .layerBackdrop(menuBackdrop)
-                    .background(readerBackground)
-            ) {
+            Box(Modifier.fillMaxSize().background(readerBackground)) {
                 when (state.settings.scrollMode) {
                     MangaScrollMode.PAGE_LEFT_TO_RIGHT,
                     MangaScrollMode.PAGE_RIGHT_TO_LEFT -> HorizontalMangaPager(state, onIntent, imageLoader)
@@ -285,7 +268,7 @@ fun MangaReaderScreen(
             MangaReaderMenu(
                 state = state,
                 onIntent = onIntent,
-                backdrop = menuBackdrop,
+                backdrop = null,
                 hazeState = hazeState,
                 menuSeedColor = when (state.settings.menuColorSource) {
                     1 -> currentPageColor ?: readerBackground
@@ -1592,4 +1575,3 @@ private fun performMangaClickAction(
 internal fun isDoublePageActive(mode: Int, viewport: IntSize): Boolean =
     mode == MangaDoublePageMode.ALWAYS ||
         mode == MangaDoublePageMode.LANDSCAPE && viewport.width > viewport.height
-

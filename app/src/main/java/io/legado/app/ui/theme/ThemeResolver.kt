@@ -22,7 +22,6 @@ object ThemeResolver {
         "10" to AppThemeMode.Phoebe,
         "11" to AppThemeMode.Mujika,
         "12" to AppThemeMode.Custom,
-        "13" to AppThemeMode.Transparent,
     )
 
     private val materialPaletteStyles = mapOf(

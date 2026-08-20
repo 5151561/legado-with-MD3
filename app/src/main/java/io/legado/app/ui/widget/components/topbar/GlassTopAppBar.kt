@@ -1,6 +1,5 @@
 package io.legado.app.ui.widget.components.topbar
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
@@ -16,8 +15,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.legado.app.ui.theme.LegadoTheme
-import io.legado.app.ui.theme.LocalHazeState
-import io.legado.app.ui.theme.responsiveHazeEffect
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,18 +24,9 @@ fun GlassTopAppBar(
     navigationIcon: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
 ) {
-    val hazeState = LocalHazeState.current
     val containerColor = GlassTopAppBarDefaults.containerColor()
 
-    val finalModifier = if (hazeState != null) {
-        modifier
-            .background(color = containerColor)
-            .responsiveHazeEffect(state = hazeState)
-    } else {
-        modifier.background(color = containerColor)
-    }
-
-    Column(modifier = finalModifier) {
+    Column(modifier = modifier) {
         TopAppBar(
             title = {
                 Text(
@@ -55,8 +43,8 @@ fun GlassTopAppBar(
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.Transparent,
-                scrolledContainerColor = Color.Transparent
+                containerColor = containerColor,
+                scrolledContainerColor = containerColor,
             )
         )
     }

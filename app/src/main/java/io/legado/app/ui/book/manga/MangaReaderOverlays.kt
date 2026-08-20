@@ -67,8 +67,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.kyant.backdrop.Backdrop
-import dev.chrisbanes.haze.HazeState
 import io.legado.app.R
 import io.legado.app.ui.book.read.ReadMenuSlider
 import io.legado.app.ui.theme.LegadoTheme
@@ -156,8 +154,8 @@ internal fun BoxScope.MangaFooter(state: MangaReaderUiState) {
 internal fun BoxScope.MangaReaderMenu(
     state: MangaReaderUiState,
     onIntent: (MangaReaderIntent) -> Unit,
-    backdrop: Backdrop? = null,
-    hazeState: HazeState? = null,
+    backdrop: Any? = null,
+    hazeState: Any? = null,
     menuSeedColor: Color? = null,
 ) {
     val readingPageDescription = stringResource(R.string.manga_reader_page_semantics)
@@ -182,8 +180,8 @@ internal fun BoxScope.MangaReaderMenu(
 private fun BoxScope.MangaReaderMenuContent(
     state: MangaReaderUiState,
     onIntent: (MangaReaderIntent) -> Unit,
-    backdrop: Backdrop?,
-    hazeState: HazeState?,
+    backdrop: Any?,
+    hazeState: Any?,
     readingPageDescription: String,
 ) {
     ReaderMenuDismissLayer(
@@ -209,7 +207,7 @@ private fun BoxScope.MangaReaderMenuContent(
 private fun MangaMenuTopBar(
     state: MangaReaderUiState,
     onIntent: (MangaReaderIntent) -> Unit,
-    backdrop: Backdrop?,
+    backdrop: Any?,
 ) {
     val topBarGlass = state.settings.menuTopBarLiquidGlass && readerMenuLiquidGlassAvailable(backdrop)
     val compact = state.settings.menuTopBarCompact
@@ -263,7 +261,7 @@ private fun RowScope.MangaTitleCapsule(
     state: MangaReaderUiState,
     onIntent: (MangaReaderIntent) -> Unit,
     glassEnabled: Boolean = false,
-    backdrop: Backdrop? = null,
+    backdrop: Any? = null,
 ) {
     val pillShape = RoundedCornerShape(50)
     Box(
@@ -327,7 +325,7 @@ private fun RowScope.MangaTitleCapsule(
 private fun MangaMenuMergedActions(
     onIntent: (MangaReaderIntent) -> Unit,
     glassEnabled: Boolean,
-    backdrop: Backdrop?,
+    backdrop: Any?,
 ) {
     val pillShape = RoundedCornerShape(50)
     val tint = LegadoTheme.colorScheme.onSurfaceVariant
@@ -423,9 +421,9 @@ private fun MergedMangaDivider(tint: Color) {
 private fun MangaMenuBottomBar(
     state: MangaReaderUiState,
     onIntent: (MangaReaderIntent) -> Unit,
-    backdrop: Backdrop?,
+    backdrop: Any?,
     readingPageDescription: String,
-    hazeState: HazeState? = null,
+    hazeState: Any? = null,
 ) {
     // 悬浮底栏玻璃化表面；贴边底栏只玻璃化操作控件，和文章阅读菜单保持一致。
     val glass = state.settings.menuBottomBarLiquidGlass && readerMenuLiquidGlassAvailable(backdrop)
@@ -646,7 +644,7 @@ private fun MangaMenuBottomBar(
 private fun MangaMenuToolRow(
     actions: List<ReaderMenuAction>,
     glassEnabled: Boolean,
-    backdrop: Backdrop?,
+    backdrop: Any?,
 ) {
     Row(
         modifier = Modifier
@@ -675,7 +673,7 @@ private fun MangaMenuIconButton(
     modifier: Modifier = Modifier,
     onLongClick: (() -> Unit)? = null,
     glassEnabled: Boolean = false,
-    backdrop: Backdrop? = null,
+    backdrop: Any? = null,
     onClick: () -> Unit,
 ) {
     val tint = LegadoTheme.colorScheme.onSurfaceVariant

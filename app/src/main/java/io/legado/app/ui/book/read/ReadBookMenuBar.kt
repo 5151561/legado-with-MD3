@@ -68,8 +68,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
-import com.kyant.backdrop.Backdrop
-import dev.chrisbanes.haze.HazeState
 import io.legado.app.R
 import io.legado.app.constant.ReadMenuBlurMode
 import io.legado.app.data.repository.ReadPreferences
@@ -104,8 +102,8 @@ fun ReadBookMenuBar(
     eyeProtectionActive: Boolean,
     onIntent: (ReadBookIntent) -> Unit,
     onBrightnessPreview: (Int) -> Unit,
-    backdrop: Backdrop? = null,
-    hazeState: HazeState? = null,
+    backdrop: Any? = null,
+    hazeState: Any? = null,
 ) {
     val context = LocalContext.current
     val currentRoute = state.menuState.currentRoute
@@ -316,8 +314,8 @@ private fun ReadBookMenuSurface(
     colors: ReadMenuColors,
     onIntent: (ReadBookIntent) -> Unit,
     context: Context,
-    backdrop: Backdrop?,
-    hazeState: HazeState?,
+    backdrop: Any?,
+    hazeState: Any?,
     readStylePage: Int,
     onReadStylePageChanged: (Int) -> Unit,
     progressBarBehavior: String,
@@ -823,7 +821,7 @@ private fun ReadBookMenuRoutePage(
 }
 
 private fun readMenuBottomBarButtonLiquidGlassEnabled(
-    backdrop: Backdrop?,
+    backdrop: Any?,
     menuConfig: ReadMenuConfig,
 ): Boolean {
     return menuConfig.readMenuBottomBarLiquidGlassButtons &&
@@ -843,7 +841,7 @@ private fun readMenuBottomBarEffectiveBlurMode(
 }
 
 private fun readMenuBottomBarLiquidGlassEnabled(
-    backdrop: Backdrop?,
+    backdrop: Any?,
     menuConfig: ReadMenuConfig,
     isFloating: Boolean,
 ): Boolean {
@@ -856,7 +854,7 @@ private fun readMenuBottomBarLiquidGlassEnabled(
 }
 
 private fun readMenuBottomBarHazeEnabled(
-    hazeState: HazeState?,
+    hazeState: Any?,
     menuConfig: ReadMenuConfig,
     isFloating: Boolean,
 ): Boolean {
@@ -866,7 +864,7 @@ private fun readMenuBottomBarHazeEnabled(
 
 @Composable
 private fun Modifier.readMenuBottomBarHazeEffect(
-    state: HazeState,
+    state: Any,
     colors: ReadMenuColors,
     shape: Shape,
     menuConfig: ReadMenuConfig,

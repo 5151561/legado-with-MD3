@@ -13,7 +13,5 @@ enum class AppThemeMode {
     Yuuka,
     Phoebe,
     Mujika,
-    Custom,
-    Transparent
+    Custom
 }
-

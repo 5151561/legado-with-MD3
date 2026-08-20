@@ -17,7 +17,6 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.legado.app.ui.theme.LegadoTheme
-import io.legado.app.ui.theme.LocalAppUiConfiguration
 import io.legado.app.ui.widget.components.AppContainerBackgroundType
 import io.legado.app.ui.widget.components.appContainerBackground
 
@@ -62,7 +61,6 @@ private fun BaseCard(
     val resolvedContainerColor = (containerColor ?: LegadoTheme.colorScheme.surfaceContainer)
         .let { it.copy(alpha = it.alpha * alpha) }
     val themeSettings = LocalAppUiConfiguration.current.theme
-    val isTransparent = containerColor == Color.Transparent
     val resolvedCornerRadius = if (themeSettings.overrideBaseCardCornerRadius) {
         themeSettings.baseCardCornerRadius.dp
     } else {
@@ -96,7 +94,7 @@ private fun BaseCard(
     Surface(
         modifier = clickableModifier,
         shape = resolvedShape,
-        color = if (isTransparent) Color.Transparent else resolvedContainerColor,
+        color = resolvedContainerColor,
         contentColor = contentColor ?: LegadoTheme.colorScheme.onSurface,
         tonalElevation = 0.dp,
         shadowElevation = elevation,
@@ -132,8 +130,8 @@ fun GlassCard(
         contentColor = contentColor,
         elevation = elevation,
         border = border,
-        alpha = LocalAppUiConfiguration.current.theme.containerOpacity / 100f,
-        useItemBackground = true,
+        alpha = 1f,
+        useItemBackground = false,
         content = content
     )
 }

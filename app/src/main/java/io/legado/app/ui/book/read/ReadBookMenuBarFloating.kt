@@ -47,7 +47,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.kyant.backdrop.Backdrop
 import io.legado.app.R
 import io.legado.app.data.entities.Book
 import io.legado.app.data.repository.ReadPreferences
@@ -67,7 +66,7 @@ internal fun FloatingIconRow(
     colors: ReadMenuColors,
     alignment: Alignment.Horizontal = Alignment.CenterHorizontally,
     onIntent: (ReadBookIntent) -> Unit,
-    backdrop: Backdrop?,
+    backdrop: Any?,
 ) {
     val context = LocalContext.current
     val floatingIcons = remember(

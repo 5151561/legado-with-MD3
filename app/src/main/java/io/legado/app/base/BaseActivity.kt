@@ -279,8 +279,6 @@ abstract class BaseActivity<VB : ViewBinding>(
                 if (AppConfig.customMode == "accent")
                     setTheme(R.style.ThemeOverlay_WhiteBackground)
             }
-
-            "13" -> setTheme(R.style.AppTheme_Transparent)
         }
 
         if (AppConfig.pureBlack)

@@ -43,19 +43,6 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.kyant.backdrop.Backdrop
-import com.kyant.backdrop.backdrops.layerBackdrop
-import com.kyant.backdrop.backdrops.rememberBackdrop
-import com.kyant.backdrop.backdrops.rememberCombinedBackdrop
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import com.kyant.backdrop.drawBackdrop
-import com.kyant.backdrop.effects.blur
-import com.kyant.backdrop.effects.lens
-import com.kyant.backdrop.highlight.Highlight
-import com.kyant.backdrop.shadow.InnerShadow
-import com.kyant.backdrop.shadow.Shadow
-import com.kyant.capsule.ContinuousCapsule
-import io.legado.app.ui.animation.DampedDragAnimation
 import io.legado.app.ui.book.read.sheet.ReadMenuButtonInfo
 import io.legado.app.ui.book.read.sheet.readMenuButtonInfos
 import io.legado.app.ui.theme.LegadoTheme
@@ -72,29 +59,11 @@ internal fun ReadMenuSlider(
     steps: Int = 0,
     onValueChangeFinished: (() -> Unit)? = null,
     onValueCommit: ((Float) -> Unit)? = null,
-    backdrop: Backdrop?,
+    backdrop: Any?,
     glassThumbEnabled: Boolean,
     accessibilityLabel: String? = null,
     accessibilityValue: String? = null,
 ) {
-    if (glassThumbEnabled && backdrop != null) {
-        ReadMenuLiquidSlider(
-            value = value,
-            onValueChange = onValueChange,
-            valueRange = valueRange,
-            steps = steps,
-            visibilityThreshold = 0.001f,
-            backdrop = backdrop,
-            modifier = modifier,
-            enabled = enabled,
-            onValueChangeFinished = onValueChangeFinished,
-            onValueCommit = onValueCommit,
-            accessibilityLabel = accessibilityLabel,
-            accessibilityValue = accessibilityValue,
-        )
-        return
-    }
-
     val commitAction = onValueChangeFinished ?: onValueCommit?.let { commit -> { commit(value) } }
 
     BaseReaderMenuSlider(
@@ -111,222 +80,11 @@ internal fun ReadMenuSlider(
 }
 
 @Composable
-private fun ReadMenuLiquidSlider(
-    value: Float,
-    onValueChange: (Float) -> Unit,
-    valueRange: ClosedFloatingPointRange<Float>,
-    steps: Int = 0,
-    visibilityThreshold: Float,
-    backdrop: Backdrop,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    onValueChangeFinished: (() -> Unit)? = null,
-    onValueCommit: ((Float) -> Unit)? = null,
-    accessibilityLabel: String? = null,
-    accessibilityValue: String? = null,
-) {
-    val accentColor = LegadoTheme.colorScheme.secondary
-    val trackColor = LegadoTheme.colorScheme.surfaceContainerLow
-    val thumbColor =
-        Color.White.copy(alpha = 0.9f).compositeOver(LegadoTheme.colorScheme.surfaceContainerLow)
-    val enabledAlpha = if (enabled) 1f else 0.38f
-
-    val trackBackdrop = rememberLayerBackdrop()
-
-    BoxWithConstraints(
-        modifier
-            .fillMaxWidth()
-            .semantics {
-                accessibilityLabel?.let { contentDescription = it }
-                accessibilityValue?.let { stateDescription = it }
-                progressBarRangeInfo = ProgressBarRangeInfo(
-                    current = value.coerceIn(valueRange),
-                    range = valueRange,
-                    steps = steps,
-                )
-                if (!enabled) {
-                    disabled()
-                }
-                setProgress { target ->
-                    if (!enabled) {
-                        false
-                    } else {
-                        val nextValue = target.coerceIn(valueRange)
-                        onValueChange(nextValue)
-                        onValueCommit?.invoke(nextValue) ?: onValueChangeFinished?.invoke()
-                        true
-                    }
-                }
-            },
-        contentAlignment = Alignment.CenterStart,
-    ) {
-        val trackWidth = constraints.maxWidth
-        val rangeStart = valueRange.start
-        val rangeEnd = valueRange.endInclusive
-        val range = rangeEnd - rangeStart
-        val animationScope = rememberCoroutineScope()
-        val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
-        val dampedDragAnimation =
-            remember(animationScope, trackWidth, rangeStart, rangeEnd, isLtr) {
-                DampedDragAnimation(
-                    animationScope = animationScope,
-                    initialValue = value,
-                    valueRange = valueRange,
-                    visibilityThreshold = visibilityThreshold,
-                    initialScale = 1f,
-                    pressedScale = 1.5f,
-                    onDragStarted = {},
-                    onDragStopped = {
-                        onValueChange(targetValue)
-                        onValueCommit?.invoke(targetValue) ?: onValueChangeFinished?.invoke()
-                    },
-                    onDrag = { _, dragAmount ->
-                        val delta = range * (dragAmount.x / trackWidth)
-                        val nextValue = if (isLtr) {
-                            (targetValue + delta).coerceIn(valueRange)
-                        } else {
-                            (targetValue - delta).coerceIn(valueRange)
-                        }
-                        updateValue(nextValue)
-                        onValueChange(nextValue)
-                    },
-                )
-            }
-
-        LaunchedEffect(dampedDragAnimation, value) {
-            if (dampedDragAnimation.targetValue != value) {
-                dampedDragAnimation.updateValue(value)
-            }
-        }
-
-        val progress = if (range == 0f) {
-            0f
-        } else {
-            ((dampedDragAnimation.value - rangeStart) / range).coerceIn(0f, 1f)
-        }
-
-        Box(Modifier.layerBackdrop(trackBackdrop)) {
-            Box(
-                Modifier
-                    .drawBackdrop(
-                        backdrop = backdrop,
-                        shape = { ContinuousCapsule },
-                        effects = {},
-                        highlight = null,
-                        shadow = {
-                            Shadow(
-                                radius = 8.dp,
-                                color = Color.Black.copy(alpha = 0.12f),
-                            )
-                        },
-                        innerShadow = null,
-                        onDrawSurface = {
-                            drawRect(trackColor.copy(alpha = enabledAlpha))
-                        },
-                    )
-                    .pointerInput(enabled, animationScope, isLtr, trackWidth) {
-                        if (!enabled) return@pointerInput
-                        detectTapGestures { position ->
-                            val delta = range * (position.x / trackWidth)
-                            val targetValue =
-                                (if (isLtr) rangeStart + delta else rangeEnd - delta)
-                                    .coerceIn(valueRange)
-                            dampedDragAnimation.animateToValue(targetValue)
-                            onValueChange(targetValue)
-                            onValueCommit?.invoke(targetValue) ?: onValueChangeFinished?.invoke()
-                        }
-                    }
-                    .height(6f.dp)
-                    .fillMaxWidth(),
-            )
-            Box(
-                Modifier
-                    .clip(ContinuousCapsule)
-                    .background(accentColor.copy(alpha = enabledAlpha))
-                    .height(6f.dp)
-                    .layout { measurable, constraints ->
-                        val placeable = measurable.measure(constraints)
-                        val width = (constraints.maxWidth * progress).roundToInt()
-                        layout(width, placeable.height) {
-                            placeable.place(0, 0)
-                        }
-                    },
-            )
-        }
-
-        Box(
-            Modifier
-                .graphicsLayer {
-                    alpha = enabledAlpha
-                    translationX =
-                        (-size.width / 2f + trackWidth * progress)
-                            .coerceIn(-size.width / 4f, trackWidth - size.width * 3f / 4f) *
-                                if (isLtr) 1f else -1f
-                }
-                .then(if (enabled) dampedDragAnimation.modifier else Modifier)
-                .drawBackdrop(
-                    backdrop = rememberCombinedBackdrop(
-                        backdrop,
-                        rememberBackdrop(trackBackdrop) { drawBackdrop ->
-                            val pressProgress = dampedDragAnimation.pressProgress
-                            val scaleX = 2f / 3f + (1f / 3f) * pressProgress
-                            scale(scaleX, pressProgress) {
-                                drawBackdrop()
-                            }
-                        },
-                    ),
-                    shape = { ContinuousCapsule },
-                    effects = {
-                        val pressProgress = dampedDragAnimation.pressProgress
-                        blur(8.dp.toPx() * (1f - pressProgress))
-                        lens(
-                            10.dp.toPx() * pressProgress,
-                            14.dp.toPx() * pressProgress,
-                            chromaticAberration = true,
-                        )
-                    },
-                    highlight = {
-                        Highlight.Ambient.copy(
-                            width = Highlight.Ambient.width / 1.5f,
-                            blurRadius = Highlight.Ambient.blurRadius / 1.5f,
-                            alpha = dampedDragAnimation.pressProgress,
-                        )
-                    },
-                    shadow = {
-                        Shadow(
-                            radius = 8.dp,
-                            color = Color.Black.copy(alpha = 0.12f),
-                        )
-                    },
-                    innerShadow = {
-                        InnerShadow(
-                            radius = 4.dp * dampedDragAnimation.pressProgress,
-                            alpha = dampedDragAnimation.pressProgress,
-                        )
-                    },
-                    layerBlock = {
-                        scaleX = dampedDragAnimation.scaleX
-                        scaleY = dampedDragAnimation.scaleY
-                        val velocity = dampedDragAnimation.velocity / 10f
-                        scaleX /= 1f - (velocity * 0.75f).coerceIn(-0.2f, 0.2f)
-                        scaleY *= 1f - (velocity * 0.25f).coerceIn(-0.2f, 0.2f)
-                    },
-                    onDrawSurface = {
-                        val pressProgress = dampedDragAnimation.pressProgress
-                        drawRect(thumbColor.copy(alpha = 1f - pressProgress))
-                    },
-                )
-                .size(40f.dp, 24f.dp),
-        )
-    }
-}
-
-@Composable
 internal fun ToolButtonItem(
     button: ToolButtonDef,
     state: ReadBookUiState,
     colors: ReadMenuColors,
-    backdrop: Backdrop?,
+    backdrop: Any?,
     glassEnabled: Boolean,
     labelColor: Color,
     modifier: Modifier = Modifier,

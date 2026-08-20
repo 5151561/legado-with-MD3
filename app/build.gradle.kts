@@ -302,10 +302,7 @@ dependencies {
     implementation(libs.koin.compose.viewmodel)
     implementation(libs.reorderable)
     implementation(libs.material.kolor)
-    implementation(libs.haze.core)
-    implementation(libs.haze.materials)
     implementation(libs.capsule)
-    implementation(libs.backdrop)
     implementation(libs.lyricViewx)
     implementation(libs.timber)
 }

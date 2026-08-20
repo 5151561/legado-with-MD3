@@ -204,11 +204,6 @@ fun EditThemeSheet(
                 onCheckedChange = { data = data.copy(showBottomView = it) }
             )
             CompactSwitchSettingItem(
-                title = stringResource(R.string.floating_bottom_bar),
-                checked = data.useFloatingBottomBar,
-                onCheckedChange = { data = data.copy(useFloatingBottomBar = it) }
-            )
-            CompactSwitchSettingItem(
                 title = stringResource(R.string.theme_manage_status_bar),
                 checked = data.showStatusBar,
                 onCheckedChange = { data = data.copy(showStatusBar = it) }

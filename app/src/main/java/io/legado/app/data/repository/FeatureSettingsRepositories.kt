@@ -287,9 +287,6 @@ internal fun Preferences.toAppShellSettings(): AppShellSettings = AppShellSettin
     swipeAnimation = compatDsBoolean(PreferKey.swipeAnimation) ?: true,
     predictiveBackEnabled = compatDsBoolean(PreferKey.isPredictiveBackEnabled) ?: true,
     showBottomView = compatDsBoolean(PreferKey.showBottomView) ?: true,
-    useFloatingBottomBar = compatDsBoolean(PreferKey.useFloatingBottomBar) ?: false,
-    useFloatingBottomBarLiquidGlass =
-        compatDsBoolean(PreferKey.useFloatingBottomBarLiquidGlass) ?: false,
     tabletInterface = compatDsString(PreferKey.tabletInterface) ?: "auto",
     labelVisibilityMode = compatDsString(PreferKey.labelVisibilityMode) ?: "auto",
     defaultHomePage = compatDsString(PreferKey.defaultHomePage) ?: "bookshelf",
@@ -319,8 +316,6 @@ internal fun AppShellSettings.toPrefMap(): Map<String, Any?> = mapOf(
     PreferKey.swipeAnimation to swipeAnimation,
     PreferKey.isPredictiveBackEnabled to predictiveBackEnabled,
     PreferKey.showBottomView to showBottomView,
-    PreferKey.useFloatingBottomBar to useFloatingBottomBar,
-    PreferKey.useFloatingBottomBarLiquidGlass to useFloatingBottomBarLiquidGlass,
     PreferKey.tabletInterface to tabletInterface,
     PreferKey.labelVisibilityMode to labelVisibilityMode,
     PreferKey.defaultHomePage to defaultHomePage,

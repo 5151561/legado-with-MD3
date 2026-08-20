@@ -4,13 +4,10 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import com.kyant.backdrop.Backdrop
 import com.materialkolor.PaletteStyle
-import dev.chrisbanes.haze.HazeState
 
 data class LegadoThemeMode(
     val colorScheme: ColorScheme,
@@ -128,11 +125,6 @@ val LocalLegadoThemeColors = staticCompositionLocalOf {
         useDynamicColor = true,
     )
 }
-
-val LocalHazeState = compositionLocalOf<HazeState?> { null }
-
-/** AppScaffold supplies the content-only source; bars must never write to it. */
-val LocalTopBarBackdrop = compositionLocalOf<Backdrop?> { null }
 
 object LegadoTheme {
 

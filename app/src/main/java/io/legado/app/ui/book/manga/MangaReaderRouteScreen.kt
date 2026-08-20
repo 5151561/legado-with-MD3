@@ -12,7 +12,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.chrisbanes.haze.HazeState
 import io.legado.app.receiver.NetworkChangedListener
 import io.legado.app.ui.book.read.sheet.ReaderBookSheetRoute
 import io.legado.app.ui.book.read.sheet.ReaderBookSheetTab
@@ -177,15 +176,10 @@ fun MangaReaderRouteScreen(
         }
     }
 
-    val menuHazeState = remember { HazeState() }
-    val useMenuHaze = state.settings.menuBottomBarBlur ||
-            (!state.settings.menuBottomBarFloating &&
-                    state.settings.menuBottomBarLiquidGlass &&
-                    state.settingsCategory != null)
     MangaReaderScreen(
         state = state,
         onIntent = viewModel::onIntent,
-        hazeState = if (useMenuHaze) menuHazeState else null,
+        hazeState = null,
     )
     if (state.activeSheet == MangaReaderSheet.Catalog && state.bookUrl.isNotEmpty()) {
         ReaderBookSheetRoute(

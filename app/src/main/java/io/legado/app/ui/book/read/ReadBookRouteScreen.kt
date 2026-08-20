@@ -40,10 +40,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
-import com.kyant.backdrop.backdrops.layerBackdrop
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeSource
 import io.legado.app.R
 import io.legado.app.constant.AppLog
 import io.legado.app.constant.BookType
@@ -157,14 +153,6 @@ fun ReadBookRouteScreen(
         endTime = state.eyeProtection.endTime,
     )
     val effectsReady = remember(viewModel) { CompletableDeferred<Unit>() }
-    val menuBackdrop = rememberLayerBackdrop()
-    val menuHazeState = remember { HazeState() }
-    val useMenuHazeSource = state.menuConfig.readMenuTopBarBlurMode == ReadMenuBlurMode.Haze ||
-            state.menuConfig.readMenuBottomBarBlurMode == ReadMenuBlurMode.Haze ||
-            (
-                    !state.menuConfig.readMenuFloatingBottomBar &&
-                            state.menuConfig.readMenuBottomBarBlurMode == ReadMenuBlurMode.LiquidGlass
-                    )
 
     DisposableEffect(controller) {
         onDispose {
@@ -532,15 +520,7 @@ fun ReadBookRouteScreen(
     Box(Modifier.fillMaxSize()) {
         key(controller) {
             ReadBookViewLayer(
-                modifier = Modifier
-                    .then(
-                        if (useMenuHazeSource) {
-                            Modifier.hazeSource(menuHazeState)
-                        } else {
-                            Modifier
-                        }
-                    )
-                    .layerBackdrop(menuBackdrop),
+                modifier = Modifier,
                 onRefsReady = { controller.onRefsReady(it) },
                 onCursorTouch = controller,
                 readViewCallBack = controller,
@@ -563,8 +543,8 @@ fun ReadBookRouteScreen(
                 eyeProtectionActive = eyeProtectionActive,
                 onIntent = viewModel::onIntent,
                 onBrightnessPreview = host::previewBrightness,
-                backdrop = menuBackdrop,
-                hazeState = if (useMenuHazeSource) menuHazeState else null,
+                backdrop = null,
+                hazeState = null,
             )
             ReadBookSearchBar(state = state, onIntent = viewModel::onIntent)
             AnimatedVisibility(

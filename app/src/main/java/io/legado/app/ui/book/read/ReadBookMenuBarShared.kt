@@ -7,7 +7,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.kyant.backdrop.Backdrop
 import io.legado.app.constant.ReadMenuBlurStyle
 import io.legado.app.help.config.ReadStyleResolver
 import io.legado.app.ui.theme.LegadoTheme
@@ -37,7 +36,7 @@ internal fun Int.toReaderMenuTintStyle(): ReaderMenuTintStyle {
 
 @Composable
 internal fun Modifier.readMenuLiquidGlass(
-    backdrop: Backdrop?,
+    backdrop: Any?,
     colors: ReadMenuColors,
     shape: Shape,
     useTopBarStyle: Boolean,

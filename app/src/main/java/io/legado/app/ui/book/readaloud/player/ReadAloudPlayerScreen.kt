@@ -78,15 +78,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
-import dev.chrisbanes.haze.HazeProgressive
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import io.legado.app.R
 import io.legado.app.constant.ReadAloudBgMode
 import io.legado.app.ui.theme.LegadoTheme
-import io.legado.app.ui.theme.hazeStyle.HazeLegado
 import io.legado.app.ui.widget.components.AppScaffold
 import io.legado.app.ui.widget.components.button.series.MediumPlainButton
 import io.legado.app.ui.widget.components.button.series.MediumTonalButton
@@ -108,7 +102,6 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 
-@OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
 fun ReadAloudPlayerScreenContent(
     state: ReadAloudPlayerUiState,
@@ -128,9 +121,6 @@ fun ReadAloudPlayerScreenContent(
         mutableFloatStateOf(state.timerMinutes.toFloat())
     }
     var isTextPageUserScrolling by remember { mutableStateOf(false) }
-    val pagerHazeState = remember { HazeState() }
-    val hazeEnabled =
-        state.bgMode != ReadAloudBgMode.Solid && state.bgMode != ReadAloudBgMode.Transparent
     val flowingTextModifier = Modifier
     LaunchedEffect(horizontalPagerState.currentPage) {
         if (horizontalPagerState.currentPage != 1) isTextPageUserScrolling = false
@@ -145,30 +135,15 @@ fun ReadAloudPlayerScreenContent(
             PlayerAdjustment.Timer -> 344.dp
         },
     )
-    val overlayHazeStyle = HazeLegado.ultraThinPlus(
-        containerColor = LegadoTheme.colorScheme.surface,
-    )
     AppScaffold(
         modifier = Modifier.fillMaxSize(),
         alwaysDrawBehindBars = true,
-        disableHazeSource = true,
         contentWindowInsets = WindowInsets(0),
         topBar = {
-            val hazeModifier = if (hazeEnabled) {
-                Modifier.hazeEffect(state = pagerHazeState, style = overlayHazeStyle) {
-                    progressive = HazeProgressive.verticalGradient(
-                        startIntensity = 1f,
-                        endIntensity = 0f,
-                    )
-                }
-            } else {
-                Modifier
-            }
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RectangleShape)
-                    .then(hazeModifier)
                     .pointerInput(Unit) { detectTapGestures(onTap = {}) }
                     .windowInsetsPadding(WindowInsets.statusBars),
             ) {
@@ -216,21 +191,10 @@ fun ReadAloudPlayerScreenContent(
                     targetOffsetY = { it / 5 },
                 ),
             ) {
-                val hazeModifier = if (hazeEnabled) {
-                    Modifier.hazeEffect(state = pagerHazeState, style = overlayHazeStyle) {
-                        progressive = HazeProgressive.verticalGradient(
-                            startIntensity = 0f,
-                            endIntensity = 1f,
-                        )
-                    }
-                } else {
-                    Modifier
-                }
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RectangleShape)
-                        .then(hazeModifier)
                         .pointerInput(Unit) { detectTapGestures(onTap = {}) }
                         .windowInsetsPadding(WindowInsets.navigationBars)
                         .padding(vertical = 8.dp),
@@ -426,10 +390,7 @@ fun ReadAloudPlayerScreenContent(
             }
         },
     ) {
-        Box(Modifier
-            .fillMaxSize()
-            .then(if (hazeEnabled) Modifier.hazeSource(pagerHazeState) else Modifier)
-        ) {
+        Box(Modifier.fillMaxSize()) {
             PlayerBackground(
                 name = state.bookName,
                 author = state.author,
@@ -717,7 +678,6 @@ private const val BOTTOM_BAR_RESTORE_DELAY_MILLIS = 650L
 
 private fun PlayerAdjustment?.toggle(value: PlayerAdjustment): PlayerAdjustment? =
     if (this == value) null else value
-
 
 
 

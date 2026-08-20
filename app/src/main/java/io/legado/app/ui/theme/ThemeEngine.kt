@@ -17,7 +17,6 @@ import io.legado.app.ui.theme.colorScheme.LemonColorScheme
 import io.legado.app.ui.theme.colorScheme.MujikaColorScheme
 import io.legado.app.ui.theme.colorScheme.PhoebeColorScheme
 import io.legado.app.ui.theme.colorScheme.SoraColorScheme
-import io.legado.app.ui.theme.colorScheme.TransparentColorScheme
 import io.legado.app.ui.theme.colorScheme.WHColorScheme
 import io.legado.app.ui.theme.colorScheme.YuukaColorScheme
 
@@ -35,7 +34,6 @@ object ThemeEngine {
         AppThemeMode.Yuuka to YuukaColorScheme,
         AppThemeMode.Phoebe to PhoebeColorScheme,
         AppThemeMode.Mujika to MujikaColorScheme,
-        AppThemeMode.Transparent to TransparentColorScheme,
     )
 
     fun getColorScheme(
@@ -49,10 +47,9 @@ object ThemeEngine {
         customSeedColor: Int? = null,
         customContrast: String? = null,
     ): ColorScheme {
-        val resolvedMode = resolveMode(mode = mode, forceOpaque = forceOpaque)
         val baseColorScheme = resolveBaseColorScheme(
             context = context,
-            mode = resolvedMode,
+            mode = mode,
             darkTheme = darkTheme,
             paletteStyle = paletteStyle,
             materialVersion = materialVersion,
@@ -60,20 +57,7 @@ object ThemeEngine {
             customContrast = customContrast,
         )
 
-        return baseColorScheme
-            .applyAmoledIfNeeded(darkTheme = darkTheme, isAmoled = isAmoled)
-            .applyTransparentIfNeeded(mode = resolvedMode, forceOpaque = forceOpaque)
-    }
-
-    private fun resolveMode(
-        mode: AppThemeMode,
-        forceOpaque: Boolean
-    ): AppThemeMode {
-        return if (forceOpaque && mode == AppThemeMode.Transparent) {
-            AppThemeMode.WH
-        } else {
-            mode
-        }
+        return baseColorScheme.applyAmoledIfNeeded(darkTheme = darkTheme, isAmoled = isAmoled)
     }
 
     private fun resolveBaseColorScheme(
@@ -142,16 +126,4 @@ object ThemeEngine {
         )
     }
 
-    private fun ColorScheme.applyTransparentIfNeeded(
-        mode: AppThemeMode,
-        forceOpaque: Boolean
-    ): ColorScheme {
-        if (forceOpaque || mode != AppThemeMode.Transparent) return this
-        return copy(
-            surface = Color.Transparent,
-            background = Color.Transparent,
-            surfaceContainerLow = Color.Transparent,
-            surfaceContainer = Color.Transparent,
-        )
-    }
 }

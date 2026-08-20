@@ -12,31 +12,21 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.kyant.backdrop.backdrops.layerBackdrop
-import com.kyant.backdrop.backdrops.rememberCombinedBackdrop
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeSource
 import io.legado.app.domain.model.settings.hasBackgroundImage
 import io.legado.app.ui.theme.LegadoTheme
 import io.legado.app.ui.theme.LocalAppUiConfiguration
-import io.legado.app.ui.theme.LocalHazeState
-import io.legado.app.ui.theme.LocalTopBarBackdrop
-import io.legado.app.ui.theme.responsiveHazeSource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppScaffold(
     modifier: Modifier = Modifier,
-    topBar: @Composable (HazeState) -> Unit = {},
+    topBar: @Composable () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
     snackbarHost: @Composable () -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},
@@ -44,56 +34,27 @@ fun AppScaffold(
     contentColor: Color = contentColorFor(LegadoTheme.colorScheme.surface),
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
     alwaysDrawBehindBars: Boolean = false,
-    disableHazeSource: Boolean = false,
     content: @Composable (PaddingValues) -> Unit
 ) {
     val isDark = LegadoTheme.isDark
     val configuration = LocalAppUiConfiguration.current
     val themeSettings = configuration.theme
     val hasImageBg = themeSettings.hasBackgroundImage(isDark)
-    val hazeState = remember { HazeState() }
-    val liquidGlassEnabled = configuration.theme.topBarButtonStyle == "liquid"
-    val contentDrawsBehindBars =
-        alwaysDrawBehindBars || themeSettings.enableBlur || themeSettings.enableProgressiveBlur
+    val contentDrawsBehindBars = alwaysDrawBehindBars
 
     val containerColor = if (hasImageBg) {
         Color.Transparent
     } else {
         LegadoTheme.colorScheme.background
     }
-    val topBarBackdropBaseColor = LegadoTheme.colorScheme.background
-    val topBarBackgroundBackdrop = rememberLayerBackdrop {
-        drawRect(topBarBackdropBaseColor)
-        drawContent()
-    }
-    val topBarContentBackdrop = rememberLayerBackdrop { drawContent() }
-    val topBarBackdrop = rememberCombinedBackdrop(
-        topBarBackgroundBackdrop,
-        topBarContentBackdrop
-    )
-
-    CompositionLocalProvider(
-        LocalHazeState provides if (themeSettings.enableBlur) hazeState else null,
-        LocalTopBarBackdrop provides if (liquidGlassEnabled) topBarBackdrop else null,
-    ) {
-                Box(modifier = modifier.fillMaxSize()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .then(
-                                if (liquidGlassEnabled) {
-                                    Modifier.layerBackdrop(topBarBackgroundBackdrop)
-                                } else {
-                                    Modifier
-                                }
-                            )
-                    ) {
-                        BackgroundImageContent(isDark = isDark, hazeState = hazeState)
+    Box(modifier = modifier.fillMaxSize()) {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        BackgroundImageContent(isDark = isDark)
                     }
                     Scaffold(
                         modifier = Modifier.fillMaxSize(),
                         topBar = {
-                            topBar(hazeState)
+                            topBar()
                         },
                         bottomBar = bottomBar,
                         snackbarHost = snackbarHost,
@@ -103,25 +64,10 @@ fun AppScaffold(
                         contentColor = contentColor,
                         contentWindowInsets = contentWindowInsets
                     ) { paddingValues ->
-                        val scaffoldPadding = if (configuration.appShell.useFloatingBottomBar) {
-                            PaddingValues(top = paddingValues.calculateTopPadding())
-                        } else {
-                            paddingValues
-                        }
+                        val scaffoldPadding = paddingValues
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .then(
-                                    if (liquidGlassEnabled) {
-                                        Modifier.layerBackdrop(topBarContentBackdrop)
-                                    } else {
-                                        Modifier
-                                    }
-                                )
-                                .then(
-                                    if (!disableHazeSource) Modifier.responsiveHazeSource(hazeState)
-                                    else Modifier
-                                )
                                 .then(
                                     if (contentDrawsBehindBars) Modifier
                                     else Modifier
@@ -135,7 +81,6 @@ fun AppScaffold(
                             )
                         }
                     }
-                }
     }
 }
 
@@ -143,7 +88,6 @@ fun AppScaffold(
 @Composable
 private fun BackgroundImageContent(
     isDark: Boolean,
-    hazeState: HazeState
 ) {
     val themeSettings = LocalAppUiConfiguration.current.theme
     val hasImageBg = themeSettings.hasBackgroundImage(isDark)
@@ -159,26 +103,14 @@ private fun BackgroundImageContent(
     }
 
     if (hasImageBg && !bgImagePath.isNullOrBlank()) {
-        if (themeSettings.enableBlur) {
-            AsyncImage(
-                model = bgImagePath,
-                contentDescription = null,
-                imageLoader = org.koin.compose.koinInject(),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .hazeSource(hazeState),
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            AsyncImage(
-                model = bgImagePath,
-                contentDescription = null,
-                imageLoader = org.koin.compose.koinInject(),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .blur(blur.dp),
-                contentScale = ContentScale.Crop
-            )
-        }
+        AsyncImage(
+            model = bgImagePath,
+            contentDescription = null,
+            imageLoader = org.koin.compose.koinInject(),
+            modifier = Modifier
+                .fillMaxSize()
+                .blur(blur.dp),
+            contentScale = ContentScale.Crop
+        )
     }
 }

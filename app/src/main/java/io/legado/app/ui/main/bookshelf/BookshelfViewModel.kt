@@ -600,7 +600,7 @@ class BookshelfViewModel(
     ) { state, settings, appShellSettings, themeSettings, pendingUploadUrl ->
         state.copy(
             settings = settings,
-            useRaisedBottomInset = appShellSettings.useFloatingBottomBar || themeSettings.enableBlur,
+            useRaisedBottomInset = themeSettings.enableBlur,
             enableCustomTagColors = themeSettings.enableCustomTagColors,
             customTagColors = parseTagColors(themeSettings.customTagColorsJson),
             themeColor = themeSettings.themeColor,
@@ -614,7 +614,7 @@ class BookshelfViewModel(
             selectedGroupId = initialSettings.saveTabPosition,
             isInFolderRoot = initialSettings.bookGroupStyle == 2,
             bookGroupStyle = initialSettings.bookGroupStyle,
-            useRaisedBottomInset = initialAppShellSettings.useFloatingBottomBar || initialThemeSettings.enableBlur,
+            useRaisedBottomInset = initialThemeSettings.enableBlur,
             enableCustomTagColors = initialThemeSettings.enableCustomTagColors,
             customTagColors = parseTagColors(initialThemeSettings.customTagColorsJson),
             themeColor = initialThemeSettings.themeColor,
