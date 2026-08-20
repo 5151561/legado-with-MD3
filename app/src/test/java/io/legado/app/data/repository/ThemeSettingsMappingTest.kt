@@ -82,37 +82,6 @@ class ThemeSettingsMappingTest {
     }
 
     @Test
-    fun `Miuix Monet 根据原子路径当前主题决定是否回退`() {
-        fun enableMiuixMonet(current: ThemeSettings) = captureAtomicUpdateValues(
-            current = current,
-            read = { it.toThemeSettings() },
-            toPrefMap = ThemeSettings::toGatewayPrefMap,
-            transform = {
-                it.copy(
-                    useMiuixMonet = true,
-                    appTheme = if (it.appTheme != "0" && it.appTheme != "12") {
-                        "0"
-                    } else {
-                        it.appTheme
-                    },
-                )
-            },
-        )
-
-        assertEquals(
-            mapOf(
-                PreferKey.appTheme to "0",
-                PreferKey.useMiuixMonet to true,
-            ),
-            enableMiuixMonet(ThemeSettings(appTheme = "7")),
-        )
-        assertEquals(
-            mapOf(PreferKey.useMiuixMonet to true),
-            enableMiuixMonet(ThemeSettings(appTheme = "12")),
-        )
-    }
-
-    @Test
     fun `透明主题通过真实原子路径同时写主题与容器透明度`() {
         val values = captureAtomicUpdateValues(
             current = ThemeSettings(appTheme = "0", containerOpacity = 80),
@@ -146,7 +115,6 @@ class ThemeSettingsMappingTest {
 private fun themeMappingSamples(): List<ThemeSettings> {
     val base = ThemeSettings(
         appTheme = "app-theme",
-        useMiuixMonet = false,
         isPureBlack = false,
         paletteStyle = "palette-style",
         materialVersion = "material-version",
@@ -219,7 +187,6 @@ private fun themeMappingSamples(): List<ThemeSettings> {
     )
     return listOf(
         base,
-        base.copy(useMiuixMonet = true),
         base.copy(isPureBlack = true),
         base.copy(enableDeepPersonalization = true),
         base.copy(overrideBaseCardCornerRadius = true),
@@ -240,7 +207,6 @@ private fun themeMappingSamples(): List<ThemeSettings> {
 
 private fun ThemeSettings.expectedGatewayPrefMap(): Map<String, Any?> = mapOf(
     PreferKey.appTheme to appTheme,
-    PreferKey.useMiuixMonet to useMiuixMonet,
     PreferKey.pureBlack to isPureBlack,
     PreferKey.paletteStyle to paletteStyle,
     PreferKey.materialVersion to materialVersion,

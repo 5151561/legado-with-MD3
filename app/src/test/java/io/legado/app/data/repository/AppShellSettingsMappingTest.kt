@@ -46,7 +46,6 @@ private fun appShellMappingSamples(): List<AppShellSettings> {
     val base = AppShellSettings(
         themeMode = "theme-mode",
         fontScale = 13,
-        composeEngine = "compose-engine",
         tabletInterface = "tablet-interface",
         labelVisibilityMode = "label-mode",
         defaultHomePage = "default-page",
@@ -81,7 +80,6 @@ private fun appShellMappingSamples(): List<AppShellSettings> {
 private fun AppShellSettings.expectedPrefMap(): Map<String, Any?> = mapOf(
     PreferKey.themeMode to themeMode,
     PreferKey.fontScale to fontScale,
-    PreferKey.composeEngine to composeEngine,
     PreferKey.showHome to showHome,
     PreferKey.showDiscovery to showDiscovery,
     PreferKey.showRss to showRss,

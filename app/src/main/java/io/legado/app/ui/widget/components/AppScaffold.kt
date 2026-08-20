@@ -30,11 +30,7 @@ import io.legado.app.ui.theme.LegadoTheme
 import io.legado.app.ui.theme.LocalAppUiConfiguration
 import io.legado.app.ui.theme.LocalHazeState
 import io.legado.app.ui.theme.LocalTopBarBackdrop
-import io.legado.app.ui.theme.ThemeResolver
 import io.legado.app.ui.theme.responsiveHazeSource
-import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.basic.FabPosition as MiuixFabPosition
-import top.yukonga.miuix.kmp.basic.Scaffold as MiuixScaffold
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,7 +41,7 @@ fun AppScaffold(
     snackbarHost: @Composable () -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},
     floatingActionButtonPosition: FabPosition = FabPosition.End,
-    contentColor: Color = contentColorFor(MiuixTheme.colorScheme.surface),
+    contentColor: Color = contentColorFor(LegadoTheme.colorScheme.surface),
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
     alwaysDrawBehindBars: Boolean = false,
     disableHazeSource: Boolean = false,
@@ -57,7 +53,6 @@ fun AppScaffold(
     val hasImageBg = themeSettings.hasBackgroundImage(isDark)
     val hazeState = remember { HazeState() }
     val liquidGlassEnabled = configuration.theme.topBarButtonStyle == "liquid"
-    val composeEngine = LegadoTheme.composeEngine
     val contentDrawsBehindBars =
         alwaysDrawBehindBars || themeSettings.enableBlur || themeSettings.enableProgressiveBlur
 
@@ -65,12 +60,6 @@ fun AppScaffold(
         Color.Transparent
     } else {
         LegadoTheme.colorScheme.background
-    }
-
-    val miuixContainerColor = if (hasImageBg) {
-        Color.Transparent
-    } else {
-        MiuixTheme.colorScheme.surface
     }
     val topBarBackdropBaseColor = LegadoTheme.colorScheme.background
     val topBarBackgroundBackdrop = rememberLayerBackdrop {
@@ -87,75 +76,6 @@ fun AppScaffold(
         LocalHazeState provides if (themeSettings.enableBlur) hazeState else null,
         LocalTopBarBackdrop provides if (liquidGlassEnabled) topBarBackdrop else null,
     ) {
-        when {
-            ThemeResolver.isMiuixEngine(composeEngine) -> {
-                val miuixFabPosition = when (floatingActionButtonPosition) {
-                    FabPosition.End -> MiuixFabPosition.End
-                    FabPosition.Center -> MiuixFabPosition.Center
-                    else -> MiuixFabPosition.End
-                }
-                Box(modifier = modifier.fillMaxSize()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .then(
-                                if (liquidGlassEnabled) {
-                                    Modifier.layerBackdrop(topBarBackgroundBackdrop)
-                                } else {
-                                    Modifier
-                                }
-                            )
-                    ) {
-                        BackgroundImageContent(isDark = isDark, hazeState = hazeState)
-                    }
-                    MiuixScaffold(
-                        modifier = Modifier.fillMaxSize(),
-                        topBar = {
-                            topBar(hazeState)
-                        },
-                        bottomBar = bottomBar,
-                        snackbarHost = snackbarHost,
-                        floatingActionButton = floatingActionButton,
-                        floatingActionButtonPosition = miuixFabPosition,
-                        containerColor = miuixContainerColor,
-                        contentWindowInsets = contentWindowInsets
-                    ) { paddingValues ->
-                        val scaffoldPadding = if (configuration.appShell.useFloatingBottomBar) {
-                            PaddingValues(top = paddingValues.calculateTopPadding())
-                        } else {
-                            paddingValues
-                        }
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .then(
-                                    if (liquidGlassEnabled) {
-                                        Modifier.layerBackdrop(topBarContentBackdrop)
-                                    } else {
-                                        Modifier
-                                    }
-                                )
-                                .then(
-                                    if (!disableHazeSource) Modifier.responsiveHazeSource(hazeState)
-                                    else Modifier
-                                )
-                                .then(
-                                    if (contentDrawsBehindBars) Modifier
-                                    else Modifier
-                                        .padding(scaffoldPadding)
-                                        .consumeWindowInsets(scaffoldPadding)
-                                )
-                        ) {
-                            content(
-                                if (contentDrawsBehindBars) scaffoldPadding
-                                else PaddingValues(0.dp)
-                            )
-                        }
-                    }
-                }
-            }
-
-            else -> {
                 Box(modifier = modifier.fillMaxSize()) {
                     Box(
                         modifier = Modifier
@@ -216,8 +136,6 @@ fun AppScaffold(
                         }
                     }
                 }
-            }
-        }
     }
 }
 

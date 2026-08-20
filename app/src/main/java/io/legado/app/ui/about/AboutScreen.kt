@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.sp
 import io.legado.app.R
 import io.legado.app.constant.AppConst.appInfo
 import io.legado.app.ui.theme.LegadoTheme
-import io.legado.app.ui.theme.ThemeResolver
 import io.legado.app.ui.widget.components.AppScaffold
 import io.legado.app.ui.widget.components.SettingItemWithDivider
 import io.legado.app.ui.widget.components.SplicedColumnGroup
@@ -57,21 +56,12 @@ fun AboutScreen(
     onBack: () -> Unit = {},
     versionName: String = appInfo.versionName,
 ) {
-    if (ThemeResolver.isMiuixEngine(LegadoTheme.composeEngine)) {
-        MiuixAboutScreen(
-            state = state,
-            onIntent = onIntent,
-            onBack = onBack,
-            versionName = versionName,
-        )
-    } else {
-        MaterialAboutScreen(
-            state = state,
-            onIntent = onIntent,
-            onBack = onBack,
-            versionName = versionName,
-        )
-    }
+    MaterialAboutScreen(
+        state = state,
+        onIntent = onIntent,
+        onBack = onBack,
+        versionName = versionName,
+    )
 
     AboutOverlays(
         state = state,

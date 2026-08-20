@@ -39,16 +39,11 @@ import androidx.compose.ui.unit.dp
 import io.legado.app.R
 import io.legado.app.ui.theme.LegadoTheme
 import io.legado.app.ui.theme.ProvideAppDensity
-import io.legado.app.ui.theme.ThemeResolver
 import io.legado.app.ui.widget.components.icon.AppIcon
 import io.legado.app.ui.widget.components.icon.AppIcons
 import io.legado.app.ui.widget.components.menuItem.RoundDropdownMenu
 import io.legado.app.ui.widget.components.menuItem.RoundDropdownMenuItem
 import io.legado.app.ui.widget.components.text.AppText
-import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.basic.FloatingToolbar as MiuixFloatingToolbar
-import top.yukonga.miuix.kmp.basic.Icon as MiuixIcon
-import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
 
 data class SelectionActions(
     val primaryAction: ActionItem,
@@ -74,7 +69,6 @@ fun SelectionBottomBar(
     secondaryActions: List<ActionItem>
 ) {
     var showMenu by remember { mutableStateOf(false) }
-    val isMiuix = ThemeResolver.isMiuixEngine(LegadoTheme.composeEngine)
     val selectAllDescription = stringResource(R.string.select_all)
     val invertSelectionDescription = stringResource(R.string.invert_selection)
     val moreActionsDescription = stringResource(R.string.more_menu)
@@ -84,68 +78,7 @@ fun SelectionBottomBar(
             .union(WindowInsets.ime)
     )
 
-    if (isMiuix) {
-        MiuixFloatingToolbar(
-            modifier = safeModifier
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(8.dp)
-            ) {
-                MiuixIconButton(onClick = onSelectAll) {
-                    MiuixIcon(
-                        imageVector = Icons.Default.SelectAll,
-                        contentDescription = selectAllDescription
-                    )
-                }
-                MiuixIconButton(onClick = onSelectInvert) {
-                    MiuixIcon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = invertSelectionDescription
-                    )
-                }
-
-                MiuixIconButton(
-                    onClick = primaryAction.onClick,
-                    backgroundColor = MiuixTheme.colorScheme.secondaryContainer,
-                    minWidth = 64.dp
-                ) {
-                    MiuixIcon(
-                        imageVector = primaryAction.icon,
-                        contentDescription = primaryAction.text,
-                        tint = MiuixTheme.colorScheme.onSecondaryContainer
-                    )
-                }
-
-                if (secondaryActions.isNotEmpty()) {
-                    Box {
-                        MiuixIconButton(onClick = { showMenu = true }) {
-                            MiuixIcon(
-                                imageVector = AppIcons.MoreVert,
-                                contentDescription = moreActionsDescription
-                            )
-                        }
-                        RoundDropdownMenu(
-                            expanded = showMenu,
-                            onDismissRequest = { showMenu = false }
-                        ) {
-                            secondaryActions.forEach { action ->
-                                RoundDropdownMenuItem(
-                                    text = action.text,
-                                    onClick = {
-                                        action.onClick()
-                                        showMenu = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    } else {
-        HorizontalFloatingToolbar(
+    HorizontalFloatingToolbar(
             modifier = safeModifier,
             expanded = true,
             leadingContent = {
@@ -212,5 +145,4 @@ fun SelectionBottomBar(
                 }
             }
         )
-    }
 }

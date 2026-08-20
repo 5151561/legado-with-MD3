@@ -1,9 +1,6 @@
 package io.legado.app.ui.widget.components.alert
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -17,16 +14,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.legado.app.ui.theme.LegadoTheme
-import io.legado.app.ui.theme.LegadoTheme.composeEngine
 import io.legado.app.ui.theme.ProvideAppDensity
-import io.legado.app.ui.theme.ThemeResolver
 import io.legado.app.ui.widget.components.button.PrimaryButton
 import io.legado.app.ui.widget.components.button.SecondaryButton
-import top.yukonga.miuix.kmp.window.WindowDialog
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -42,58 +35,7 @@ fun AppAlertDialog(
     dismissText: String = "取消",
     onDismiss: (() -> Unit)? = null,
 ) {
-    if (ThemeResolver.isMiuixEngine(composeEngine)) {
-        WindowDialog(
-            show = show,
-            modifier = modifier,
-            title = title,
-            summary = text,
-            onDismissRequest = onDismissRequest,
-            content = {
-                ProvideAppDensity {
-                    if (content != null) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 12.dp)
-                                .verticalScroll(rememberScrollState())
-                        ) {
-                            content()
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 24.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (onDismiss != null) {
-                            SecondaryButton(
-                                text = dismissText,
-                                modifier = Modifier.weight(1f),
-                                onClick = {
-                                    onDismiss()
-                                }
-                            )
-                        }
-
-                        if (onConfirm != null) {
-                            PrimaryButton(
-                                text = confirmText,
-                                modifier = Modifier.weight(1f),
-                                onClick = {
-                                    onConfirm()
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-        )
-    } else {
-        if (show) {
+    if (show) {
             AlertDialog(
                 onDismissRequest = onDismissRequest,
                 modifier = modifier,
@@ -146,7 +88,6 @@ fun AppAlertDialog(
                 }
             )
         }
-    }
 }
 
 /**

@@ -33,7 +33,6 @@ import io.legado.app.ui.book.read.eyeProtectionColorFilter
 import io.legado.app.ui.book.read.rememberEyeProtectionActive
 import io.legado.app.ui.theme.AppTheme
 import io.legado.app.ui.theme.LegadoTheme
-import io.legado.app.ui.theme.ThemeResolver
 import io.legado.app.utils.LogUtils
 import io.legado.app.utils.disableAutoFill
 import io.legado.app.utils.isNightMode
@@ -44,7 +43,6 @@ import io.legado.app.utils.toggleSystemBar
 import io.legado.app.utils.windowSize
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 abstract class BaseComposeActivity(
     private val toolBarTheme: Theme = Theme.Auto,
@@ -174,11 +172,7 @@ abstract class BaseComposeActivity(
     @Composable
     private fun SyncWindowBackground() {
         if (transparent) return
-        val backgroundColor = if (ThemeResolver.isMiuixEngine(LegadoTheme.composeEngine)) {
-            MiuixTheme.colorScheme.surface
-        } else {
-            LegadoTheme.colorScheme.background
-        }
+        val backgroundColor = LegadoTheme.colorScheme.background
         SideEffect {
             if (!hasWindowBgImage) {
                 val colorInt = backgroundColor.toArgb()

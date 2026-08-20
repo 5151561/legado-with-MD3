@@ -205,8 +205,6 @@ object PreferKey {
     const val customMode = "customMode"
     const val paletteStyle = "paletteStyle"
     const val materialVersion = "materialVersion"
-    const val composeEngine = "composeEngine"
-    const val useMiuixMonet = "useMiuixMonet"
     const val containerOpacity = "containerOpacity"
     const val overrideBaseCardCornerRadius = "overrideBaseCardCornerRadius"
     const val baseCardCornerRadius = "baseCardCornerRadius"

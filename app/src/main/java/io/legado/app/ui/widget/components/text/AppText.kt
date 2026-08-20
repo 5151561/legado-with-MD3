@@ -89,7 +89,7 @@ fun AppText(
     style: TextStyle? = null,
 ) {
     // 1. 获取基础样式：如果外部没传 style，直接拿你自己封装的 LegadoTheme.typography.bodyMedium
-    // 这完美避开了 M3 的 LocalTextStyle，且自动适配 Miuix/M3 引擎！
+    // 避开 M3 的 LocalTextStyle，统一使用应用字体配置。
     val baseStyle = style ?: LegadoTheme.typography.bodyMedium
 
     // 2. 获取默认文本色：直接拿你自己封装的 LegadoTheme.colorScheme.onSurface

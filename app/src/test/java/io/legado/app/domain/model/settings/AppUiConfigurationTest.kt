@@ -39,10 +39,7 @@ class AppUiConfigurationTest {
     @Test
     fun diff_ignoresComposeOnlyThemeChangesForLegacyContent() {
         val previous = AppUiConfiguration()
-        val current = previous.copy(
-            appShell = previous.appShell.copy(composeEngine = "miuix"),
-            theme = previous.theme.copy(enableItemDivider = true),
-        )
+        val current = previous.copy(theme = previous.theme.copy(enableItemDivider = true))
 
         val diff = current.diffFrom(previous)
 

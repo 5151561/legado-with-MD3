@@ -87,7 +87,6 @@ import io.legado.app.R
 import io.legado.app.constant.ReadAloudBgMode
 import io.legado.app.ui.theme.LegadoTheme
 import io.legado.app.ui.theme.hazeStyle.HazeLegado
-import io.legado.app.ui.util.rememberBlurBackdrop
 import io.legado.app.ui.widget.components.AppScaffold
 import io.legado.app.ui.widget.components.button.series.MediumPlainButton
 import io.legado.app.ui.widget.components.button.series.MediumTonalButton
@@ -105,15 +104,9 @@ import io.legado.app.ui.widget.components.text.AppText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import top.yukonga.miuix.kmp.blur.BlendColorEntry
-import top.yukonga.miuix.kmp.blur.BlurBlendMode
-import top.yukonga.miuix.kmp.blur.BlurColors
-import top.yukonga.miuix.kmp.blur.layerBackdrop
-import top.yukonga.miuix.kmp.blur.textureBlur
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
-import androidx.compose.ui.graphics.BlendMode as ComposeBlendMode
 
 @OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
@@ -138,19 +131,7 @@ fun ReadAloudPlayerScreenContent(
     val pagerHazeState = remember { HazeState() }
     val hazeEnabled =
         state.bgMode != ReadAloudBgMode.Solid && state.bgMode != ReadAloudBgMode.Transparent
-    val textBackdrop = rememberBlurBackdrop()
-    val flowingLightActive = state.bgMode == ReadAloudBgMode.FlowingLight
-    val flowingTextModifier = if (flowingLightActive && textBackdrop != null) {
-        Modifier.textureBlur(
-            backdrop = textBackdrop,
-            shape = RoundedCornerShape(4.dp),
-            blurRadius = 150f,
-            colors = BlurColors(blendColors = flowingTextBlend()),
-            contentBlendMode = ComposeBlendMode.DstIn,
-        )
-    } else {
-        Modifier
-    }
+    val flowingTextModifier = Modifier
     LaunchedEffect(horizontalPagerState.currentPage) {
         if (horizontalPagerState.currentPage != 1) isTextPageUserScrolling = false
     }
@@ -455,11 +436,6 @@ fun ReadAloudPlayerScreenContent(
                 path = state.coverPath,
                 sourceOrigin = state.sourceOrigin,
                 bgMode = state.bgMode,
-                modifier = if (flowingLightActive && textBackdrop != null) {
-                    Modifier.layerBackdrop(textBackdrop)
-                } else {
-                    Modifier
-                },
             )
             HorizontalPager(
                 state = horizontalPagerState,
@@ -741,26 +717,6 @@ private const val BOTTOM_BAR_RESTORE_DELAY_MILLIS = 650L
 
 private fun PlayerAdjustment?.toggle(value: PlayerAdjustment): PlayerAdjustment? =
     if (this == value) null else value
-
-@Composable
-private fun flowingTextBlend(): List<BlendColorEntry> {
-    val isDark = LegadoTheme.isDark
-    return remember(isDark) {
-        if (isDark) {
-            listOf(
-                BlendColorEntry(Color(0xe6a1a1a1), BlurBlendMode.ColorDodge),
-                BlendColorEntry(Color(0x4de6e6e6), BlurBlendMode.LinearLight),
-                BlendColorEntry(Color(0xff1af500), BlurBlendMode.Lab),
-            )
-        } else {
-            listOf(
-                BlendColorEntry(Color(0xcc4a4a4a), BlurBlendMode.ColorBurn),
-                BlendColorEntry(Color(0xff4f4f4f), BlurBlendMode.LinearLight),
-                BlendColorEntry(Color(0xff1af200), BlurBlendMode.Lab),
-            )
-        }
-    }
-}
 
 
 

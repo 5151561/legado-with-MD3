@@ -125,10 +125,8 @@ private data class MainRouteCache(val groupId: Long) : MainRoute
 
 ## Theme System
 
-A multi-engine theming system in `ui/theme/`:
-
-1. **Material 3 Expressive** (default): Uses `MaterialExpressiveTheme` with `MotionScheme.expressive()`
-2. **Miuix** (alternative): Uses `top.yukonga.miuix.kmp` theming engine
+A Material 3 Expressive theming system in `ui/theme/`, using `MaterialExpressiveTheme` with
+`MotionScheme.expressive()`.
 
 14 theme modes (`AppThemeMode` enum) — Dynamic (Monet), 12 named presets, Custom (MaterialKolor seed-color generation), Transparent. `CustomColorScheme` wraps `com.materialkolor` with configurable `PaletteStyle` (TonalSpot, Neutral, Vibrant, Expressive, Rainbow, etc.) and `ColorSpec` (2021 vs 2025).
 
@@ -346,17 +344,9 @@ two-layer pattern:
   permission requests. Wires ViewModel.
 - Inner `XxxScreen`: pure UI, stateless with `state` + `onIntent`.
 
-### Material 3 vs Miuix
+### Material 3 only
 
-The project supports two Compose theme engines. If a screen needs engine-specific UI, branch on:
-
-```kotlin
-if (ThemeResolver.isMiuixEngine(LegadoTheme.composeEngine)) {
-    // Miuix implementation
-} else {
-    // Material 3 implementation
-}
-```
+Compose UI uses Material 3 components and the project theme APIs exclusively.
 
 For detailed Compose review conventions and migration patterns, see
 `.claude/skills/legado-compose-review/`.

@@ -1607,7 +1607,6 @@
     <string name="theme_manage_section_container">容器设置</string>
     <string name="theme_config_manage_label_colors">管理标签颜色</string>
     <string name="theme_config_label_color_name">标签 %1$d</string>
-    <string name="theme_config_miuix_experimental_warning">Miuix 目前为测试主题，且不对基于 View 的界面生效。</string>
     <string name="theme_config_bottom_bar_lens_radius">底栏模糊强度</string>
     <string name="theme_config_bottom_bar_lens_radius_summary">控制液态玻璃的扭曲程度</string>
     <string name="theme_config_blur_radius_performance_summary">模糊半径越大，系统运行越卡顿</string>
@@ -1718,8 +1717,6 @@
     <string name="light_mode">浅色</string>
     <string name="dark_mode">深色</string>
     <string name="pure_black">纯黑深色模式</string>
-    <string name="miuix_monet">自定义主题色</string>
-    <string name="miuix_monet_summary">为 Miuix 使用自定义主题配色</string>
     <string name="transparent_theme_alarm">透明主题请于设置背景图片后设置</string>
     <string name="seed_color_summary">使用种子颜色生成主题颜色</string>
     <string name="seed_color">种子色</string>
@@ -1849,7 +1846,6 @@
     <string name="is_blur_enable">启用控件模糊</string>
     <string name="use_underline">总是使用下划线表示强调文本</string>
     <string name="adapt_special_style">适配特殊样式</string>
-    <string name="compose_engine">主题风格</string>
     <string name="container_opacity">容器背景不透明度</string>
     <string name="container_opacity_summary">%d</string>
     <string name="top_bar_opacity">顶栏不透明度</string>

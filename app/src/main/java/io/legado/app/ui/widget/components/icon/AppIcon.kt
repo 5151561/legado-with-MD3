@@ -75,7 +75,7 @@ fun AppIcon(
 
 /**
  * 3. 辅助扩展函数：处理图标的默认尺寸
- * M3 和 MIUIX 内部都有 defaultSizeFor，如果 painter 没有固有尺寸，默认设为 24.dp
+ * 如果 painter 没有固有尺寸，默认设为 24.dp。
  */
 private fun Modifier.defaultIconSize(painter: Painter): Modifier {
     return this.then(

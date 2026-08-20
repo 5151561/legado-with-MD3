@@ -3,7 +3,6 @@ package io.legado.app.domain.model.settings
 data class AppShellSettings(
     val themeMode: String = "0",
     val fontScale: Int = 10,
-    val composeEngine: String = "material",
     val showHome: Boolean = true,
     val showDiscovery: Boolean = true,
     val showRss: Boolean = true,

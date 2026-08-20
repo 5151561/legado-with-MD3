@@ -25,12 +25,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.legado.app.ui.theme.LegadoTheme
-import io.legado.app.ui.theme.ThemeResolver
 import io.legado.app.ui.widget.components.text.AppText
-import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.basic.InputField as MiuixSearchBarInputField
-import top.yukonga.miuix.kmp.basic.TextField as MiuixTextField
-import top.yukonga.miuix.kmp.basic.TextFieldDefaults as MiuixTextFieldDefaults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,35 +55,7 @@ fun AppTextField(
     contentPadding: PaddingValues? = null,
     interactionSource: MutableInteractionSource? = null,
 ) {
-    val isMiuix = ThemeResolver.isMiuixEngine(LegadoTheme.composeEngine)
-
-    if (isMiuix) {
-        MiuixTextField(
-            state = state,
-            modifier = modifier,
-            enabled = enabled,
-            readOnly = readOnly,
-            colors = MiuixTextFieldDefaults.textFieldColors(
-                backgroundColor = if (backgroundColor != Color.Unspecified) {
-                    backgroundColor
-                } else {
-                    MiuixTheme.colorScheme.surfaceContainerHigh
-                },
-            ),
-            label = label ?: "",
-            leadingIcon = leadingIcon,
-            trailingIcon = trailingIcon,
-            inputTransformation = inputTransformation,
-            outputTransformation = outputTransformation,
-            keyboardOptions = keyboardOptions,
-            onKeyboardAction = onKeyboardAction,
-            lineLimits = lineLimits,
-            onTextLayout = onTextLayout,
-            scrollState = scrollState,
-            interactionSource = interactionSource
-        )
-    } else {
-        val resolvedContentPadding =
+    val resolvedContentPadding =
             contentPadding ?: if (label == null || labelPosition is TextFieldLabelPosition.Above) {
                 TextFieldDefaults.contentPaddingWithoutLabel()
             } else {
@@ -135,7 +102,6 @@ fun AppTextField(
             contentPadding = resolvedContentPadding,
             interactionSource = interactionSource
         )
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -164,35 +130,7 @@ fun AppTextField(
     shape: Shape = TextFieldDefaults.shape,
     interactionSource: MutableInteractionSource? = null,
 ) {
-    val isMiuix = ThemeResolver.isMiuixEngine(LegadoTheme.composeEngine)
-
-    if (isMiuix) {
-        MiuixTextField(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = modifier,
-            enabled = enabled,
-            readOnly = readOnly,
-            colors = MiuixTextFieldDefaults.textFieldColors(
-                backgroundColor = if (backgroundColor != Color.Unspecified) {
-                    backgroundColor
-                } else {
-                    MiuixTheme.colorScheme.surfaceContainerHigh
-                },
-            ),
-            label = label ?: "",
-            leadingIcon = leadingIcon,
-            trailingIcon = trailingIcon,
-            visualTransformation = visualTransformation,
-            keyboardOptions = keyboardOptions,
-            keyboardActions = keyboardActions,
-            singleLine = singleLine,
-            maxLines = maxLines,
-            minLines = minLines,
-            interactionSource = interactionSource
-        )
-    } else {
-        val resolvedColors = if (backgroundColor != Color.Unspecified) {
+    val resolvedColors = if (backgroundColor != Color.Unspecified) {
             TextFieldDefaults.colors(
                 focusedContainerColor = backgroundColor,
                 unfocusedContainerColor = backgroundColor,
@@ -230,7 +168,6 @@ fun AppTextField(
             colors = resolvedColors,
             interactionSource = interactionSource
         )
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -314,41 +251,9 @@ fun AppDenseTextField(
     scrollState: ScrollState = rememberScrollState(),
     shape: Shape = TextFieldDefaults.shape,
     interactionSource: MutableInteractionSource? = null,
-    miuixUseSearchBarInputField: Boolean = false,
-    miuixSearchBarLabel: String = label ?: "",
-    miuixOnSearch: (String) -> Unit = {},
 ) {
-    val isMiuix = ThemeResolver.isMiuixEngine(LegadoTheme.composeEngine)
-    if (isMiuix && miuixUseSearchBarInputField) {
-        MiuixSearchBarInputField(
-            query = state.text.toString(),
-            onQueryChange = { newQuery ->
-                val current = state.text.toString()
-                if (newQuery != current) {
-                    state.edit {
-                        replace(0, length, newQuery)
-                    }
-                }
-            },
-            onSearch = miuixOnSearch,
-            expanded = false,
-            onExpandedChange = {},
-            modifier = modifier.heightIn(min = 45.dp),
-            label = miuixSearchBarLabel,
-            enabled = enabled,
-            leadingIcon = leadingIcon,
-            trailingIcon = trailingIcon,
-            interactionSource = interactionSource
-        )
-        return
-    }
-
-    val denseMinHeight = if (isMiuix) 45.dp else 48.dp
-    val denseBackgroundColor = if (isMiuix && backgroundColor == Color.Unspecified) {
-        MiuixTheme.colorScheme.surfaceContainerHigh
-    } else {
-        backgroundColor
-    }
+    val denseMinHeight = 48.dp
+    val denseBackgroundColor = backgroundColor
 
     AppTextField(
         state = state,

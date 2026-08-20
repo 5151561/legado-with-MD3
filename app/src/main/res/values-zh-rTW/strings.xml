@@ -1364,8 +1364,6 @@
     <string name="show_book_count">顯示分組書籍數量</string>
     <string name="dynamic_colors_summary">使用基於桌布的主題顏色</string>
     <string name="input_value_range">輸入數值（%1$d-%2$d）</string>
-    <string name="miuix_monet">Miuix Monet</string>
-    <string name="miuix_monet_summary">為 Miuix 使用 Monet 演算法產生配色。目前主題為動態主題且系統為 Android 12 以上時，會優先使用系統取色；否則使用下方種子色。</string>
 	<string name="layout_setting">佈局設定</string>
 	<string name="cover_info_orientation">封面資訊方向</string>
 	<string name="rule_segment">Rule</string>
@@ -1757,7 +1755,6 @@
     <string name="theme_manage_section_container">容器</string>
     <string name="theme_config_manage_label_colors">管理標籤顏色</string>
     <string name="theme_config_label_color_name">標籤 %1$d</string>
-    <string name="theme_config_miuix_experimental_warning">Miuix 目前為實驗性功能，不適用於基於 View 的介面。</string>
     <string name="theme_config_bottom_bar_lens_radius">底部工具列模糊強度</string>
     <string name="theme_config_bottom_bar_lens_radius_summary">控制液態玻璃扭曲強度</string>
     <string name="theme_config_blur_radius_performance_summary">較大的模糊半徑可能降低效能</string>
@@ -1975,7 +1972,6 @@
     <string name="is_blur_enable">啟用元素模糊</string>
     <string name="use_underline">強調文字始終使用底線</string>
     <string name="adapt_special_style">適配特殊樣式</string>
-    <string name="compose_engine">主題樣式</string>
     <string name="container_opacity">容器不透明度</string>
     <string name="container_opacity_summary">%d</string>
     <string name="web_service_auto_start">開啟應用時啟動 Web 服務</string>

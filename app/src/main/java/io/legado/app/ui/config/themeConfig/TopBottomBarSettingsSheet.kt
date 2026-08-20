@@ -26,7 +26,6 @@ fun TopBottomBarSettingsSheet(
     show: Boolean,
     appShell: AppShellSettings,
     theme: ThemeSettings,
-    isMiuixEngine: Boolean,
     onDismissRequest: () -> Unit,
     onIntent: (ThemeConfigIntent) -> Unit,
 ) {
@@ -46,15 +45,13 @@ fun TopBottomBarSettingsSheet(
                 .padding(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            if (!isMiuixEngine) {
-                CompactSwitchSettingItem(
-                    title = stringResource(R.string.use_flexible_top_bar),
-                    checked = theme.useFlexibleTopAppBar,
-                    onCheckedChange = { checked ->
-                        updateTheme { current -> current.copy(useFlexibleTopAppBar = checked) }
-                    },
-                )
-            }
+            CompactSwitchSettingItem(
+                title = stringResource(R.string.use_flexible_top_bar),
+                checked = theme.useFlexibleTopAppBar,
+                onCheckedChange = { checked ->
+                    updateTheme { current -> current.copy(useFlexibleTopAppBar = checked) }
+                },
+            )
             CompactDropdownSettingItem(
                 title = stringResource(R.string.top_bar_button_style),
                 selectedValue = theme.topBarButtonStyle,
@@ -144,7 +141,7 @@ fun TopBottomBarSettingsSheet(
                         updateTheme { current -> current.copy(bottomBarBlurAlpha = value.toInt()) }
                     },
                 )
-            } else if (!isMiuixEngine) {
+            } else {
                 SliderSettingItem(
                     title = stringResource(R.string.top_bar_opacity),
                     description = stringResource(

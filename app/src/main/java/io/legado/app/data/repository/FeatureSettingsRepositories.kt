@@ -280,7 +280,6 @@ internal fun BackupSettings.toPrefMap(): Map<String, Any?> = mapOf(
 internal fun Preferences.toAppShellSettings(): AppShellSettings = AppShellSettings(
     themeMode = compatDsString(PreferKey.themeMode) ?: "0",
     fontScale = compatDsInt(PreferKey.fontScale) ?: 10,
-    composeEngine = compatDsString(PreferKey.composeEngine) ?: "material",
     showHome = compatDsBoolean(PreferKey.showHome) ?: true,
     showDiscovery = compatDsBoolean(PreferKey.showDiscovery) ?: true,
     showRss = compatDsBoolean(PreferKey.showRss) ?: true,
@@ -313,7 +312,6 @@ internal fun Preferences.toAppShellSettings(): AppShellSettings = AppShellSettin
 internal fun AppShellSettings.toPrefMap(): Map<String, Any?> = mapOf(
     PreferKey.themeMode to themeMode,
     PreferKey.fontScale to fontScale,
-    PreferKey.composeEngine to composeEngine,
     PreferKey.showHome to showHome,
     PreferKey.showDiscovery to showDiscovery,
     PreferKey.showRss to showRss,
@@ -343,7 +341,6 @@ internal fun AppShellSettings.toPrefMap(): Map<String, Any?> = mapOf(
 
 internal fun Preferences.toThemeSettings(): ThemeSettings = ThemeSettings(
     appTheme = compatDsString(PreferKey.appTheme) ?: "0",
-    useMiuixMonet = compatDsBoolean(PreferKey.useMiuixMonet) ?: false,
     isPureBlack = compatDsBoolean(PreferKey.pureBlack) ?: false,
     paletteStyle = compatDsString(PreferKey.paletteStyle) ?: "tonalSpot",
     materialVersion = compatDsString(PreferKey.materialVersion) ?: "material3",
@@ -427,7 +424,6 @@ internal fun Preferences.toThemeSettings(): ThemeSettings = ThemeSettings(
  */
 internal fun ThemeSettings.toGatewayPrefMap(): Map<String, Any?> = mapOf(
     PreferKey.appTheme to appTheme,
-    PreferKey.useMiuixMonet to useMiuixMonet,
     PreferKey.pureBlack to isPureBlack,
     PreferKey.paletteStyle to paletteStyle,
     PreferKey.materialVersion to materialVersion,

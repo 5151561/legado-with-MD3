@@ -53,7 +53,6 @@ fun ExploreKindMultiTypeItem(
     onRefreshKinds: () -> Unit = {},
     modifier: Modifier = Modifier,
     backgroundColor: Color = LegadoTheme.colorScheme.surfaceContainer,
-    isMiuix: Boolean,
     displayNameOverride: String? = null,
     valueOverride: String? = null,
     isSelected: Boolean = false,
@@ -88,7 +87,6 @@ fun ExploreKindMultiTypeItem(
                 onClick = click,
                 modifier = modifier,
                 backgroundColor = backgroundColor,
-                isMiuix = isMiuix,
                 displayText = text,
                 isSelected = isSelected,
                 trailingIcon = trailingIcon,
@@ -167,7 +165,6 @@ fun ExploreKindMultiTypeItem(
                         onClick = {},
                         modifier = modifier,
                         backgroundColor = backgroundColor,
-                        isMiuix = isMiuix,
                         displayText = state.displayName,
                         minHeight = minHeight,
                     )

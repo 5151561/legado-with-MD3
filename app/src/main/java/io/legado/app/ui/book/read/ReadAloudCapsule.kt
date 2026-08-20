@@ -35,6 +35,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -59,7 +60,6 @@ import io.legado.app.ui.theme.LegadoTheme
 import io.legado.app.ui.widget.components.image.cover.BookCoverImage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import top.yukonga.miuix.kmp.basic.VerticalDivider
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable

@@ -11,9 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
-import top.yukonga.miuix.kmp.theme.ColorSchemeMode
-import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.theme.ThemeController
 
 fun ColorScheme.toLegadoColorScheme(
     customBgColor: Color = background,
@@ -112,69 +109,17 @@ fun ProvideColorSchemeOverride(
             isDark = resolvedIsDark,
         )
     }
-    val isMiuixEngine = ThemeResolver.isMiuixEngine(overrideThemeMode.composeEngine)
-    val miuixColorSchemeMode = remember(overrideThemeMode.themeMode) {
-        overrideThemeMode.themeMode.toMiuixMonetMode()
-    }
-    val miuixPaletteStyle = remember(themeSettings.paletteStyle) {
-        ThemeResolver.resolveMiuixPaletteStyle(themeSettings.paletteStyle)
-    }
-    val miuixColorSpec = remember(themeSettings.materialVersion, themeSettings.paletteStyle) {
-        ThemeResolver.resolveMiuixColorSpec(
-            themeSettings.materialVersion,
-            themeSettings.paletteStyle,
-        )
-    }
-    val miuixController = remember(
-        isMiuixEngine,
-        miuixColorSchemeMode,
-        overrideThemeMode.isDark,
-        seedColor,
-        miuixPaletteStyle,
-        miuixColorSpec
-    ) {
-        if (!isMiuixEngine) {
-            null
-        } else {
-            ThemeController(
-                colorSchemeMode = miuixColorSchemeMode,
-                keyColor = seedColor,
-                paletteStyle = miuixPaletteStyle,
-                colorSpec = miuixColorSpec,
-                isDark = overrideThemeMode.isDark
-            )
-        }
-    }
-
     CompositionLocalProvider(
         LocalLegadoThemeColors provides overrideThemeMode,
         LocalLegadoColorScheme provides legadoColorScheme
     ) {
-        if (miuixController != null) {
-            MiuixTheme(controller = miuixController) {
-                content()
-            }
-        } else {
-            MaterialTheme(
-                colorScheme = colorScheme,
-                typography = MaterialTheme.typography,
-                shapes = MaterialTheme.shapes
-            ) {
-                content()
-            }
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = MaterialTheme.typography,
+            shapes = MaterialTheme.shapes
+        ) {
+            content()
         }
-    }
-}
-
-private fun ColorSchemeMode.toMiuixMonetMode(): ColorSchemeMode {
-    return when (this) {
-        ColorSchemeMode.Light,
-        ColorSchemeMode.MonetLight -> ColorSchemeMode.MonetLight
-
-        ColorSchemeMode.Dark,
-        ColorSchemeMode.MonetDark -> ColorSchemeMode.MonetDark
-
-        else -> ColorSchemeMode.MonetSystem
     }
 }
 

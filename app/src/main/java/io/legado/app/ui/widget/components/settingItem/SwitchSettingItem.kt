@@ -9,11 +9,8 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import io.legado.app.ui.theme.LegadoTheme
-import io.legado.app.ui.theme.ThemeResolver
 import io.legado.app.ui.widget.components.AdaptiveSwitch
 import io.legado.app.ui.widget.components.SplicedColumnDivider
-import top.yukonga.miuix.kmp.preference.SwitchPreference
 
 
 @Composable
@@ -26,37 +23,25 @@ fun SwitchSettingItem(
     enabled: Boolean = true,
     onCheckedChange: (Boolean) -> Unit
 ) {
-    val composeEngine = LegadoTheme.composeEngine
     SplicedColumnDivider()
 
-    if (ThemeResolver.isMiuixEngine(composeEngine)) {
-        SwitchPreference(
-            title = title,
-            summary = description,
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            modifier = Modifier,
-            enabled = enabled,
-        )
-    } else {
-        SettingItem(
-            title = title,
-            description = description,
-            imageVector = imageVector,
-            color = color,
-            enabled = enabled,
-            semanticRole = Role.Switch,
-            semanticToggleState = checked,
-            onClick = { if (enabled) onCheckedChange(!checked) },
-            trailingContent = {
-                AdaptiveSwitch(
-                    modifier = Modifier.clearAndSetSemantics { },
-                    checked = checked,
-                    onCheckedChange = onCheckedChange,
-                    enabled = enabled,
-                    includeStateSemantics = false
-                )
-            }
-        )
-    }
+    SettingItem(
+        title = title,
+        description = description,
+        imageVector = imageVector,
+        color = color,
+        enabled = enabled,
+        semanticRole = Role.Switch,
+        semanticToggleState = checked,
+        onClick = { if (enabled) onCheckedChange(!checked) },
+        trailingContent = {
+            AdaptiveSwitch(
+                modifier = Modifier.clearAndSetSemantics { },
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                enabled = enabled,
+                includeStateSemantics = false
+            )
+        }
+    )
 }

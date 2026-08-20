@@ -96,14 +96,6 @@
             app:entries="@array/paletteStyle"
             app:entryValues="@array/paletteStyle_value" />
 
-        <io.legado.app.lib.prefs.NameListPreference
-            android:defaultValue="material"
-            android:enabled="false"
-            android:key="composeEngine"
-            android:title="@string/compose_engine"
-            app:entries="@array/composeEngine"
-            app:entryValues="@array/composeEngine_value" />
-
         <io.legado.app.lib.prefs.Preference
             android:key="containerOpacity"
             android:summary="@string/container_opacity_summary"

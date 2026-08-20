@@ -1370,8 +1370,6 @@
     <string name="show_book_count">顯示分組書籍數量</string>
     <string name="dynamic_colors_summary">使用基於桌布的主題顏色</string>
     <string name="input_value_range">輸入數值（%1$d-%2$d）</string>
-    <string name="miuix_monet">Miuix Monet</string>
-    <string name="miuix_monet_summary">為 Miuix 使用 Monet 演算法生成配色。目前主題為動態主題且系統為 Android 12 或以上時，會優先使用系統取色；否則使用下方種子色。</string>
     <string name="bookshelf_total_count">共%1$d本</string>
     <string name="bookshelf_selected_count">已選%1$d本</string>
     <string name="bookshelf_empty_global_search">沒有書籍，嘗試全局搜索</string>
@@ -1704,7 +1702,6 @@
     <string name="compact_grid">緊湊網格</string>
     <string name="compact_list">緊湊列表</string>
     <string name="complete_required_information">填寫所有必填資訊</string>
-    <string name="compose_engine">主題樣式</string>
     <string name="compose_related">Compose 相關</string>
     <string name="blur_effects">模糊效果</string>
     <string name="top_bottom_bar_settings">頂欄與底欄</string>
@@ -2262,7 +2259,6 @@
     <string name="theme_config_divider_width">分隔線寬度</string>
     <string name="theme_config_label_color_name">標籤 %1$d</string>
     <string name="theme_config_manage_label_colors">管理標籤顏色</string>
-    <string name="theme_config_miuix_experimental_warning">Miuix 目前為實驗性功能，不適用於 View 介面。</string>
     <string name="theme_config_nav_icons">導航欄圖標</string>
     <string name="theme_config_nav_icons_custom_count">已設定 %1$d 個自訂圖標</string>
     <string name="theme_config_nav_icons_default">使用預設圖標</string>

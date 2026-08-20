@@ -28,18 +28,10 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
 import io.legado.app.ui.theme.LegadoTheme
-import io.legado.app.ui.theme.LegadoTheme.composeEngine
-import io.legado.app.ui.theme.ThemeResolver
 import io.legado.app.ui.widget.components.ValueStepper
 import io.legado.app.ui.widget.components.card.TextCard
 import io.legado.app.ui.widget.components.menuItem.RoundDropdownMenuItem
 import io.legado.app.ui.widget.components.sliderAccessibility
-import top.yukonga.miuix.kmp.basic.BasicComponent
-import top.yukonga.miuix.kmp.basic.BasicComponentDefaults
-import top.yukonga.miuix.kmp.preference.ArrowPreference
-import top.yukonga.miuix.kmp.preference.SwitchPreference
-import top.yukonga.miuix.kmp.preference.WindowDropdownPreference
-import top.yukonga.miuix.kmp.basic.Slider as MiuixSlider
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -54,32 +46,10 @@ fun CompactDropdownSettingItem(
     cornerRadius: androidx.compose.ui.unit.Dp = 8.dp,
     onValueChange: (String) -> Unit
 ) {
-    if (ThemeResolver.isMiuixEngine(composeEngine)) {
-        val selectedIndex = entryValues.indexOf(selectedValue).coerceAtLeast(0)
-        val spinnerItems = displayEntries.toList()
+    val currentEntry =
+        displayEntries.getOrNull(entryValues.indexOf(selectedValue)) ?: selectedValue
 
-        WindowDropdownPreference(
-            title = title,
-            summary = description,
-            items = spinnerItems,
-            selectedIndex = selectedIndex,
-            startAction = imageVector?.let { icon ->
-                {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null
-                    )
-                }
-            },
-            onSelectedIndexChange = { index ->
-                onValueChange(entryValues[index])
-            }
-        )
-    } else {
-        val currentEntry =
-            displayEntries.getOrNull(entryValues.indexOf(selectedValue)) ?: selectedValue
-
-        SettingItem(
+    SettingItem(
             title = title,
             description = description,
             imageVector = imageVector,
@@ -115,8 +85,7 @@ fun CompactDropdownSettingItem(
                     )
                 }
             }
-        )
-    }
+    )
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -138,51 +107,7 @@ fun CompactSliderSettingItem(
     var displayValue by remember(value) { mutableFloatStateOf(value) }
     val sliderAccessibilityValue = description ?: displayValue.toString()
 
-    if (ThemeResolver.isMiuixEngine(composeEngine)) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            BasicComponent(
-                title = title,
-                summary = description,
-                onClick = { expanded = !expanded },
-                endActions = {
-                    ValueStepper(
-                        value = value,
-                        displayValue = displayValue,
-                        valueRange = valueRange,
-                        onValueChange = onValueChange
-                    )
-                }
-            )
-
-            AnimatedVisibility(visible = expanded) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    MiuixSlider(
-                        value = sliderValue,
-                        onValueChange = {
-                            sliderValue = it
-                            displayValue = it
-                        },
-                        onValueChangeFinished = {
-                            onValueChange(sliderValue)
-                        },
-                        valueRange = valueRange,
-                        steps = steps,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .sliderAccessibility(
-                                label = title,
-                                value = sliderAccessibilityValue,
-                            )
-                    )
-                }
-            }
-        }
-    } else {
-        SettingItem(
+    SettingItem(
             title = title,
             description = description,
             imageVector = imageVector,
@@ -218,8 +143,7 @@ fun CompactSliderSettingItem(
                         )
                 )
             }
-        )
-    }
+    )
 
     LaunchedEffect(value) {
         if (!expanded) {
@@ -240,17 +164,7 @@ fun CompactSwitchSettingItem(
     enabled: Boolean = true,
     onCheckedChange: (Boolean) -> Unit
 ) {
-    if (ThemeResolver.isMiuixEngine(composeEngine)) {
-        SwitchPreference(
-            title = title,
-            summary = description,
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            modifier = Modifier,
-            enabled = enabled,
-        )
-    } else {
-        SettingItem(
+    SettingItem(
             title = title,
             description = description,
             imageVector = imageVector,
@@ -270,8 +184,7 @@ fun CompactSwitchSettingItem(
                     enabled = enabled
                 )
             }
-        )
-    }
+    )
 }
 
 @Composable
@@ -284,15 +197,7 @@ fun CompactClickableSettingItem(
     trailingContent: (@Composable () -> Unit)? = null,
     onClick: () -> Unit
 ) {
-    if (ThemeResolver.isMiuixEngine(composeEngine)) {
-        ArrowPreference(
-            title = title,
-            summary = description,
-            insideMargin = BasicComponentDefaults.InsideMargin,
-            onClick = onClick
-        )
-    } else {
-        SettingItem(
+    SettingItem(
             title = title,
             description = description,
             imageVector = imageVector,
@@ -306,6 +211,5 @@ fun CompactClickableSettingItem(
                 )
             },
             onClick = onClick
-        )
-    }
+    )
 }

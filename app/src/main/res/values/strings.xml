@@ -1666,7 +1666,6 @@
     <string name="theme_manage_section_container">Container</string>
     <string name="theme_config_manage_label_colors">Manage Label Colors</string>
     <string name="theme_config_label_color_name">Label %1$d</string>
-    <string name="theme_config_miuix_experimental_warning">Miuix is currently experimental and does not apply to View-based screens.</string>
     <string name="theme_config_bottom_bar_lens_radius">Bottom Bar Blur Strength</string>
     <string name="theme_config_bottom_bar_lens_radius_summary">Controls the liquid glass distortion strength</string>
     <string name="theme_config_blur_radius_performance_summary">Higher blur radius may reduce performance</string>
@@ -1773,8 +1772,6 @@
     <string name="light_mode">Light</string>
     <string name="dark_mode">Dark</string>
     <string name="pure_black">True Black Mode</string>
-    <string name="miuix_monet">Miuix Monet</string>
-    <string name="miuix_monet_summary">Use Monet to generate the Miuix palette. If the current theme is Dynamic on Android 12+, the system accent is used; otherwise the seed color below is used.</string>
     <string name="transparent_theme_alarm">Please set the transparent theme after setting a background image.</string>
     <string name="seed_color_summary">Create a theme from a seed color</string>
     <string name="seed_color">Seed Color</string>
@@ -1906,7 +1903,6 @@
     <string name="is_blur_enable">Enable Element Blur</string>
     <string name="use_underline">Always Use Underline for Emphasized Text</string>
     <string name="adapt_special_style">Adapt Special Styles</string>
-    <string name="compose_engine">Theme Style</string>
     <string name="container_opacity">Container Opacity</string>
     <string name="container_opacity_summary">%d</string>
     <string name="top_bar_opacity">Top Bar Opacity</string>

@@ -64,7 +64,6 @@ import io.legado.app.domain.model.settings.ThemeSettings
 import io.legado.app.domain.model.settings.isEyeProtectionConfigured
 import io.legado.app.ui.theme.LegadoTheme
 import io.legado.app.ui.theme.ThemeEngine
-import io.legado.app.ui.theme.ThemeResolver
 import io.legado.app.ui.theme.adaptiveContentPadding
 import io.legado.app.ui.widget.components.AppScaffold
 import io.legado.app.ui.widget.components.FontFolderState
@@ -125,27 +124,21 @@ fun ThemeConfigScreen(
             )
         ) {
             item {
-                val composeEngine = appShell.composeEngine
-                val isMiuixEngine = remember(composeEngine) {
-                    ThemeResolver.isMiuixEngine(composeEngine)
-                }
                 val isDarkTheme = LegadoTheme.isDark
 
-                if (!isMiuixEngine) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        ThemeCard(
-                            context = context,
-                            value = theme.appTheme,
-                            isDark = isDarkTheme,
-                            isAmoled = theme.isPureBlack,
-                            paletteStyle = theme.paletteStyle,
-                            customLightSeedColor = theme.customPrimary,
-                            customNightSeedColor = theme.customNightPrimary
-                        )
-                    }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    ThemeCard(
+                        context = context,
+                        value = theme.appTheme,
+                        isDark = isDarkTheme,
+                        isAmoled = theme.isPureBlack,
+                        paletteStyle = theme.paletteStyle,
+                        customLightSeedColor = theme.customPrimary,
+                        customNightSeedColor = theme.customNightPrimary
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -183,104 +176,44 @@ fun ThemeConfigScreen(
 
 
                 SplicedColumnGroup(title = stringResource(R.string.theme)) {
-                    if (isMiuixEngine) {
-                        DropdownListSettingItem(
-                            title = stringResource(R.string.theme_mode),
-                            selectedValue = appShell.themeMode,
-                            displayEntries = stringArrayResource(R.array.theme_mode),
-                            entryValues = stringArrayResource(R.array.theme_mode_v),
-                            onValueChange = { mode ->
-                                onIntent(
-                                    ThemeConfigIntent.SetThemeMode(mode)
-                                )
-                            }
-                        )
+                    ThemeModeSelector(
+                        selectedMode = appShell.themeMode,
+                        onModeSelected = { mode -> onIntent(ThemeConfigIntent.SetThemeMode(mode)) }
+                    )
 
-                        SwitchSettingItem(
-                            title = stringResource(R.string.miuix_monet),
-                            description = stringResource(R.string.miuix_monet_summary),
-                            checked = theme.useMiuixMonet,
-                            onCheckedChange = {
-                                onIntent(ThemeConfigIntent.SetMiuixMonet(it))
-                            }
-                        )
-
-                        if (theme.useMiuixMonet) {
-                            val visibleThemes = themes.filter { (_, value) ->
-                                value != "4" || state.showEInkTheme
-                            }
-                            DropdownListSettingItem(
-                                title = stringResource(R.string.theme),
-                                selectedValue = theme.appTheme,
-                                displayEntries = visibleThemes.map { it.first }.toTypedArray(),
-                                entryValues = visibleThemes.map { it.second }.toTypedArray(),
-                                onValueChange = { value ->
-                                    onIntent(ThemeConfigIntent.SelectTheme(value))
-                                }
-                            )
-                        }
-                    } else {
-                        ThemeModeSelector(
-                            selectedMode = appShell.themeMode,
-                            onModeSelected = { mode ->
-                                onIntent(ThemeConfigIntent.SetThemeMode(mode))
-                            }
-                        )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    val visibleThemes = themes.filter { (_, value) ->
+                        value != "4" || state.showEInkTheme
                     }
-
-                    if (!isMiuixEngine) {
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        val visibleThemes = themes.filter { (_, value) ->
-                            value != "4" || state.showEInkTheme
-                        }
-                        ThemeColorSelector(
-                            context = context,
-                            themes = visibleThemes,
-                            selectedTheme = theme.appTheme,
-                            isDark = isDarkTheme,
-                            isAmoled = theme.isPureBlack,
-                            paletteStyle = theme.paletteStyle,
-                            customLightSeedColor = theme.customPrimary,
-                            customNightSeedColor = theme.customNightPrimary,
-                            onThemeSelected = {
-                                onIntent(ThemeConfigIntent.SelectTheme(it))
-                            }
-                        )
-                    }
+                    ThemeColorSelector(
+                        context = context,
+                        themes = visibleThemes,
+                        selectedTheme = theme.appTheme,
+                        isDark = isDarkTheme,
+                        isAmoled = theme.isPureBlack,
+                        paletteStyle = theme.paletteStyle,
+                        customLightSeedColor = theme.customPrimary,
+                        customNightSeedColor = theme.customNightPrimary,
+                        onThemeSelected = { onIntent(ThemeConfigIntent.SelectTheme(it)) }
+                    )
                 }
 
                 SplicedColumnGroup {
-                    if (!isMiuixEngine) {
-                        SwitchSettingItem(
-                            title = stringResource(R.string.pure_black),
-                            checked = theme.isPureBlack,
-                            onCheckedChange = { value ->
-                                updateTheme { it.copy(isPureBlack = value) }
-                            }
-                        )
-                    }
+                    SwitchSettingItem(
+                        title = stringResource(R.string.pure_black),
+                        checked = theme.isPureBlack,
+                        onCheckedChange = { value -> updateTheme { it.copy(isPureBlack = value) } }
+                    )
                     ClickableSettingItem(
                         title = stringResource(R.string.font_setting),
                         onClick = { onIntent(ThemeConfigIntent.ShowSheet(ThemeConfigSheet.Font)) }
                     )
-                    if (theme.appTheme == "12" && (!isMiuixEngine || theme.useMiuixMonet)) {
+                    if (theme.appTheme == "12") {
                         ClickableSettingItem(
                             title = stringResource(R.string.custom_theme_colors),
                             onClick = onNavigateToCustomTheme
                         )
                     }
-                    DropdownListSettingItem(
-                        title = stringResource(R.string.compose_engine),
-                        selectedValue = appShell.composeEngine,
-                        displayEntries = stringArrayResource(R.array.composeEngine),
-                        entryValues = stringArrayResource(R.array.composeEngine_value),
-                        onValueChange = {
-                            onIntent(
-                                ThemeConfigIntent.SetComposeEngine(it)
-                            )
-                        }
-                    )
                     ClickableSettingItem(
                         title = stringResource(R.string.change_icon),
                         description = stringResource(R.string.change_icon_summary),
@@ -878,7 +811,6 @@ fun ThemeConfigScreen(
         show = state.activeSheet == ThemeConfigSheet.TopBottomBar,
         appShell = appShell,
         theme = theme,
-        isMiuixEngine = ThemeResolver.isMiuixEngine(appShell.composeEngine),
         onDismissRequest = { onIntent(ThemeConfigIntent.DismissSheet) },
         onIntent = onIntent,
     )

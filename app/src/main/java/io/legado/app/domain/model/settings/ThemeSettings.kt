@@ -2,7 +2,6 @@ package io.legado.app.domain.model.settings
 
 data class ThemeSettings(
     val appTheme: String = "0",
-    val useMiuixMonet: Boolean = false,
     val isPureBlack: Boolean = false,
     val paletteStyle: String = "tonalSpot",
     val materialVersion: String = "material3",

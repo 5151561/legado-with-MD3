@@ -20,7 +20,6 @@ import io.legado.app.ui.theme.LegadoTheme
 import io.legado.app.ui.theme.LocalAppUiConfiguration
 import io.legado.app.ui.widget.components.AppContainerBackgroundType
 import io.legado.app.ui.widget.components.appContainerBackground
-import top.yukonga.miuix.kmp.basic.CardDefaults as MiuixCardDefaults
 
 @Composable
 private fun BaseCardContent(
@@ -51,7 +50,7 @@ private fun BaseCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     onLongClick: (() -> Unit)? = null,
-    cornerRadius: Dp = MiuixCardDefaults.CornerRadius,
+    cornerRadius: Dp = 16.dp,
     containerColor: Color? = null,
     contentColor: Color? = null,
     elevation: Dp = 0.dp,
@@ -117,7 +116,7 @@ fun GlassCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     onLongClick: (() -> Unit)? = null,
-    cornerRadius: Dp = MiuixCardDefaults.CornerRadius,
+    cornerRadius: Dp = 16.dp,
     containerColor: Color? = null,
     contentColor: Color? = null,
     elevation: Dp = 0.dp,
@@ -145,7 +144,7 @@ fun NormalCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     onLongClick: (() -> Unit)? = null,
-    cornerRadius: Dp = MiuixCardDefaults.CornerRadius,
+    cornerRadius: Dp = 16.dp,
     containerColor: Color? = null,
     contentColor: Color? = null,
     elevation: Dp = 0.dp,

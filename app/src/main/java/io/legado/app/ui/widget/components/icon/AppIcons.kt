@@ -30,64 +30,40 @@ import androidx.compose.material.icons.outlined.Sell
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import io.legado.app.ui.main.MainDestination
-import io.legado.app.ui.theme.LegadoTheme
-import io.legado.app.ui.theme.ThemeResolver
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Album
-import top.yukonga.miuix.kmp.icon.extended.Back
-import top.yukonga.miuix.kmp.icon.extended.Close
-import top.yukonga.miuix.kmp.icon.extended.ContactsBook
-import top.yukonga.miuix.kmp.icon.extended.Delete
-import top.yukonga.miuix.kmp.icon.extended.Edit
-import top.yukonga.miuix.kmp.icon.extended.Favorites
-import top.yukonga.miuix.kmp.icon.extended.Filter
-import top.yukonga.miuix.kmp.icon.extended.More
-import top.yukonga.miuix.kmp.icon.extended.MoreCircle
-import top.yukonga.miuix.kmp.icon.extended.Notes
-import top.yukonga.miuix.kmp.icon.extended.Pin
-import top.yukonga.miuix.kmp.icon.extended.Refresh
-import top.yukonga.miuix.kmp.icon.extended.Search
-import top.yukonga.miuix.kmp.icon.extended.Settings
-import top.yukonga.miuix.kmp.icon.extended.Unpin
-import top.yukonga.miuix.kmp.icon.extended.WorldClock
 
 object AppIcons {
 
-    private val isMiuix: Boolean
-        @Composable
-        get() = ThemeResolver.isMiuixEngine(LegadoTheme.composeEngine)
-
     val Search: ImageVector
         @Composable
-        get() = if (isMiuix) MiuixIcons.Search else Icons.Default.Search
+        get() = Icons.Default.Search
 
     val MoreVert: ImageVector
         @Composable
-        get() = if (isMiuix) MiuixIcons.More else Icons.Default.MoreVert
+        get() = Icons.Default.MoreVert
 
     val Edit: ImageVector
         @Composable
-        get() = if (isMiuix) MiuixIcons.Edit else Icons.Default.Edit
+        get() = Icons.Default.Edit
 
     val Delete: ImageVector
         @Composable
-        get() = if (isMiuix) MiuixIcons.Delete else Icons.Default.Delete
+        get() = Icons.Default.Delete
 
     val Close: ImageVector
         @Composable
-        get() = if (isMiuix) MiuixIcons.Close else Icons.Default.Clear
+        get() = Icons.Default.Clear
 
     val Back: ImageVector
         @Composable
-        get() = if (isMiuix) MiuixIcons.Back else Icons.AutoMirrored.Filled.ArrowBack
+        get() = Icons.AutoMirrored.Filled.ArrowBack
 
     val Filter: ImageVector
         @Composable
-        get() = if (isMiuix) MiuixIcons.Filter else Icons.Default.FilterList
+        get() = Icons.Default.FilterList
 
     val Settings: ImageVector
         @Composable
-        get() = if (isMiuix) MiuixIcons.Settings else Icons.Default.Settings
+        get() = Icons.Default.Settings
 
     val BugReport: ImageVector
         @Composable
@@ -95,23 +71,23 @@ object AppIcons {
 
     val PrecisionSearch: ImageVector
         @Composable
-        get() = if (isMiuix) MiuixIcons.Pin else Icons.Default.MyLocation
+        get() = Icons.Default.MyLocation
 
     val UnPrecisionSearch: ImageVector
         @Composable
-        get() = if (isMiuix) MiuixIcons.Unpin else Icons.Default.LocationSearching
+        get() = Icons.Default.LocationSearching
 
     val History: ImageVector
         @Composable
-        get() = if (isMiuix) MiuixIcons.WorldClock else Icons.Default.History
+        get() = Icons.Default.History
 
     val Replay: ImageVector
         @Composable
-        get() = if (isMiuix) MiuixIcons.Refresh else Icons.Default.Replay
+        get() = Icons.Default.Replay
 
     val MoreCircle: ImageVector
         @Composable
-        get() = if (isMiuix) MiuixIcons.MoreCircle else Icons.Default.MoreHoriz
+        get() = Icons.Default.MoreHoriz
 
     val Check: ImageVector
         @Composable
@@ -119,42 +95,18 @@ object AppIcons {
 
     val Group: ImageVector
         @Composable
-        get() = if (isMiuix) MiuixIcons.Filter else Icons.Outlined.Sell
+        get() = Icons.Outlined.Sell
 
 
 
     @Composable
     fun mainDestination(destination: MainDestination, selected: Boolean): ImageVector {
         return when (destination) {
-            MainDestination.Home -> if (isMiuix) {
-                MiuixIcons.Regular.ContactsBook
-            } else {
-                if (selected) Icons.Default.Home else Icons.Outlined.Home
-            }
-
-            MainDestination.Bookshelf -> if (isMiuix) {
-                if (selected) MiuixIcons.Regular.Notes else MiuixIcons.Regular.Notes
-            } else {
-                if (selected) Icons.AutoMirrored.Filled.LibraryBooks else Icons.AutoMirrored.Outlined.LibraryBooks
-            }
-
-            MainDestination.Explore -> if (isMiuix) {
-                if (selected) MiuixIcons.Regular.Album else MiuixIcons.Regular.Album
-            } else {
-                if (selected) Icons.Default.Explore else Icons.Outlined.Explore
-            }
-
-            MainDestination.Rss -> if (isMiuix) {
-                if (selected) MiuixIcons.Regular.Favorites else MiuixIcons.Regular.Favorites
-            } else {
-                if (selected) Icons.Default.RssFeed else Icons.Outlined.RssFeed
-            }
-
-            MainDestination.My -> if (isMiuix) {
-                if (selected) MiuixIcons.Regular.Settings else MiuixIcons.Regular.Settings
-            } else {
-                if (selected) Icons.Default.Person else Icons.Outlined.Person
-            }
+            MainDestination.Home -> if (selected) Icons.Default.Home else Icons.Outlined.Home
+            MainDestination.Bookshelf -> if (selected) Icons.AutoMirrored.Filled.LibraryBooks else Icons.AutoMirrored.Outlined.LibraryBooks
+            MainDestination.Explore -> if (selected) Icons.Default.Explore else Icons.Outlined.Explore
+            MainDestination.Rss -> if (selected) Icons.Default.RssFeed else Icons.Outlined.RssFeed
+            MainDestination.My -> if (selected) Icons.Default.Person else Icons.Outlined.Person
         }
     }
 }

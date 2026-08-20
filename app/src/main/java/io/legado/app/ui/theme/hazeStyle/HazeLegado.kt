@@ -8,17 +8,14 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
-import io.legado.app.ui.theme.LegadoTheme.composeEngine
 import io.legado.app.ui.theme.LocalAppUiConfiguration
-import io.legado.app.ui.theme.ThemeResolver
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 object HazeLegado {
 
     @Composable
     @ReadOnlyComposable
     fun ultraThinPlus(
-        containerColor: Color = if (ThemeResolver.isMiuixEngine(composeEngine)) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surface,
+        containerColor: Color = MaterialTheme.colorScheme.surface,
     ): HazeStyle = hazeLegado(
         containerColor = containerColor,
         lightAlpha = 0.0f,
@@ -28,7 +25,7 @@ object HazeLegado {
     @Composable
     @ReadOnlyComposable
     fun ultraThin(
-        containerColor: Color = if (ThemeResolver.isMiuixEngine(composeEngine)) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surface,
+        containerColor: Color = MaterialTheme.colorScheme.surface,
     ): HazeStyle {
         val blurAlpha = LocalAppUiConfiguration.current.theme.topBarBlurAlpha / 100f
         return hazeLegado(
@@ -41,7 +38,7 @@ object HazeLegado {
     @Composable
     @ReadOnlyComposable
     fun regular(
-        containerColor: Color = if (ThemeResolver.isMiuixEngine(composeEngine)) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surface,
+        containerColor: Color = MaterialTheme.colorScheme.surface,
     ): HazeStyle {
         val blurAlpha = LocalAppUiConfiguration.current.theme.topBarBlurAlpha / 100f
         return hazeLegado(
@@ -54,7 +51,7 @@ object HazeLegado {
     @Composable
     @ReadOnlyComposable
     fun custom(
-        containerColor: Color = if (ThemeResolver.isMiuixEngine(composeEngine)) MiuixTheme.colorScheme.surface else MaterialTheme.colorScheme.surface,
+        containerColor: Color = MaterialTheme.colorScheme.surface,
         blurRadius: Int = LocalAppUiConfiguration.current.theme.topBarBlurRadius,
         blurAlpha: Int = LocalAppUiConfiguration.current.theme.topBarBlurAlpha,
     ): HazeStyle = hazeLegado(

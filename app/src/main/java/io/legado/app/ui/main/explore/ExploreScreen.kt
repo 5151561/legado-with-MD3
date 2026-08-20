@@ -62,8 +62,6 @@ import io.legado.app.domain.usecase.ExploreKindUiUseCase
 import io.legado.app.help.source.getExploreInfoMap
 import io.legado.app.ui.book.search.SearchScope
 import io.legado.app.ui.theme.LegadoTheme
-import io.legado.app.ui.theme.LegadoTheme.composeEngine
-import io.legado.app.ui.theme.ThemeResolver
 import io.legado.app.ui.theme.adaptiveContentPadding
 import io.legado.app.ui.widget.components.EmptyMessage
 import io.legado.app.ui.widget.components.alert.AppAlertDialog
@@ -82,7 +80,6 @@ import io.legado.app.ui.widget.components.text.AppText
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @OptIn(
     ExperimentalMaterial3Api::class,
@@ -167,8 +164,6 @@ fun ExploreScreen(
         }
     }
 
-    val composeEngine = ThemeResolver.isMiuixEngine(composeEngine)
-
     ListScaffold(
         title = stringResource(R.string.discovery),
         state = state,
@@ -234,7 +229,6 @@ fun ExploreScreen(
                             onLogin = { onIntent(ExploreIntent.OpenLogin(item)) },
                             onRefresh = { onIntent(ExploreIntent.RefreshKinds(item)) },
                             onDelete = { sourceToDeleteUrl = item.bookSourceUrl },
-                            isMiuix = composeEngine
                         )
                         }
 
@@ -254,7 +248,6 @@ fun ExploreScreen(
                                             onOpenExploreShow(kind.title, listItem.sourceUrl, url)
                                         },
                                         modifier = Modifier.weight(span.toFloat()),
-                                        isMiuix = composeEngine,
                                         displayNameOverride = state.kindDisplayNames[kind.title],
                                         valueOverride = state.kindValues[kind.title],
                                         onValueChange = { value ->
@@ -345,7 +338,6 @@ fun ExploreSourceHeader(
     onLogin: () -> Unit,
     onRefresh: () -> Unit,
     onDelete: () -> Unit,
-    isMiuix: Boolean,
 ) {
     var showMenu by remember { mutableStateOf(false) }
     val rotation by animateFloatAsState(if (isExpanded) 90f else 0f, label = "rotation")
@@ -354,19 +346,15 @@ fun ExploreSourceHeader(
     val moreMenuLabel = stringResource(R.string.more_menu)
 
     val containerColor by animateColorAsState(
-        targetValue = if (isExpanded)
-            if (isMiuix) MiuixTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.secondaryContainer
-        else
-            if (isMiuix) MiuixTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surfaceContainerLow,
+        targetValue = if (isExpanded) MaterialTheme.colorScheme.secondaryContainer
+        else MaterialTheme.colorScheme.surfaceContainerLow,
         animationSpec = tween(durationMillis = 200, easing = FastOutSlowInEasing),
         label = "CardColor"
     )
 
     val contentColor by animateColorAsState(
-        targetValue = if (isExpanded)
-            if (isMiuix) MiuixTheme.colorScheme.primary else MaterialTheme.colorScheme.primary
-        else
-            if (isMiuix) MiuixTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface,
+        targetValue = if (isExpanded) MaterialTheme.colorScheme.primary
+        else MaterialTheme.colorScheme.onSurface,
         animationSpec = tween(durationMillis = 200, easing = FastOutSlowInEasing),
         label = "CardColor"
     )

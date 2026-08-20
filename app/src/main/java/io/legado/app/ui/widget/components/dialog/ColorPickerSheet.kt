@@ -42,9 +42,6 @@ import io.legado.app.ui.widget.components.button.series.MediumTonalButton
 import io.legado.app.ui.widget.components.modalBottomSheet.AppModalBottomSheet
 import io.legado.app.ui.widget.components.text.AppText
 import io.legado.app.utils.isHex
-import top.yukonga.miuix.kmp.basic.ColorPalette
-import top.yukonga.miuix.kmp.basic.ColorPicker
-import top.yukonga.miuix.kmp.basic.ColorSpace
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -102,21 +99,6 @@ fun ColorPickerSheet(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            ColorPalette(
-                color = currentColor,
-                onColorChanged = { color ->
-                    currentColor = color
-                    hexInput = color.toArgb().asHexColorString()
-                    isHexInputError = false
-                },
-                rows = 8,
-                hueColumns = 12,
-                modifier = Modifier.fillMaxWidth(),
-                showPreview = false
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()

@@ -10,10 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.legado.app.ui.theme.LegadoTheme
-import io.legado.app.ui.theme.ThemeResolver
 import io.legado.app.ui.widget.components.text.AppText
-import top.yukonga.miuix.kmp.basic.TabRowDefaults
-import top.yukonga.miuix.kmp.basic.TabRowWithContour
 
 @Composable
 fun AppTabRow(
@@ -23,51 +20,36 @@ fun AppTabRow(
     modifier: Modifier = Modifier,
     isScrollable: Boolean = true
 ) {
-    val composeEngine = LegadoTheme.composeEngine
-
-    if (ThemeResolver.isMiuixEngine(composeEngine)) {
-        TabRowWithContour(
-            tabs = tabTitles,
+    if (isScrollable) {
+        PrimaryScrollableTabRow(
             selectedTabIndex = selectedTabIndex,
-            onTabSelected = onTabSelected,
+            edgePadding = 0.dp,
+            divider = { },
+            containerColor = Color.Transparent,
+            minTabWidth = 0.dp,
             modifier = modifier
-                .padding(vertical = 4.dp),
-            colors = TabRowDefaults.tabRowColors(
-                backgroundColor = Color.Transparent
-            )
-        )
-    } else {
-        if (isScrollable) {
-            PrimaryScrollableTabRow(
-                selectedTabIndex = selectedTabIndex,
-                edgePadding = 0.dp,
-                divider = { },
-                containerColor = Color.Transparent,
-                minTabWidth = 0.dp,
-                modifier = modifier
-            ) {
-                tabTitles.forEachIndexed { index, title ->
-                    AppTab(
-                        selected = selectedTabIndex == index,
-                        onClick = { onTabSelected(index) },
-                        title = title
-                    )
-                }
+        ) {
+            tabTitles.forEachIndexed { index, title ->
+                AppTab(
+                    selected = selectedTabIndex == index,
+                    onClick = { onTabSelected(index) },
+                    title = title
+                )
             }
-        } else {
-            PrimaryTabRow(
-                selectedTabIndex = selectedTabIndex,
-                divider = { },
-                containerColor = Color.Transparent,
-                modifier = modifier
-            ) {
-                tabTitles.forEachIndexed { index, title ->
-                    AppTab(
-                        selected = selectedTabIndex == index,
-                        onClick = { onTabSelected(index) },
-                        title = title
-                    )
-                }
+        }
+    } else {
+        PrimaryTabRow(
+            selectedTabIndex = selectedTabIndex,
+            divider = { },
+            containerColor = Color.Transparent,
+            modifier = modifier
+        ) {
+            tabTitles.forEachIndexed { index, title ->
+                AppTab(
+                    selected = selectedTabIndex == index,
+                    onClick = { onTabSelected(index) },
+                    title = title
+                )
             }
         }
     }

@@ -56,7 +56,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.legado.app.R
 import io.legado.app.data.entities.Bookmark
 import io.legado.app.ui.theme.LegadoTheme
-import io.legado.app.ui.theme.ThemeResolver
 import io.legado.app.ui.theme.adaptiveContentPadding
 import io.legado.app.ui.theme.adaptiveHorizontalPadding
 import io.legado.app.ui.widget.components.AppScaffold
@@ -79,7 +78,6 @@ import io.legado.app.ui.widget.components.topbar.TopBarNavigationButton
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
-import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
     ExperimentalMaterial3ExpressiveApi::class
@@ -148,7 +146,6 @@ fun AllBookmarkScreen(
     var editingBookmark by remember { mutableStateOf<Bookmark?>(null) }
     var showBottomSheet by remember { mutableStateOf(false) }
     val scrollBehavior = GlassTopAppBarDefaults.defaultScrollBehavior()
-    val isMiuix = ThemeResolver.isMiuixEngine(LegadoTheme.composeEngine)
     val stickyGroup by remember(bookmarkGroups, collapsedGroups, listState) {
         derivedStateOf {
             val firstVisibleIndex = listState.firstVisibleItemIndex
@@ -309,7 +306,6 @@ fun AllBookmarkScreen(
                                             onToggle = {
                                                 onIntent(AllBookmarkIntent.ToggleGroupCollapse(headerKey))
                                             },
-                                            isMiuix = isMiuix
                                         )
 
                                         AnimatedVisibility(
@@ -397,11 +393,10 @@ private fun BookmarkGroupHeaderContent(
     subtitle: String?,
     isCollapsed: Boolean,
     onToggle: () -> Unit,
-    isMiuix: Boolean
 ) {
 
     val contentColor by animateColorAsState(
-        if (isMiuix) MiuixTheme.colorScheme.primary else MaterialTheme.colorScheme.primary,
+        MaterialTheme.colorScheme.primary,
         animationSpec = tween(durationMillis = 200, easing = FastOutSlowInEasing),
         label = "CardColor"
     )

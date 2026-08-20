@@ -8,12 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import io.legado.app.ui.theme.LegadoTheme
-import io.legado.app.ui.theme.ThemeResolver
 import io.legado.app.ui.widget.components.SplicedColumnDivider
 import io.legado.app.ui.widget.components.menuItem.RoundDropdownMenuItem
-import top.yukonga.miuix.kmp.basic.DropdownItem
-import top.yukonga.miuix.kmp.preference.OverlaySpinnerPreference
 
 @Composable
 fun DropdownListSettingItem(
@@ -25,38 +21,12 @@ fun DropdownListSettingItem(
     imageVector: ImageVector? = null,
     onValueChange: (String) -> Unit
 ) {
-    val composeEngine = LegadoTheme.composeEngine
     SplicedColumnDivider()
 
-    if (ThemeResolver.isMiuixEngine(composeEngine)) {
-        val selectedIndex = entryValues.indexOf(selectedValue).coerceAtLeast(0)
-        val spinnerItems = displayEntries.map { display ->
-            DropdownItem(title = display)
-        }
+    val currentEntry =
+        displayEntries.getOrNull(entryValues.indexOf(selectedValue)) ?: selectedValue
 
-        OverlaySpinnerPreference(
-            title = title,
-            summary = description,
-            items = spinnerItems,
-            selectedIndex = selectedIndex,
-            startAction = imageVector?.let { icon ->
-                {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null
-                    )
-                }
-            },
-            onSelectedIndexChange = { index ->
-                onValueChange(entryValues[index])
-            }
-        )
-    } else {
-
-        val currentEntry =
-            displayEntries.getOrNull(entryValues.indexOf(selectedValue)) ?: selectedValue
-
-        SettingItem(
+    SettingItem(
             title = title,
             description = description,
             option = currentEntry,
@@ -82,6 +52,5 @@ fun DropdownListSettingItem(
                     )
                 }
             }
-        )
-    }
+    )
 }

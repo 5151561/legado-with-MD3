@@ -100,9 +100,6 @@ class ThemeConfigViewModel(
                 transform = { it.copy(themeMode = intent.value) },
                 effect = ThemeConfigEffect.ApplyDayNight,
             )
-            is ThemeConfigIntent.SetComposeEngine -> updateAppShell {
-                it.copy(composeEngine = intent.value)
-            }
             is ThemeConfigIntent.SetPredictiveBackEnabled -> updateAppShell {
                 it.copy(predictiveBackEnabled = intent.enabled)
             }
@@ -131,7 +128,6 @@ class ThemeConfigViewModel(
             is ThemeConfigIntent.SetLabelVisibilityMode -> updateAppShell {
                 it.copy(labelVisibilityMode = intent.value)
             }
-            is ThemeConfigIntent.SetMiuixMonet -> setMiuixMonet(intent.enabled)
             is ThemeConfigIntent.SetDynamicColors -> setDynamicColors(intent.enabled)
             is ThemeConfigIntent.SetBlurEnabled -> setBlurEnabled(intent.enabled)
             is ThemeConfigIntent.SetMainDestinationVisible -> setMainDestinationVisible(intent)
@@ -247,21 +243,6 @@ class ThemeConfigViewModel(
                 it.copy(
                     appTheme = value,
                     containerOpacity = if (value == "13") 0 else it.containerOpacity,
-                )
-            }
-        }
-    }
-
-    private fun setMiuixMonet(enabled: Boolean) {
-        viewModelScope.launch {
-            themeSettingsGateway.update {
-                it.copy(
-                    useMiuixMonet = enabled,
-                    appTheme = if (enabled && it.appTheme != "0" && it.appTheme != "12") {
-                        "0"
-                    } else {
-                        it.appTheme
-                    },
                 )
             }
         }

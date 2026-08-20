@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.Density
 import com.materialkolor.PaletteStyle
 import io.legado.app.domain.model.settings.AppUiConfiguration
 import io.legado.app.domain.model.settings.customColors
-import top.yukonga.miuix.kmp.theme.ColorSchemeMode
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -44,9 +43,7 @@ private fun AppThemePreview(
         isDark = darkTheme,
         seedColor = Color.Unspecified,
         paletteStyle = PaletteStyle.TonalSpot,
-        themeMode = if (darkTheme) ColorSchemeMode.Dark else ColorSchemeMode.Light,
         useDynamicColor = false,
-        composeEngine = "material"
     )
     CompositionLocalProvider(
         LocalLegadoThemeColors provides themeColors,
@@ -77,7 +74,6 @@ private fun AppThemeActual(
     val paletteStyleValue = themeSettings.paletteStyle
     val materialVersion = themeSettings.materialVersion
     val customContrast = themeSettings.customContrast
-    val composeEngine = appShellSettings.composeEngine
     val customPrimary = themeSettings.customPrimary
     val customNightPrimary = themeSettings.customNightPrimary
     val appFontPath = themeSettings.appFontPath
@@ -145,40 +141,28 @@ private fun AppThemeActual(
     // 这样"跟随系统"和"深色"在系统深色下产生相等的 LegadoThemeMode，
     // staticCompositionLocalOf 不会触发全树重组
     val themeColors = remember(
-        colorScheme, effectiveDarkTheme, themeSeedColor, paletteStyleValue, composeEngine,
+        colorScheme, effectiveDarkTheme, themeSeedColor, paletteStyleValue,
         appThemeMode
     ) {
         val paletteStyle = ThemeResolver.resolvePaletteStyle(paletteStyleValue)
-        val colorSchemeMode =
-            if (effectiveDarkTheme) ColorSchemeMode.Dark else ColorSchemeMode.Light
         LegadoThemeMode(
             colorScheme = colorScheme,
             isDark = effectiveDarkTheme,
             seedColor = themeSeedColor,
             paletteStyle = paletteStyle,
-            themeMode = colorSchemeMode,
             useDynamicColor = appThemeMode == AppThemeMode.Dynamic,
-            composeEngine = composeEngine
         )
     }
 
-    // 7. 提供主题数据并根据引擎渲染
+    // 7. 提供 Material 3 主题数据
     CompositionLocalProvider(
         LocalLegadoThemeColors provides themeColors,
         LocalDensity provides appDensity,
     ) {
-        if (ThemeResolver.isMiuixEngine(themeColors.composeEngine)) {
-            MiuixThemeWrapper(
-                themeColors = themeColors,
-                customFontFamily = customFontFamily,
-                content = content
-            )
-        } else {
-            MaterialThemeWrapper(
-                themeColors = themeColors,
-                customFontFamily = customFontFamily,
-                content = content
-            )
-        }
+        MaterialThemeWrapper(
+            themeColors = themeColors,
+            customFontFamily = customFontFamily,
+            content = content
+        )
     }
 }

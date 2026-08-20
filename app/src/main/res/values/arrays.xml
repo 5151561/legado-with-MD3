@@ -259,11 +259,6 @@
 		<item>Material 3 Expressive (2025)</item>
 	</string-array>
 
-	<string-array name="composeEngine">
-        <item>Material Design</item>
-        <item>Miuix</item>
-    </string-array>
-
     <string-array name="customMode">
 		<item>Global</item>
 		<item>Accent</item>

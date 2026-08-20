@@ -89,7 +89,6 @@ import io.legado.app.ui.theme.LocalHazeState
 import io.legado.app.ui.theme.LocalLegadoThemeColors
 import io.legado.app.ui.theme.ProvideColorSchemeOverride
 import io.legado.app.ui.theme.ThemeOverrideState
-import io.legado.app.ui.theme.ThemeResolver
 import io.legado.app.ui.theme.animateColorSchemeAsState
 import io.legado.app.ui.theme.fadingEdge
 import io.legado.app.ui.theme.rememberImageSeedColor
@@ -118,20 +117,15 @@ import io.legado.app.ui.widget.components.text.AppText
 import io.legado.app.ui.widget.components.topbar.GlassTopAppBarDefaults
 import io.legado.app.ui.widget.components.topbar.GlassTopAppBarScrollBehavior
 import io.legado.app.ui.widget.components.topbar.M3GlassScrollBehavior
-import io.legado.app.ui.widget.components.topbar.MiuixGlassScrollBehavior
 import io.legado.app.ui.widget.components.topbar.TopBarActionButton
 import io.legado.app.ui.widget.components.topbar.TopBarActionsRow
 import io.legado.app.ui.widget.components.topbar.TopBarNavigationButton
-import io.legado.app.ui.widget.components.topbar.miuixTopBarActionsEndPadding
-import io.legado.app.ui.widget.components.topbar.miuixTopBarSlotPadding
 import io.legado.app.ui.widget.components.variable.VariableEditorSheet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
 import org.koin.compose.koinInject
-import top.yukonga.miuix.kmp.basic.MiuixScrollBehavior
 import io.legado.app.model.BookCover as BookCoverModel
-import top.yukonga.miuix.kmp.basic.TopAppBar as MiuixTopAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -228,12 +222,7 @@ private fun BookInfoScreenContent(
     usesDefaultCover: Boolean,
     onNetworkCoverLoadError: (String?) -> Unit,
 ) {
-    val isMiuix = ThemeResolver.isMiuixEngine(LegadoTheme.composeEngine)
-    val scrollBehavior = if (isMiuix) {
-        MiuixGlassScrollBehavior(MiuixScrollBehavior())
-    } else {
-        M3GlassScrollBehavior(TopAppBarDefaults.exitUntilCollapsedScrollBehavior())
-    }
+    val scrollBehavior = M3GlassScrollBehavior(TopAppBarDefaults.exitUntilCollapsedScrollBehavior())
     val listState = rememberLazyListState()
 
     AppScaffold(
@@ -502,12 +491,7 @@ private fun BookInfoTransparentTopAppBar(
     scrollBehavior: GlassTopAppBarScrollBehavior,
 ) {
     val hazeState = LocalHazeState.current
-    val isMiuix = ThemeResolver.isMiuixEngine(LegadoTheme.composeEngine)
-    val collapsedColor = if (isMiuix) {
-        GlassTopAppBarDefaults.getMiuixAppBarColor()
-    } else {
-        GlassTopAppBarDefaults.scrolledContainerColor()
-    }
+    val collapsedColor = GlassTopAppBarDefaults.scrolledContainerColor()
     val isAtTop = scrollBehavior.collapsedFraction <= 0.001f
     val resolvedColor = if (isAtTop) Color.Transparent else collapsedColor
     val topBarColors = TopAppBarDefaults.topAppBarColors(
@@ -515,33 +499,7 @@ private fun BookInfoTransparentTopAppBar(
         scrolledContainerColor = resolvedColor,
     )
 
-    if (isMiuix) {
-        MiuixTopAppBar(
-            modifier = hazeState?.let { Modifier.responsiveHazeEffectFixedStyle(it) } ?: Modifier,
-            title = "",
-            subtitle = "",
-            navigationIcon = {
-                TopBarNavigationButton(onClick = onBackPressed)
-            },
-            actions = {
-                TopBarActionsRow(
-                    modifier = Modifier.padding(
-                        end = miuixTopBarActionsEndPadding()
-                    )
-                ) {
-                    BookInfoTopBarActions(
-                        state = state,
-                        onMenuAction = onMenuAction,
-                    )
-                }
-            },
-            color = resolvedColor,
-            navigationIconPadding = miuixTopBarSlotPadding(),
-            actionIconPadding = miuixTopBarSlotPadding(),
-            scrollBehavior = (scrollBehavior as? MiuixGlassScrollBehavior)?.miuixBehavior,
-        )
-    } else {
-        MediumFlexibleTopAppBar(
+    MediumFlexibleTopAppBar(
             modifier = hazeState?.let { Modifier.responsiveHazeEffectFixedStyle(it) } ?: Modifier,
             title = { Text(text = "", maxLines = 1) },
             navigationIcon = {
@@ -559,8 +517,7 @@ private fun BookInfoTransparentTopAppBar(
             },
             scrollBehavior = (scrollBehavior as? M3GlassScrollBehavior)?.m3Behavior,
             colors = topBarColors,
-        )
-    }
+    )
 }
 
 @Composable

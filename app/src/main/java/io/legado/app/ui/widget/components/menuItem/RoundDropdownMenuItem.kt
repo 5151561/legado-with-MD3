@@ -1,9 +1,6 @@
 package io.legado.app.ui.widget.components.menuItem
 
-import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -27,18 +24,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import io.legado.app.ui.theme.LegadoTheme
-import io.legado.app.ui.theme.ThemeResolver
 import io.legado.app.ui.widget.components.icon.AppIcon
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.basic.Check
-import top.yukonga.miuix.kmp.theme.MiuixTheme
-import top.yukonga.miuix.kmp.basic.Text as MiuixText
 
 @Composable
 fun RoundDropdownMenuItem(
@@ -53,65 +43,10 @@ fun RoundDropdownMenuItem(
     contentPadding: PaddingValues = MenuDefaults.DropdownMenuItemContentPadding,
     interactionSource: MutableInteractionSource? = null,
 ) {
-    val isMiuix = ThemeResolver.isMiuixEngine(LegadoTheme.composeEngine)
     val interaction = interactionSource ?: remember { MutableInteractionSource() }
     val hasCustomContentColor = color != Color.Unspecified
 
-    if (isMiuix) {
-        val legadoColorScheme = LegadoTheme.colorScheme
-        val textColor = if (isSelected) legadoColorScheme.primary else legadoColorScheme.onSurface
-        val backgroundColor = legadoColorScheme.surfaceContainer
-        val checkColor = if (isSelected) legadoColorScheme.primary else Color.Transparent
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = modifier
-                .fillMaxWidth()
-                .drawBehind { drawRect(backgroundColor) }
-                .clickable(
-                    interactionSource = interaction,
-                    indication = LocalIndication.current,
-                    enabled = enabled,
-                    onClick = onClick
-                )
-                .padding(horizontal = 20.dp, vertical = 12.dp)
-        ) {
-            CompositionLocalProvider(LocalContentColor provides textColor) {
-                if (leadingIcon != null) {
-                    leadingIcon()
-                    Spacer(Modifier.width(12.dp))
-                }
-
-                Box(
-                    modifier = Modifier.weight(1f),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    MiuixText(
-                        modifier = Modifier.widthIn(max = 200.dp),
-                        text = text,
-                        fontSize = MiuixTheme.textStyles.body1.fontSize,
-                        fontWeight = FontWeight.Medium,
-                        color = textColor,
-                    )
-                }
-
-                if (trailingIcon != null) {
-                    Spacer(Modifier.width(12.dp))
-                    trailingIcon()
-                } else {
-                    Spacer(Modifier.width(12.dp))
-                    AppIcon(
-                        imageVector = MiuixIcons.Basic.Check,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                        tint = checkColor
-                    )
-                }
-            }
-        }
-    } else {
-        val legadoColorScheme = LegadoTheme.colorScheme
+    val legadoColorScheme = LegadoTheme.colorScheme
         val selectedContentColor = legadoColorScheme.primary
         val defaultContentColor = legadoColorScheme.onSurface
         val contentColor = if (enabled) {
@@ -178,7 +113,6 @@ fun RoundDropdownMenuItem(
                 }
             }
         }
-    }
 }
 
 @Composable

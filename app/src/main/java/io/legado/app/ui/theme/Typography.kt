@@ -4,58 +4,6 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
-import top.yukonga.miuix.kmp.theme.TextStyles
-
-
-/**
- * 将 Miuix 的 TextStyles 语义化映射为 Material 3 的 Typography
- */
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-fun miuixStylesToM3Typography(miuixStyles: TextStyles): Typography {
-    return Typography(
-        displayLarge = miuixStyles.title1,   // 32.sp
-        displayMedium = miuixStyles.title2,  // 24.sp
-        displaySmall = miuixStyles.title3,   // 20.sp
-
-        headlineLarge = miuixStyles.title1,  // 32.sp
-        headlineMedium = miuixStyles.title2, // 24.sp
-        headlineSmall = miuixStyles.title3,  // 20.sp
-
-        titleLarge = miuixStyles.title4,     // 18.sp
-        titleMedium = miuixStyles.headline2, // 16.sp
-        titleSmall = miuixStyles.subtitle,   // 14.sp, Bold
-
-        bodyLarge = miuixStyles.paragraph,   // 17.sp
-        bodyMedium = miuixStyles.body1,      // 16.sp
-        bodySmall = miuixStyles.body2.copy(fontSize = 12.sp), // 12.sp
-
-        labelLarge = miuixStyles.footnote1.copy(fontSize = 14.sp), // 14.sp
-        labelMedium = miuixStyles.footnote1, // 13.sp
-        labelSmall = miuixStyles.footnote2,  // 11.sp
-    )
-}
-
-fun TextStyles.withFont(fontFamily: FontFamily?): TextStyles {
-    if (fontFamily == null) return this
-    return copy(
-        main = main.copy(fontFamily = fontFamily),
-        paragraph = paragraph.copy(fontFamily = fontFamily),
-        body1 = body1.copy(fontFamily = fontFamily),
-        body2 = body2.copy(fontFamily = fontFamily),
-        button = button.copy(fontFamily = fontFamily),
-        footnote1 = footnote1.copy(fontFamily = fontFamily),
-        footnote2 = footnote2.copy(fontFamily = fontFamily),
-        headline1 = headline1.copy(fontFamily = fontFamily),
-        headline2 = headline2.copy(fontFamily = fontFamily),
-        subtitle = subtitle.copy(fontFamily = fontFamily),
-        title1 = title1.copy(fontFamily = fontFamily),
-        title2 = title2.copy(fontFamily = fontFamily),
-        title3 = title3.copy(fontFamily = fontFamily),
-        title4 = title4.copy(fontFamily = fontFamily),
-    )
-}
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun Typography.toLegadoTypography(): LegadoTypography {

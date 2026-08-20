@@ -30,7 +30,6 @@ fun ExploreKindItem(
     isClickable: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    isMiuix: Boolean,
     backgroundColor: androidx.compose.ui.graphics.Color = LegadoTheme.colorScheme.surfaceContainer,
     displayText: String = kind.title,
     isSelected: Boolean = false,

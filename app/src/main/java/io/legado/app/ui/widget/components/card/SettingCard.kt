@@ -10,11 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.legado.app.ui.theme.LegadoTheme
-import io.legado.app.ui.theme.ThemeResolver
-import top.yukonga.miuix.kmp.basic.BasicComponent
-
-// import top.yukonga.miuix.kmp.basic.theme.LocalColors as MiuixLocalColors
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -27,28 +22,19 @@ fun SettingCard(
     border: BorderStroke? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val composeEngine = LegadoTheme.composeEngine
-    if (ThemeResolver.isMiuixEngine(composeEngine)) {
-        BasicComponent(
-            modifier = modifier,
-            onClick = onClick,
-            content = content
-        )
-    } else {
-        val baseColors = colors ?: CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-        )
+    val baseColors = colors ?: CardDefaults.cardColors(
+        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+    )
 
-        GlassCard(
-            modifier = modifier,
-            onClick = onClick,
-            cornerRadius = cornerRadius,
-            containerColor = baseColors.containerColor,
-            contentColor = baseColors.contentColor,
-            elevation = elevation,
-            border = border,
-            content = content,
-        )
-    }
+    GlassCard(
+        modifier = modifier,
+        onClick = onClick,
+        cornerRadius = cornerRadius,
+        containerColor = baseColors.containerColor,
+        contentColor = baseColors.contentColor,
+        elevation = elevation,
+        border = border,
+        content = content,
+    )
 }

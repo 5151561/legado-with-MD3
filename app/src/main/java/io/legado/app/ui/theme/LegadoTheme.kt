@@ -11,16 +11,13 @@ import androidx.compose.ui.text.TextStyle
 import com.kyant.backdrop.Backdrop
 import com.materialkolor.PaletteStyle
 import dev.chrisbanes.haze.HazeState
-import top.yukonga.miuix.kmp.theme.ColorSchemeMode
 
 data class LegadoThemeMode(
     val colorScheme: ColorScheme,
     val isDark: Boolean,
     val seedColor: Color,
     val paletteStyle: PaletteStyle,
-    val themeMode: ColorSchemeMode,
     val useDynamicColor: Boolean,
-    val composeEngine: String,
 )
 
 data class LegadoColorScheme(
@@ -128,9 +125,7 @@ val LocalLegadoThemeColors = staticCompositionLocalOf {
         isDark = false,
         seedColor = Color.Unspecified,
         paletteStyle = PaletteStyle.TonalSpot,
-        themeMode = ColorSchemeMode.System,
         useDynamicColor = true,
-        composeEngine = "material"
     )
 }
 
@@ -160,16 +155,6 @@ object LegadoTheme {
         @Composable
         @ReadOnlyComposable
         get() = LocalLegadoThemeColors.current.paletteStyle
-
-    val themeMode: ColorSchemeMode
-        @Composable
-        @ReadOnlyComposable
-        get() = LocalLegadoThemeColors.current.themeMode
-
-    val composeEngine: String
-        @Composable
-        @ReadOnlyComposable
-        get() = LocalLegadoThemeColors.current.composeEngine
 
     val useDynamicColor: Boolean
         @Composable

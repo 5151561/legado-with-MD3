@@ -77,7 +77,6 @@ import io.legado.app.domain.model.PlaybackTimer
 import io.legado.app.model.AudioPlay
 import io.legado.app.ui.theme.LegadoTheme
 import io.legado.app.ui.theme.hazeStyle.HazeLegado
-import io.legado.app.ui.util.rememberBlurBackdrop
 import io.legado.app.ui.widget.components.AppScaffold
 import io.legado.app.ui.widget.components.button.series.MediumPlainButton
 import io.legado.app.ui.widget.components.button.series.MediumTonalButton
@@ -97,7 +96,6 @@ import io.legado.app.ui.widget.components.player.PlayerTocPage
 import io.legado.app.ui.widget.components.player.playerBgModeLabel
 import io.legado.app.ui.widget.components.text.AppText
 import kotlinx.coroutines.launch
-import top.yukonga.miuix.kmp.blur.layerBackdrop
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -123,8 +121,6 @@ fun AudioPlayScreenContent(
     val pagerHazeState = remember { HazeState() }
     val hazeEnabled =
         state.bgMode != ReadAloudBgMode.Solid && state.bgMode != ReadAloudBgMode.Transparent
-    val textBackdrop = rememberBlurBackdrop()
-    val flowingLightActive = state.bgMode == ReadAloudBgMode.FlowingLight
     val overlayHazeStyle = HazeLegado.ultraThinPlus(
         containerColor = LegadoTheme.colorScheme.surface,
     )
@@ -495,11 +491,6 @@ fun AudioPlayScreenContent(
                 path = state.coverPath,
                 sourceOrigin = state.sourceOrigin,
                 bgMode = state.bgMode,
-                modifier = if (flowingLightActive && textBackdrop != null) {
-                    Modifier.layerBackdrop(textBackdrop)
-                } else {
-                    Modifier
-                },
             )
             VerticalPager(
                 state = verticalPagerState,
