@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.CircularProgressIndicator
+import io.legado.app.core.designsystem.component.AppCircularProgressIndicator as DesignSystemCircularProgressIndicator
 
 @Composable
 fun AppCircularProgressIndicator(
@@ -12,16 +12,9 @@ fun AppCircularProgressIndicator(
     progress: Float? = null,
     strokeWidth: Dp = 4.dp,
 ) {
-    if (progress != null) {
-        CircularProgressIndicator(
-            progress = { progress },
-            modifier = modifier,
-            strokeWidth = strokeWidth,
-        )
-    } else {
-        CircularProgressIndicator(
-            modifier = modifier,
-            strokeWidth = strokeWidth,
-        )
-    }
+    DesignSystemCircularProgressIndicator(
+        modifier = modifier,
+        progress = progress,
+        strokeWidth = strokeWidth,
+    )
 }

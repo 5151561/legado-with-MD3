@@ -45,15 +45,11 @@ private fun AppThemePreview(
         paletteStyle = PaletteStyle.TonalSpot,
         useDynamicColor = false,
     )
-    CompositionLocalProvider(
-        LocalLegadoThemeColors provides themeColors,
-    ) {
-        MaterialThemeWrapper(
-            themeColors = themeColors,
-            customFontFamily = null,
-            content = content
-        )
-    }
+    MaterialThemeWrapper(
+        themeColors = themeColors,
+        customFontFamily = null,
+        content = content
+    )
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -156,7 +152,6 @@ private fun AppThemeActual(
 
     // 7. 提供 Material 3 主题数据
     CompositionLocalProvider(
-        LocalLegadoThemeColors provides themeColors,
         LocalDensity provides appDensity,
     ) {
         MaterialThemeWrapper(

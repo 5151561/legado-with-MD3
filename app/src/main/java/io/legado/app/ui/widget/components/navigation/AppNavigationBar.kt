@@ -1,6 +1,5 @@
 package io.legado.app.ui.widget.components.navigation
 
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.ShortNavigationBar
 import androidx.compose.material3.ShortNavigationBarItem
@@ -19,7 +18,7 @@ fun AppNavigationBar(
     modifier: Modifier = Modifier,
     showLabel: Boolean = true,
     alwaysShowLabel: Boolean = true,
-    content: @Composable RowScope.() -> Unit
+    content: @Composable () -> Unit
 ) {
     val configuration = LocalAppUiConfiguration.current
     val themeSettings = configuration.theme
@@ -36,12 +35,12 @@ fun AppNavigationBar(
     ShortNavigationBar(
         modifier = modifier,
         containerColor = baseColor,
-        content = { ShortNavigationBarRowScope.content() }
+        content = { content() }
     )
 }
 
 @Composable
-fun RowScope.AppNavigationBarItem(
+fun AppNavigationBarItem(
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,

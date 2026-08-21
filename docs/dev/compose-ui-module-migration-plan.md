@@ -1,6 +1,6 @@
 # Compose UI 重做与业务模块化迁移计划
 
-> 状态：Phase 0 已完成；Phase 1 尚未开始
+> 状态：Phase 0、Phase 1 已完成；Phase 2 尚未开始
 > 日期：2026-08-21
 > 范围：Android 端 Compose UI 的重做，以及为它提供稳定边界的业务模块化。**不包含** `modules/web/` Vue 前端重做，也不把内嵌 Ktor 服务改造成独立云端后端。
 
@@ -196,6 +196,16 @@ feature/<name>/ui/
 回滚：仅文档、测试和边界盘点，不改变生产调用链。
 
 ### Phase 1：建立最小 Design System、导航装配接缝与跨模块护栏
+
+实施产物：新增 `:core:designsystem` 与 `:core:navigation`。前者持有 Legado 主题消费
+契约、CompositionLocal、语义 token，以及 Scaffold、Top Bar、反馈态、列表项、确认对话框、
+Modal Bottom Sheet、按钮、图标和进度组件；`:app` 的旧 `ui/theme` 与通用组件入口继续转发到
+同一组 token/组件，动态色、用户偏好、字体与背景图解析仍由 app shell 注入。About 页面已直接
+消费 Design System 进度组件。
+
+根导航新增非 sealed `AppRoute` 协议；既有 `MainRoute` 接入该协议，`MainNavigator` 对未显式
+注册策略的 route 直接报错，不再静默忽略。架构任务现扫描 `:app`、`core:*`、`feature:*` 的
+全部 Kotlin source set 和模块构建依赖，并通过非法 feature UI 依赖夹具验证拒绝规则。
 
 **目的**：让新 Compose 页面不再继续向 `ui/widget` 堆放业务组件，同时不触发全量视觉重构。
 

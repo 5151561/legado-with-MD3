@@ -5,6 +5,17 @@ abstract class VerifyConfigArchitectureTask : DefaultTask() {
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val sourceRoot: DirectoryProperty
 
+    @get:Internal
+    abstract val projectRoot: DirectoryProperty
+
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val moduleSourceFiles: ConfigurableFileCollection
+
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val moduleBuildFiles: ConfigurableFileCollection
+
     @get:Input
     abstract val legacyPreferenceCallBaseline: MapProperty<String, Int>
 
@@ -17,6 +28,7 @@ abstract class VerifyConfigArchitectureTask : DefaultTask() {
     @TaskAction
     fun verify() {
         val sourceRootDir = sourceRoot.get().asFile
+        val projectRootDir = projectRoot.get().asFile
         val kotlinFiles = sourceRootDir.walkTopDown()
             .filter { it.isFile && it.extension == "kt" }
             .toList()
@@ -24,6 +36,67 @@ abstract class VerifyConfigArchitectureTask : DefaultTask() {
         val daoInjectionBaseline = legacyDaoInjectionBaseline.get()
         val uiDaoAccessBaseline = legacyUiDaoAccessBaseline.get()
         val violations = mutableListOf<String>()
+
+        moduleSourceFiles.files
+            .asSequence()
+            .filter { it.isFile && it.extension == "kt" }
+            .forEach { file ->
+                val relativePath = file.relativeTo(projectRootDir).invariantSeparatorsPath
+                val modulePath = relativePath.substringBefore("/src/")
+                    .takeIf { it != relativePath }
+                    ?.let { ":" + it.replace('/', ':') }
+                    ?: return@forEach
+                val text = file.readText()
+                val imports = Regex("""^import\s+([^\s]+)""", RegexOption.MULTILINE)
+                    .findAll(text)
+                    .map { it.groupValues[1] }
+                    .toList()
+
+                if (modulePath == ":core:designsystem") {
+                    imports.filter {
+                        it.startsWith("io.legado.app.data.") ||
+                            it.startsWith("io.legado.app.domain.") ||
+                            it.startsWith("io.legado.app.model.") ||
+                            it.startsWith("io.legado.app.feature.") ||
+                            it.startsWith("io.legado.app.ui.")
+                    }.forEach { forbiddenImport ->
+                        violations += "$relativePath: :core:designsystem 禁止导入 $forbiddenImport"
+                    }
+                }
+
+                if (modulePath.startsWith(":core:")) {
+                    imports.filter { it.startsWith("io.legado.app.feature.") }
+                        .forEach { forbiddenImport ->
+                            violations += "$relativePath: core 模块禁止依赖 feature：$forbiddenImport"
+                        }
+                }
+
+                if (modulePath.startsWith(":feature:") && modulePath.endsWith(":ui")) {
+                    imports.filter {
+                        it.startsWith("io.legado.app.data.dao.") ||
+                            it.startsWith("io.legado.app.data.entities.") ||
+                            ".impl." in it ||
+                            it == "io.legado.app.data.appDb"
+                    }.forEach { forbiddenImport ->
+                        violations += "$relativePath: feature UI 禁止导入 $forbiddenImport"
+                    }
+                    if (Regex("""\bappDb\s*\.""").containsMatchIn(text)) {
+                        violations += "$relativePath: feature UI 禁止直接访问 appDb"
+                    }
+                }
+            }
+
+        moduleBuildFiles.files
+            .asSequence()
+            .filter { it.isFile }
+            .forEach { buildFile ->
+                val relativePath = buildFile.relativeTo(projectRootDir).invariantSeparatorsPath
+                val sourceModule = ":" + relativePath.removeSuffix("/build.gradle.kts")
+                    .removeSuffix("/build.gradle")
+                    .replace('/', ':')
+                findForbiddenModuleDependencies(sourceModule, buildFile.readText())
+                    .forEach { violation -> violations += "$relativePath: $violation" }
+            }
         val forbiddenConfigImport = Regex(
             """^import io\.legado\.app\.(?:help\.config\.AppConfig|ui\.config\..*Config)$""",
             RegexOption.MULTILINE,
@@ -186,6 +259,61 @@ abstract class VerifyConfigArchitectureTask : DefaultTask() {
             violations.joinToString(prefix = "配置架构护栏失败:\n", separator = "\n")
         }
     }
+
+    companion object {
+        fun findForbiddenModuleDependencies(
+            sourceModule: String,
+            buildScript: String,
+        ): List<String> {
+            val targets = Regex("""project\(\s*[\"'](:[^\"']+)[\"']\s*\)""")
+                .findAll(buildScript)
+                .map { it.groupValues[1] }
+                .toSet()
+
+            return buildList {
+                targets.forEach { target ->
+                    when {
+                        sourceModule.startsWith(":feature:") && sourceModule.endsWith(":ui") &&
+                            (target == ":core:database" ||
+                                (target.startsWith(":feature:") && target.endsWith(":impl"))) -> {
+                            add("$sourceModule 禁止依赖 $target")
+                        }
+
+                        sourceModule.startsWith(":feature:") && sourceModule.endsWith(":impl") &&
+                            target == ":app" -> {
+                            add("$sourceModule 禁止依赖 :app")
+                        }
+
+                        sourceModule.startsWith(":core:") && target.startsWith(":feature:") -> {
+                            add("$sourceModule 禁止依赖 $target")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@DisableCachingByDefault(because = "架构护栏夹具没有输出文件")
+abstract class VerifyArchitectureGuardFixtureTask : DefaultTask() {
+
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val fixture: RegularFileProperty
+
+    @TaskAction
+    fun verifyFixture() {
+        val violations = VerifyConfigArchitectureTask.findForbiddenModuleDependencies(
+            sourceModule = ":feature:fixture:ui",
+            buildScript = fixture.get().asFile.readText(),
+        )
+        check(violations.toSet() == setOf(
+            ":feature:fixture:ui 禁止依赖 :core:database",
+            ":feature:fixture:ui 禁止依赖 :feature:bookshelf:impl",
+        )) {
+            "架构护栏夹具未被正确拒绝：$violations"
+        }
+    }
 }
 
 buildscript {
@@ -219,6 +347,16 @@ val verifyConfigArchitecture = tasks.register<VerifyConfigArchitectureTask>(
     group = "verification"
     description = "禁止配置架构回退、UI 层(ViewModel 及其它)新增 DAO 直连和新增旧偏好调用"
     sourceRoot.set(layout.projectDirectory.dir("app/src/main/java"))
+    projectRoot.set(layout.projectDirectory)
+    moduleSourceFiles.from(
+        fileTree("app") { include("src/**/*.kt") },
+        fileTree("core") { include("*/src/**/*.kt") },
+        fileTree("feature") { include("**/src/**/*.kt") },
+    )
+    moduleBuildFiles.from(
+        fileTree("core") { include("*/build.gradle", "*/build.gradle.kts") },
+        fileTree("feature") { include("**/build.gradle", "**/build.gradle.kts") },
+    )
     legacyPreferenceCallBaseline.set(
         mapOf(
             "io/legado/app/App.kt" to 3,
@@ -280,6 +418,18 @@ val verifyConfigArchitecture = tasks.register<VerifyConfigArchitectureTask>(
             "io/legado/app/ui/widget/keyboard/KeyboardToolPop.kt" to 1,
         )
     )
+}
+
+val verifyArchitectureGuardFixture = tasks.register<VerifyArchitectureGuardFixtureTask>(
+    "verifyArchitectureGuardFixture"
+) {
+    group = "verification"
+    description = "用非法 feature UI 依赖夹具验证模块依赖护栏"
+    fixture.set(layout.projectDirectory.file("tools/architecture-fixtures/feature-ui.gradle.kts"))
+}
+
+verifyConfigArchitecture.configure {
+    dependsOn(verifyArchitectureGuardFixture)
 }
 
 subprojects {

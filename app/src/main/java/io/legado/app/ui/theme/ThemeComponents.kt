@@ -10,7 +10,6 @@ import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import io.legado.app.core.designsystem.theme.ProvideLegadoTheme
 
 @Composable
 fun rememberCustomFont(fontPath: String?): FontFamily? {
@@ -115,9 +115,10 @@ fun MaterialThemeWrapper(
             )
         }
 
-        CompositionLocalProvider(
-            LocalLegadoTypography provides legadoTypography,
-            LocalLegadoColorScheme provides semanticColors
+        ProvideLegadoTheme(
+            mode = themeColors,
+            colorScheme = semanticColors,
+            typography = legadoTypography,
         ) {
             AppBackground(darkTheme = darkTheme) { content() }
         }

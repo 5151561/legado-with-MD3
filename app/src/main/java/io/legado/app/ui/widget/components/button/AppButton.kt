@@ -1,11 +1,11 @@
 package io.legado.app.ui.widget.components.button
 
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import io.legado.app.ui.theme.LegadoTheme
+import io.legado.app.core.designsystem.component.PrimaryButton as DesignSystemPrimaryButton
+import io.legado.app.core.designsystem.component.SecondaryButton as DesignSystemSecondaryButton
 
 @Composable
 fun PrimaryButton(
@@ -14,7 +14,7 @@ fun PrimaryButton(
     enabled: Boolean = true,
     text: String
 ) {
-    Button(
+    DesignSystemPrimaryButton(
         onClick = onClick,
         modifier = modifier,
         enabled = enabled,
@@ -30,7 +30,7 @@ fun SecondaryButton(
     enabled: Boolean = true,
     text: String
 ) {
-    OutlinedButton(
+    DesignSystemSecondaryButton(
         onClick = onClick,
         modifier = modifier,
         enabled = enabled,

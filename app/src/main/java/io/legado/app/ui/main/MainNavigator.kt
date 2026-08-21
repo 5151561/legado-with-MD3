@@ -293,6 +293,11 @@ object MainNavigator {
                     backStack.add(route)
                 }
             }
+
+            else -> error(
+                "未注册的根导航 route：${route::class.qualifiedName}. " +
+                    "请在 MainNavigator 中显式声明入栈与去重策略。"
+            )
         }
     }
 

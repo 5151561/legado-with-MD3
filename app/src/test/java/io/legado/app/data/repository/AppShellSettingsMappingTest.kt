@@ -8,7 +8,7 @@ import org.junit.Test
 class AppShellSettingsMappingTest {
 
     @Test
-    fun `AppShell 28 键写读映射逐字段对应`() {
+    fun `AppShell 25 键写读映射逐字段对应`() {
         appShellMappingSamples().forEach { expected ->
             assertEquals(expected.expectedPrefMap(), expected.toPrefMap())
             assertEquals(
@@ -71,8 +71,6 @@ private fun appShellMappingSamples(): List<AppShellSettings> {
         base.copy(swipeAnimation = false),
         base.copy(predictiveBackEnabled = false),
         base.copy(showBottomView = false),
-        base.copy(useFloatingBottomBar = true),
-        base.copy(useFloatingBottomBarLiquidGlass = true),
         base.copy(navExtended = true),
     )
 }
@@ -87,8 +85,6 @@ private fun AppShellSettings.expectedPrefMap(): Map<String, Any?> = mapOf(
     PreferKey.swipeAnimation to swipeAnimation,
     PreferKey.isPredictiveBackEnabled to predictiveBackEnabled,
     PreferKey.showBottomView to showBottomView,
-    PreferKey.useFloatingBottomBar to useFloatingBottomBar,
-    PreferKey.useFloatingBottomBarLiquidGlass to useFloatingBottomBarLiquidGlass,
     PreferKey.tabletInterface to tabletInterface,
     PreferKey.labelVisibilityMode to labelVisibilityMode,
     PreferKey.defaultHomePage to defaultHomePage,

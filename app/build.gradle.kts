@@ -187,6 +187,8 @@ ksp {
 }
 
 dependencies {
+    implementation(project(":core:designsystem"))
+    implementation(project(":core:navigation"))
     implementation(libs.androidx.profileinstaller)
     "baselineProfile"(project(":baselineprofile"))
     coreLibraryDesugaring(libs.desugar)

@@ -1,11 +1,11 @@
 package io.legado.app.ui.main
 
-import androidx.navigation3.runtime.NavKey
+import io.legado.app.core.navigation.AppRoute
 import io.legado.app.ui.login.SourceLoginType
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed interface MainRoute : NavKey
+sealed interface MainRoute : AppRoute
 
 @Serializable
 data object MainRouteHome : MainRoute
