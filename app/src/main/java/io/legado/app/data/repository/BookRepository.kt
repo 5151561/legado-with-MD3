@@ -7,6 +7,8 @@ import io.legado.app.data.dao.GroupBookCount
 import io.legado.app.data.entities.Book
 import io.legado.app.data.entities.BookChapter
 import io.legado.app.data.model.BookshelfBookRecord
+import io.legado.app.help.book.applyTagGroupRulesForBook
+import io.legado.app.model.ReadBook
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -16,6 +18,7 @@ class BookRepository(
     private val bookChapterDao: BookChapterDao,
     private val appDb: AppDatabase,
 ) {
+    private val entityPersistence = BookEntityPersistence(bookDao, bookChapterDao)
     fun flowBook(bookUrl: String): Flow<Book?> {
         return bookDao.flowGetBook(bookUrl)
     }
@@ -130,6 +133,16 @@ class BookRepository(
         }
     }
 
+    /**
+     * Book 的唯一兼容保存入口。保持既有标签规则与 insert-or-update 语义，避免 Room entity
+     * 主动取得全局数据库实例。正式 feature impl 建立后由同一契约继续约束。
+     */
+    suspend fun save(book: Book) {
+        withContext(Dispatchers.IO) {
+            entityPersistence.save(book, ::applyTagGroupRulesForBook)
+        }
+    }
+
     suspend fun insertChapters(vararg chapters: BookChapter) {
         withContext(Dispatchers.IO) {
             bookChapterDao.insert(*chapters)
@@ -166,6 +179,16 @@ class BookRepository(
         }
     }
 
+    /** 保持旧 Book.delete() 的会话清理、章节删除、书籍删除顺序。 */
+    suspend fun deleteBook(book: Book) {
+        withContext(Dispatchers.IO) {
+            if (ReadBook.isCurrentBook(book.bookUrl)) {
+                ReadBook.clearCurrentBook()
+            }
+            entityPersistence.delete(book)
+        }
+    }
+
     suspend fun deleteChaptersByBook(bookUrl: String) {
         withContext(Dispatchers.IO) {
             bookChapterDao.delByBook(bookUrl)
@@ -182,4 +205,24 @@ class BookRepository(
         }
     }
 
+}
+
+/** Package-visible persistence contract used by repository tests without constructing Room. */
+internal class BookEntityPersistence(
+    private val bookDao: BookDao,
+    private val bookChapterDao: BookChapterDao,
+) {
+    fun save(book: Book, beforeSave: (Book) -> Unit) {
+        beforeSave(book)
+        if (bookDao.has(book.bookUrl)) {
+            bookDao.update(book)
+        } else {
+            bookDao.insert(book)
+        }
+    }
+
+    fun delete(book: Book) {
+        bookChapterDao.delByBook(book.bookUrl)
+        bookDao.delete(book)
+    }
 }

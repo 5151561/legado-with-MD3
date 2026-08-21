@@ -9,6 +9,7 @@ import io.legado.app.constant.EventBus
 import io.legado.app.constant.IntentAction
 import io.legado.app.constant.Status
 import io.legado.app.data.appDb
+import io.legado.app.data.compat.LegacyBookPersistence
 import io.legado.app.data.entities.Book
 import io.legado.app.data.entities.BookChapter
 import io.legado.app.data.entities.BookSource
@@ -282,7 +283,7 @@ object AudioPlay : CoroutineScope by MainScope() {
         book?.let {
             it.setAudioGain(gain)
             // 增益需随书持久化，否则重启/重新拉取书籍后丢失
-            Coroutine.async { it.save() }
+            Coroutine.async { LegacyBookPersistence.save(it) }
         }
         if (AudioPlayService.isRun) {
             context.startService<AudioPlayService> {

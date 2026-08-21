@@ -1,5 +1,7 @@
 package io.legado.app.help.source
 
+import io.legado.app.data.compat.*
+
 import io.legado.app.data.entities.RssSource
 import io.legado.app.utils.ACache
 import io.legado.app.utils.MD5Utils

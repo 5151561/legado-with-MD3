@@ -26,6 +26,8 @@ class HomeDashboardRepository(
     override fun observeRecentBooks(limit: Int): Flow<List<HomeReadingBook>> =
         readRecordDao.observeRecentHomeBooks(limit).map { rows ->
             rows.map { row ->
+                val totalChapterNum = row.totalChapterNum
+                val chapterIndex = row.chapterIndex
                 HomeReadingBook(
                     bookUrl = row.bookUrl,
                     name = row.recordName,
@@ -38,13 +40,13 @@ class HomeDashboardRepository(
                     },
                     chapterTitle = row.chapterTitle,
                     chapterProgress = if (
-                        row.totalChapterNum != null &&
-                        row.totalChapterNum > 0 &&
-                        row.chapterIndex != null
+                        totalChapterNum != null &&
+                        totalChapterNum > 0 &&
+                        chapterIndex != null
                     ) {
-                        (row.chapterIndex + 1)
-                            .coerceIn(0, row.totalChapterNum)
-                            .toFloat() / row.totalChapterNum
+                        (chapterIndex + 1)
+                            .coerceIn(0, totalChapterNum)
+                            .toFloat() / totalChapterNum
                     } else {
                         null
                     },

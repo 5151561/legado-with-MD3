@@ -21,7 +21,8 @@ import io.legado.app.utils.isContentScheme
 import kotlinx.coroutines.flow.Flow
 
 class RemoteBookRepository(
-    private val appDb: AppDatabase
+    private val appDb: AppDatabase,
+    private val bookRepository: BookRepository,
 ) {
 
     suspend fun getWebDav(book: Book): RemoteBookWebDav? {
@@ -118,7 +119,7 @@ class RemoteBookRepository(
             origin = BookType.webDavTag + CustomUrl(remoteBook.path)
                 .putAttribute("serverID", webDav.serverID)
                 .toString()
-            save()
+            bookRepository.save(this)
         }
         return book
     }

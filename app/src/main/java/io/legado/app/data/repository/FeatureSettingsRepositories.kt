@@ -414,7 +414,7 @@ internal fun Preferences.toThemeSettings(): ThemeSettings = ThemeSettings(
 )
 
 /**
- * Theme gateway 的 60 键写入边界。主题包专用的 [ThemeSettings.customMode] 与
+ * Theme gateway 的 68 键写入边界。主题包专用的 [ThemeSettings.customMode] 与
  * [ThemeSettings.bookInfoInputColor] 由 ThemePackageSettingsGateway 的事务路径持久化。
  */
 internal fun ThemeSettings.toGatewayPrefMap(): Map<String, Any?> = mapOf(

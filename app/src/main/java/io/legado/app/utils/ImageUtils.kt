@@ -1,5 +1,7 @@
 package io.legado.app.utils
 
+import io.legado.app.data.compat.*
+
 import io.legado.app.constant.AppLog
 import io.legado.app.data.entities.BaseSource
 import io.legado.app.data.entities.Book

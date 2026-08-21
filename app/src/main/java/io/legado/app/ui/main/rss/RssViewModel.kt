@@ -1,5 +1,7 @@
 package io.legado.app.ui.main.rss
 
+import io.legado.app.data.compat.*
+
 import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.script.rhino.runScriptWithContext

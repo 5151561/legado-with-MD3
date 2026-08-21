@@ -1,11 +1,19 @@
 package io.legado.app.help.rhino
 
 import com.script.rhino.JavaObjectWrapFactory
+import io.legado.app.data.compat.LegacySourceScriptFacade
+import io.legado.app.data.entities.BaseSource
 import org.mozilla.javascript.NativeJavaObject
 import org.mozilla.javascript.Scriptable
 
 class NativeBaseSource(scope: Scriptable?, javaObject: Any, staticType: Class<*>?) :
     NativeJavaObject(scope, javaObject, staticType) {
+
+    private val compatibilityObject = NativeJavaObject(
+        scope,
+        LegacySourceScriptFacade(javaObject as BaseSource),
+        LegacySourceScriptFacade::class.java,
+    )
 
     override fun has(name: String, start: Scriptable): Boolean {
         if (name != "setVariable" && name.length > 3 && name.startsWith("set")) {
@@ -14,7 +22,7 @@ class NativeBaseSource(scope: Scriptable?, javaObject: Any, staticType: Class<*>
                 return false
             }
         }
-        return super.has(name, start)
+        return super.has(name, start) || compatibilityObject.has(name, compatibilityObject)
     }
 
     override fun get(name: String, start: Scriptable): Any? {
@@ -24,7 +32,12 @@ class NativeBaseSource(scope: Scriptable?, javaObject: Any, staticType: Class<*>
                 return NOT_FOUND
             }
         }
-        return super.get(name, start)
+        val value = super.get(name, start)
+        return if (value === NOT_FOUND) {
+            compatibilityObject.get(name, compatibilityObject)
+        } else {
+            value
+        }
     }
 
     override fun put(

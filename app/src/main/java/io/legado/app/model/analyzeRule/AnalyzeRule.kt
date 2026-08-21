@@ -1,5 +1,7 @@
 package io.legado.app.model.analyzeRule
 
+import io.legado.app.data.compat.*
+
 import android.text.TextUtils
 import androidx.annotation.Keep
 import com.google.gson.internal.LinkedTreeMap

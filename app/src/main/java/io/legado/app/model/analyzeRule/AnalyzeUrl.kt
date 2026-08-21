@@ -1,5 +1,7 @@
 package io.legado.app.model.analyzeRule
 
+import io.legado.app.data.compat.*
+
 import android.annotation.SuppressLint
 import android.util.Base64
 import androidx.annotation.Keep

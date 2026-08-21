@@ -98,8 +98,9 @@ class TranslateChapterUseCase(
             // Load already cached chunks
             for (chunk in chunks) {
                 val cached = cachedChunkMap[chunk.index]
-                if (cached != null && cached.translatedChunkContent != null) {
-                    translatedChunks[chunk.index] = cached.translatedChunkContent
+                val translatedChunkContent = cached?.translatedChunkContent
+                if (translatedChunkContent != null) {
+                    translatedChunks[chunk.index] = translatedChunkContent
                 } else {
                     pendingChunks.add(chunk)
                 }
@@ -221,8 +222,9 @@ class TranslateChapterUseCase(
     ): Result<String> {
         val existingCache =
             translationCacheGateway.getCachedChunk(book, bookChapter, targetLanguage, chunk.index)
-        if (existingCache?.isSuccess == true && existingCache.translatedChunkContent != null) {
-            return Result.success(existingCache.translatedChunkContent)
+        val translatedChunkContent = existingCache?.translatedChunkContent
+        if (existingCache?.isSuccess == true && translatedChunkContent != null) {
+            return Result.success(translatedChunkContent)
         }
 
         val result = translateChunkWithRetry(

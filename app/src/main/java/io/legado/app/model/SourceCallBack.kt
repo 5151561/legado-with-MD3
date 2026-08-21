@@ -1,5 +1,7 @@
 package io.legado.app.model
 
+import io.legado.app.data.compat.*
+
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.script.rhino.runScriptWithContext

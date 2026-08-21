@@ -1509,8 +1509,8 @@ class ReadBookViewModel(
 
             is ReadBookIntent.ApplySimulatedReading -> {
                 ReadBook.clearTextChapter()
-                execute {
-                    ReadBook.book?.let { loadDelegate.initBook(it) }
+                ReadBook.book?.let { book ->
+                    execute { bookRepository.save(book); loadDelegate.initBook(book) }
                 }
             }
 
@@ -2158,7 +2158,7 @@ class ReadBookViewModel(
     fun removeFromBookshelf(success: (() -> Unit)? = null) {
         val book = ReadBook.book
         Coroutine.async {
-            book?.delete()
+            book?.let { bookRepository.deleteBook(it) }
         }.onSuccess {
             success?.invoke()
         }
@@ -2430,18 +2430,18 @@ class ReadBookViewModel(
         val book = ReadBook.book ?: return
         val enabled = !book.getTranslationMode()
         book.setTranslationMode(enabled)
-        book.save()
-        _uiState.update { it.copy(translationMode = enabled) }
-        ReadBook.loadContent(false)
+        execute { bookRepository.save(book) }.onSuccess {
+            _uiState.update { it.copy(translationMode = enabled) }
+            ReadBook.loadContent(false)
+        }
     }
-
     private fun retranslateCurrentChapter() {
         val book = ReadBook.book ?: return
         viewModelScope.launch {
             val chapter = currentChapter() ?: return@launch
             io.legado.app.model.translation.TranslationManager.deleteTranslationCache(book, chapter)
             book.setTranslationMode(true)
-            book.save()
+            bookRepository.save(book)
             ReadBook.loadContent(false)
         }
     }

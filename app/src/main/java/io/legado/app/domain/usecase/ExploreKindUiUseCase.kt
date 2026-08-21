@@ -1,5 +1,7 @@
 package io.legado.app.domain.usecase
 
+import io.legado.app.data.compat.*
+
 import androidx.appcompat.app.AppCompatActivity
 import com.script.rhino.runScriptWithContext
 import io.legado.app.constant.AppLog

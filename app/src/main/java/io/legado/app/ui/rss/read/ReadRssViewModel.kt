@@ -1,5 +1,7 @@
 package io.legado.app.ui.rss.read
 
+import io.legado.app.data.compat.*
+
 import android.app.Application
 import android.content.Intent
 import android.util.Base64

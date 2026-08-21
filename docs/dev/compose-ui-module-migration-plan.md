@@ -1,6 +1,6 @@
 # Compose UI 重做与业务模块化迁移计划
 
-> 状态：Phase 0、Phase 1 已完成；Phase 2、Phase 3、Phase 4 工程实现与范围内自动验证已完成；Phase 5 治理门禁已建立，灰度入口默认关闭，旧路径删除等待发布与稳定版本证据
+> 状态：Phase 0、Phase 1 已完成；Phase 2、Phase 3、Phase 4 工程实现与范围内自动验证已完成；Phase 5 已建立治理门禁，但七个 feature 仍为实验态，旧路径尚未删除；Phase 6 已完成，完整 Room schema、entity、DAO、migration 与 converter 已物理迁入 `:core:database`；Phase 7–9 尚未实施
 > 日期：2026-08-21
 > 范围：Android 端 Compose UI 的重做，以及为它提供稳定边界的业务模块化。**不包含** `modules/web/` Vue 前端重做，也不把内嵌 Ktor 服务改造成独立云端后端。
 
@@ -344,6 +344,213 @@ Lint、架构护栏，以及开启 `readerFeatureEnabled` 的 `:app:compileAppDe
 
 完成后删除旧路径及迁移适配器，更新本计划的状态、模块所有权和对应功能文档。禁止为了“以后可能要回滚”永久保留双实现。
 
+Phase 5 当前只完成了“治理门禁已建立”，没有完成“旧路径已删除”。后续不能把所有
+`experiment` 开关一次性改为默认，也不能以模块已经存在代替 Release、设备矩阵与稳定版本证据。
+
+### Phase 6：解除实现模块化阻塞
+
+**状态**：已完成。治理、构建约定、持久化反向依赖清理和完整 Room 基础设施物理迁移均已落地；
+Phase 7 可在不依赖 `:app` 的前提下创建正式 feature 实现。
+
+**目的**：把“新 UI 已有稳定 API，但实现仍由 `:app` 中 `Legacy*Adapter` 提供”的过渡形态，
+推进到可创建正式 `feature:*:impl` 的状态。Phase 6 只建立依赖接缝和构建能力，不切换默认 UI，
+不改变数据库 schema、备份格式、Intent、Service 协议或规则语义。
+
+#### 6.1 拆分迁移治理的两条状态线
+
+现有登记表以 `legacyPath` 同时代表旧 UI 与 `Legacy*Adapter`，会把“正式业务实现已建立”和
+“旧 UI 已完成稳定版本观察”错误地绑定在一起。Phase 6 先把治理模型拆成两条独立状态：
+
+```text
+实现状态：app_adapter → formal_impl
+UI 状态：experiment → default_observation → complete
+```
+
+- 实现状态进入 `formal_impl` 后，Koin 只能装配正式实现；旧适配器可以在契约测试、架构检查和
+  回滚记录齐全后删除，不必等待旧 UI 删除。
+- UI 状态仍按 Phase 5 生命周期推进；正式 `impl` 的存在不自动允许新 UI 成为默认入口。
+- 登记表分别记录 `legacyUiPath`、`compatAdapterPath`、实现切换证据、设备/发布门禁和旧 UI 删除证据。
+- 任何阶段都不允许正式 `impl` 与 app 适配器同时绑定同一 API，也不允许两条路径写入同一事实。
+
+#### 6.2 建立构建约定和模块图护栏
+
+当前 feature/core 模块重复声明 compileSdk、minSdk、Java/Kotlin toolchain、Compose、Lint 和测试配置。
+在继续增加 `impl` 模块前建立最小 `build-logic`，优先提供：
+
+- `legado.android.library`
+- `legado.android.compose`
+- `legado.feature.api`
+- `legado.feature.ui`
+- `legado.feature.impl`
+
+只机械统一已有配置，不在同一变更中升级 AGP、Kotlin、Compose、Koin 或测试框架。把现有依赖方向
+检查迁入可测试的构建逻辑，并增加以下棘轮：
+
+- `feature:*:impl → :app` 必须失败；
+- `feature:*:ui → feature:*:impl / core:database / :app` 必须失败；
+- `core:* → feature:*` 必须失败；
+- `:app` 中新增 feature 业务实现、DAO 直连和新的兼容适配器必须失败；
+- 每个正式 `impl` 必须有 API 契约测试和唯一 Koin 绑定声明。
+
+#### 6.3 清理持久化模型的反向依赖
+
+迁移前不能直接把 `app/data` 整体移动到 `:core:database`。原 Room entity 包含自持久化、配置、规则、
+UI 或阅读器运行时依赖，因此先在原包名下逐项解除阻塞，再执行物理迁移：
+
+1. 把 `Book.save()` / `Book.delete()`、`BookChapter` 和 `BookSourcePart` 中的 `appDb` 调用迁入已有
+   Repository/UseCase；每项先用契约测试固定成功、失败、重复调用和事务语义。
+2. 移除 Room entity/DAO 对 `ui`、`ReadBook` 等运行时单例和规则执行器实现的反向依赖；纯计算可迁为
+   无状态函数，业务行为归对应 feature 实现，跨业务规则能力只通过明确接口协作。
+3. 保持实体字段、表名、索引、TypeConverter、migration、数据库名和序列化/备份兼容不变。
+4. 不把 `allowMainThreadQueries()` 的移除与 Gradle 模块搬迁合并；先保持行为完成模块接缝，随后以
+   独立工作项逐条消除主线程调用，并用 dispatcher/集成测试验证。
+
+#### 6.4 建立最小基础设施模块
+
+- `:core:database`：只承载单一 Room schema、entity、DAO、migration、converter 和 database factory；
+  不放业务规则、UI DTO、Repository 或对外全局 `appDb`。
+- `:core:preferences`：只在 settings 等正式实现需要稳定偏好接缝时建立；保留现有 key、默认值和迁移语义。
+- `:core:rule-engine`、`:core:network`：只在 catalog/RSS 等垂直切片实际需要时建立，不为目标图预建空模块。
+- 迁移期允许 `:app` 为未迁移旧调用方保留一个只读取得数据库实例的兼容入口，但必须登记调用基线、
+  禁止新增引用，并在 Phase 9 删除；新的 feature `impl` 不得使用该入口。
+
+验收：
+
+- 迁移治理能独立表达“正式 impl 已启用、旧 UI 仍保留”的合法状态。
+- convention plugin 应用前后目标变体、BuildConfig、Lint 与测试行为等价。
+- Room schema JSON、migration、数据库名和备份/恢复兼容没有变化。
+- entity/DAO 不再新增 `appDb`、UI 或 feature 实现依赖；既有基线只降不升。
+- `:core:database` 不依赖 `:app`、UI、feature 或规则业务实现。
+- `:app:compileAppDebugKotlin`、相关数据测试、架构门禁和至少一次数据库 migration 测试通过。
+
+回滚：构建约定、持久化去耦、模块移动和主线程治理分别提交；任一变更可独立回退，不需要回滚数据库。
+
+2026-08-21 实施记录：
+
+- 登记表已拆为 `implementationStatus` 与 `uiStatus`，分别记录旧 UI、兼容适配器、正式实现、发布门禁
+  和两类删除证据；七个 feature 仍为 `app_adapter + experiment`，默认 UI 未改变。
+- 已建立 `build-logic` 的五个 convention plugin，并迁移现有 core 与 feature API/UI 模块；
+  `verifyModuleDependencies` 会拒绝 UI→app/database/impl、impl→app、core→feature 等非法依赖，正式
+  impl 还必须提供对应 API 依赖、Koin module 和契约测试。
+- `Book.save/delete` 已移入 `BookRepository` 的持久化边界并补顺序/失败契约测试；`BookChapter` 与
+  `BookSourcePart` 不再直接读取全局 `appDb`；需规则、网络、配置或 UI 的行为通过 core 定义、app 注入的
+  显式运行时契约承接。架构门禁冻结 `appDb` 生产引用基线为 430，并禁止 entity/DAO 依赖 appDb、app
+  帮助/服务实现、UI、feature 或 Reader 运行时。
+- 104 个 entity/DAO 源文件、`AppDatabase`、全部 migration、converter、数据库所需投影与序列化帮助代码
+  已保持原包名物理迁入 `:core:database`；`:app` 只保留数据库装配和旧 `appDb` 兼容入口。
+- Room 数据库名、版本、表、字段、索引、schema JSON 路径与备份序列化契约保持不变；生产 migration
+  列表继续接入仪器测试，并保留 102→103 JVM 执行合约测试。
+- 自动验证已通过 `:core:database` 编译/单测、`:app:compileAppDebugKotlin`、
+  `:app:compileAppDebugAndroidTestKotlin`、架构门禁、102→103 migration 合约和实体持久化定向测试；
+  原 `HttpTtsTest` 的过期 `speechRatePlay` 引用也已改到现存兼容配置入口，androidTest 源集不再受阻。
+
+Phase 6 的数据库阻断已清零；Phase 7 可以开始书架正式 impl，但默认 UI、旧路径与实验开关仍保持不变。
+
+### Phase 7：书架正式实现垂直切片
+
+**状态**：计划中；Phase 6 前置数据库接缝已满足。
+
+**目的**：用书架证明 `Compose UI → feature API → feature impl → Room SSOT` 的完整模块链路，
+并把首个业务实现及其 Koin 绑定从 `:app` 移出。
+
+目标依赖：
+
+```text
+:app ─────────────────────→ :feature:bookshelf:ui
+  └── 仅总装配 ───────────→ :feature:bookshelf:impl
+
+:feature:bookshelf:ui ────→ :feature:bookshelf:api
+:feature:bookshelf:impl ──→ :feature:bookshelf:api + :core:database
+```
+
+工作项：
+
+1. 新建 `:feature:bookshelf:impl`，只移动书架查询、分组、删除和排序需要的实现；不整体搬迁所有
+   `BookRepository`、图书详情、阅读器或规则引擎代码。
+2. 将 `LegacyBookshelfAdapter` 中的 API 映射、错误分类和 SSOT 组合迁入正式实现；公开 API 与
+   Compose UiState 不改变。
+3. 正式实现暴露自己的 Koin module；`:app` 只加载 module，不逐个声明四个 Bookshelf API 绑定。
+4. 对 app adapter 和正式 impl 运行同一套 API 契约测试，覆盖正常、空、失败、重试、重复命令、
+   partial failure、排序完整性和阅读进度只读投影。
+5. 一次性把运行时绑定从 app adapter 切到正式 impl；切换前后继续使用同一数据库和 SSOT，禁止双写。
+6. 实现切换证据通过后删除 `LegacyBookshelfAdapter` 及其 Koin 绑定；旧书架 UI 和 UI 灰度开关继续
+   按 Phase 8 的发布生命周期管理。
+
+验收：
+
+- `:feature:bookshelf:impl` 不依赖 `:app`，不包含 Compose、Activity、Fragment 或根导航代码。
+- `:app` 中没有书架 API 的业务实现和逐接口绑定，只保留 feature module 总装配与根导航。
+- 新旧 UI 均不会产生第二个书架数据所有者；写入只由正式 impl 完成并由 Room Flow 回流。
+- API/UI/数据库/架构测试、书架 Lint、Debug 构建和 Release/R8 构建通过。
+- 关闭新 UI 时仍能回到旧书架，而不需要恢复 app adapter。
+
+回滚：只切换 API 实现绑定或 UI 消费者；数据库和持久化格式不变，同一构建中始终只有一个写实现。
+
+### Phase 8：按风险逐个完成正式实现与 UI 转正
+
+**状态**：计划中，书架正式实现稳定后开始。
+
+**目的**：复制 Phase 7 已验证的模式，但不要求所有 feature 使用相同内部结构，也不同时开启七个入口。
+
+默认顺序：
+
+| 顺序 | Feature | 实现模块化重点 | UI 转正前额外门禁 |
+|---:|---|---|---|
+| 8.1 | `bookshelf` | 正式 Room/Repository 实现、移除 app adapter | Release/R8、设备矩阵、进程恢复、稳定版本观察 |
+| 8.2 | `settings` | 偏好只读/写入接缝、设置子页边界 | 主题即时刷新、返回栈、大字体、TalkBack |
+| 8.3 | `rss` | DAO、打开目标解析、文章/收藏/阅读子 route | JS 单 URL、WebView/外链、返回栈 |
+| 8.4 | `catalog` | 书源持久化、规则/网络接缝、搜索/发现/导入 | 规则语义、导入兼容、详情/发现恢复 |
+| 8.5 | `ai` | profile/preset 持久化、会话与流式生成边界 | 取消、工具确认、错误恢复、密钥不泄漏 |
+| 8.6 | `readaloud` | 模块安全 Session Gateway、服务与 UI 解耦 | 锁屏、耳机、中断、缓存、进程恢复 |
+| 8.7 | `reader` | 唯一 ReaderSession 实现和正文渲染边界 | 专项 parity、帧率、内存、无障碍门禁 |
+
+每个 feature 独立执行：
+
+```text
+app_adapter → formal_impl
+experiment → default_observation → complete
+```
+
+只有当前 feature 的正式实现、子流程、Release/R8、设备矩阵和回滚证据完整后，才进入
+`default_observation`；至少一个约定的稳定版本周期无回退后，才删除旧 UI、资源和开关并进入
+`complete`。前一 feature 的边界或发布证据不稳定时，不复制到下一 feature。
+
+验收：单个 feature 达到 `complete` 时，必须不存在 app adapter、旧 UI 入口、临时 BuildConfig/Gradle
+开关和重复 Koin 绑定；搜索、架构测试、Release 产物、设备签收和删除记录全部可审计。
+
+### Phase 9：`:app` 瘦身与持续治理
+
+**状态**：计划中，随 Phase 7–8 渐进实施，最终统一收口。
+
+**目的**：让 `:app` 真正成为应用外壳，并证明模块化降低了变更影响，而不是只增加 Gradle 项目数。
+
+最终 `:app` 只保留：
+
+- `Application`、Manifest、启动与外部 Intent 兼容；
+- 根 Navigation 3 back stack、跨 feature route 聚合和系统边界；
+- Koin feature module 总装配；
+- 进程级生命周期、通知/权限/Activity Result 等应用外壳职责；
+- 有明确截止条件的极少量旧入口兼容代码。
+
+治理工作：
+
+1. 删除全局 `appDb` 兼容入口、已迁移 Repository/UseCase、旧 UI、重复资源、兼容适配器和临时开关。
+2. 把架构检查、模块图、API 可见性、依赖方向和迁移登记纳入 CI；所有基线只能下降，例外必须有负责人、
+   理由和截止条件。
+3. 用构建扫描或等价度量记录配置时间、典型增量编译范围和缓存命中；模块拆分导致反馈变慢时调整粒度，
+   不以模块数量作为成功指标。
+4. 根据真实复用与所有权决定是否合并过细模块；没有独立边界、测试或消费者价值的空壳模块应合并或删除。
+5. 更新架构文档、模块所有权、关键读写链路和新 feature 模板，使新增业务默认落在合法边界内。
+
+最终验收：
+
+- 新 feature 开发不需要在 `:app/data`、`:app/domain` 或根 DI 文件增加业务实现。
+- `:app` 不直接访问 DAO、不承载 feature Repository/UseCase、不逐接口绑定 feature API。
+- 依赖图无循环，feature 只能穿透到其他 feature 的 `api`。
+- 关键用户旅程、备份/恢复、深链、进程恢复、Release/R8 和设备矩阵保持通过。
+- 已完成 feature 搜索不到旧入口、适配器、双写路径和临时开关。
+- 模块化前后的构建反馈与变更影响有记录；若没有收益，允许合并模块而不是继续细拆。
+
 ## 6. Koin、导航与兼容策略
 
 ### Koin
@@ -397,25 +604,43 @@ Lint、架构护栏，以及开启 `readerFeatureEnabled` 的 `:app:compileAppDe
 15. **M4.1（已完成）**：建立 reader API、不可变当前页投影与加载/错误/恢复命令语义，不向 feature 泄漏遗留运行时对象。
 16. **M4.2（已完成）**：建立无动画只读 Compose renderer、互斥单渲染所有权和默认关闭的编译期开关。
 17. **M4.3（自动门禁完成，设备矩阵待签收）**：建立边界测试与真机 parity/首帧/帧统计/往返采集器；默认切换维持 No-Go。
+18. **M5.1（已完成治理、未完成删除）**：建立双轨登记、状态门禁与删除条件；当前七个 feature 均为 `experiment`，旧路径删除尚未发生。
+19. **M6.1（已完成）**：治理登记已拆为实现状态与 UI 状态，分别登记旧 UI、app adapter、正式 impl、发布门禁和删除证据。
+20. **M6.2（已完成）**：已建立最小 convention plugin 和可测试的模块依赖护栏；未升级工具链。
+21. **M6.3（已完成）**：Room 模型已移除直接 `appDb`/UI/Reader 反向依赖，持久化归 Repository/兼容边界，app 行为通过显式运行时契约注入；schema 未改变。
+22. **M6.4（已完成）**：完整 Room schema、104 个 entity/DAO、migration、converter 与 database factory 已物理迁入 `:core:database`；`:app` 仅保留装配与旧入口兼容层。
+23. **M7.1**：建立 `:feature:bookshelf:impl`，让 app adapter 与正式 impl 通过同一套 API/SSOT 契约测试。
+24. **M7.2**：一次性切换书架 Koin 绑定到正式 impl，删除 app adapter，保持旧 UI 仍可作为消费者回退。
+25. **M8.1**：书架完成 Release/R8、设备矩阵与进程恢复后进入 `default_observation`；稳定版本观察通过后删除旧 UI 和开关。
+26. **M8.2–M8.7**：按 settings、rss、catalog、ai、readaloud、reader 顺序逐项完成正式实现与 UI 转正；不得批量开启。
+27. **M9.1**：删除全局 `appDb` 兼容入口和已迁移的 app 业务实现，收紧 `:app` 增长棘轮并记录构建收益。
 
 ## 9. 决策记录与待确认项
 
-在实施 M0.1 前确认以下决定：
+已确认决定与后续默认：
 
 1. **首个 UI 切片**：默认选择书架；若产品近期重点是设置或书源，可替换，但必须重新写行为基线。
 2. **模块粒度**：书架的目标形态是 `api / impl / ui`；首批只强制建立 `api / ui`，`impl` 在依赖接缝下沉后创建。后续 feature 根据复杂度决定，不预建空模块。
 3. **新 UI 的上线方式**：首批采用开发开关、灰度入口还是直接替换。默认建议先保留可回退入口。
 4. **阅读器范围**：本计划不承诺阅读器的完整 Compose 重写日期；只有第 5 节 Phase 4 的门槛满足后才立项。
 5. **业务更新授权**：默认允许当前切片内的缺陷修复和有测试保护的等价简化；改变产品行为、数据格式或跨 feature 语义时必须单独确认。
+6. **后续主线**：不继续批量创建 `api/ui` 空壳；优先解除持久化依赖，建立书架正式 `impl`。
+7. **治理状态**：业务实现切换与 UI 默认切换分开管理；`formal_impl` 不代表 UI 自动进入默认观察。
+8. **数据库移动**：保持单一 Room schema；先去除 entity 自持久化和反向依赖，再移动模块；`allowMainThreadQueries()` 另立工作项。
+9. **基础模块**：`preferences`、`network`、`rule-engine` 只在垂直切片需要时建立，不为目标图预建空模块。
+10. **转正顺序**：一次只推进一个 feature 的默认观察与删除，阅读器始终最后并受专项门禁约束。
 
 ## 10. 追溯表
 
 | 目标问题 | 对应阶段 | 可验证结果 |
 |---|---|---|
 | UI 穿透数据和运行时实现 | Phase 0、2、3 | 新 UI 无 DAO / `appDb` / Room 实体导入 |
-| `:app` 承载过多业务与页面装配 | Phase 1、2、3 | feature 最终自带 UI/API/实现；app 只保留根导航、总装配和有删除条件的迁移适配器 |
+| `:app` 承载过多业务与页面装配 | Phase 1、2、3、6、7、9 | feature 最终自带 UI/API/实现；app 只保留根导航、总装配和应用外壳 |
 | 组件与主题重复、重做 UI 容易漂移 | Phase 1 | Design System 无业务依赖且被多个页面复用 |
 | Compose 重写改变既有行为 | Phase 0、2、3 | 行为基线、SSOT 回流、导航/恢复测试通过 |
-| 迁移只包裹旧债、没有降低复杂度 | Phase 0、2、3、5 | 业务逻辑分类明确；等价简化有契约测试；替代路径按删除条件清理 |
+| 实现仍由 app `Legacy*Adapter` 提供 | Phase 6、7、8 | 正式 impl 不依赖 app；app 只加载 feature Koin module；适配器按实现证据删除 |
+| Room entity 自持久化和反向依赖阻塞模块移动 | Phase 6 | 数据写入归 Repository/UseCase；entity/DAO 无 appDb、UI 和运行时实现依赖 |
+| 迁移只包裹旧债、没有降低复杂度 | Phase 0、2、3、5、6、7、9 | 业务逻辑分类明确；等价简化有契约测试；替代路径按删除条件清理 |
 | 阅读器复杂度导致大爆炸迁移 | Phase 4 | 单独 decision gate、parity 基线和可回退路径 |
-| 临时双轨长期残留 | Phase 5 | 有删除条件、搜索验证和旧资源清理 |
+| 临时双轨长期残留 | Phase 5、6、8 | 实现/UI 状态独立；有删除条件、稳定版本证据、搜索验证和旧资源清理 |
+| 模块数量增加但构建与变更影响无改善 | Phase 6、9 | convention plugin、构建度量和模块合并条件可验证 |

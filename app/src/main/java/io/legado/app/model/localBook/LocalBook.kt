@@ -11,6 +11,7 @@ import io.legado.app.constant.AppLog
 import io.legado.app.constant.AppPattern
 import io.legado.app.constant.BookType
 import io.legado.app.data.appDb
+import io.legado.app.data.compat.LegacyBookPersistence
 import io.legado.app.data.entities.BaseSource
 import io.legado.app.data.entities.Book
 import io.legado.app.data.entities.BookChapter
@@ -330,7 +331,7 @@ object LocalBook {
                     origin = "${BookType.localTag}::${archiveFileDoc.name}"
                     addType(BookType.archive)
                     upKind()
-                    save()
+                    LegacyBookPersistence.save(this)
                 }
             }
         }
@@ -351,7 +352,7 @@ object LocalBook {
                     type = BookType.local or BookType.image or BookType.archive
                     origin = BookType.localTag
                     upKind()
-                    save()
+                    LegacyBookPersistence.save(this)
                 }
             } else {
                 books.addAll(importArchiveFile(uri) { it.matches(AppPattern.bookFileRegex) })
@@ -517,7 +518,7 @@ object LocalBook {
         localBook.coverUrl = onLineBook.coverUrl
         localBook.intro =
             if (onLineBook.intro.isNullOrBlank()) localBook.intro else onLineBook.intro
-        localBook.save()
+        LegacyBookPersistence.save(localBook)
         return localBook
     }
 
@@ -562,7 +563,7 @@ object LocalBook {
                             localBook.origin =
                                 BookType.webDavTag + CustomUrl(webDavUrl).toString()
 
-                            localBook.save()
+                            LegacyBookPersistence.save(localBook)
                         } else {
                             val newBook = oldBook.copy(
                                 bookUrl = newBookUrl,

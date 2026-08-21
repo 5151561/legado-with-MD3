@@ -1,5 +1,7 @@
 package io.legado.app.ui.book.info
 
+import io.legado.app.data.compat.*
+
 import android.app.Activity.RESULT_OK
 import android.app.Application
 import android.content.Intent
@@ -655,7 +657,7 @@ class BookInfoViewModel(
         currentBook?.let { book ->
             execute {
                 book.remark = remark
-                book.save()
+                bookRepository.save(book)
                 book
             }.onSuccess {
                 currentBook = it
@@ -676,7 +678,7 @@ class BookInfoViewModel(
                 book.durChapterPos = it.durChapterPos
                 book.durChapterTitle = it.durChapterTitle
             }
-            book.save()
+            bookRepository.save(book)
             if (ReadBook.isCurrentBook(book)) {
                 ReadBook.replaceCurrentBook(book)
             } else if (AudioPlay.book?.isSameNameAuthor(book) == true) {
@@ -717,7 +719,7 @@ class BookInfoViewModel(
             } else if (AudioPlay.book?.isSameNameAuthor(book) == true) {
                 AudioPlay.book = book
             }
-            book.save()
+            bookRepository.save(book)
             SourceCallBack.callBackBook(SourceCallBack.ADD_BOOK_SHELF, bookSource, book)
             bookRepository.insertChapters(*currentChapterList.toTypedArray())
             book
@@ -759,7 +761,7 @@ class BookInfoViewModel(
             if (book.isLocal) {
                 LocalBook.deleteBook(book, deleteOriginal)
             }
-            book.delete()
+            bookRepository.deleteBook(book)
         }.onSuccess {
             success?.invoke()
         }
@@ -822,7 +824,7 @@ class BookInfoViewModel(
                     }
                     currentBook = loadedBook
                     if (inBookshelf) {
-                        loadedBook.save()
+                        bookRepository.save(loadedBook)
                     }
                     syncUiState(isTocLoading = showLoading)
                     refreshMeta(loadedBook)

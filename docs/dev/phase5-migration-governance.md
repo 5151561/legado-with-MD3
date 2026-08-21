@@ -12,17 +12,29 @@ Phase 2–4 的七个 Compose feature 均仍处于受控实验态。它们的迁
 统一登记表为 [`config/compose-feature-migrations.properties`](../../config/compose-feature-migrations.properties)。
 `verifyFeatureMigrationGovernance` 已接入 `verifyConfigArchitecture`，编译和 assemble 任务会间接执行。
 
-## 生命周期
+## 两条独立生命周期
 
-| 状态 | 默认入口 | 旧路径 | 临时开关 | 必需证据 |
+实现状态与 UI 发布状态自 Phase 6 起独立登记，避免正式业务实现必须等待旧 UI 稳定观察才能落地：
+
+```text
+implementationStatus: app_adapter → formal_impl
+uiStatus:             experiment → default_observation → complete
+```
+
+| 实现状态 | 运行时实现 | 必需证据 |
+|---|---|---|
+| `app_adapter` | `:app` 兼容适配器 | `compatAdapterPath` 存在、`implementationBlocker` 非空 |
+| `formal_impl` | `feature:*:impl` | `formalImplModule`、契约/切换证据和适配器删除证据齐全；兼容适配器已删除 |
+
+| UI 状态 | 默认入口 | 旧 UI | 临时开关 | 必需证据 |
 |---|---|---|---|---|
-| `experiment` | 旧实现 | 必须保留 | 必须登记且默认关闭 | 迁移卡、明确 blocker |
-| `default_observation` | 新实现 | 暂时保留 | 必须登记且默认开启 | `gateEvidence` 指向设备/发布签收，稳定版本观察尚未结束 |
-| `complete` | 新实现 | 必须删除 | 必须删除 | 保留 `gateEvidence`，新增删除签收记录，blocker 清零 |
+| `experiment` | 旧 UI | 必须保留 | 必须登记且默认关闭 | 迁移卡、明确 `uiBlocker` |
+| `default_observation` | 新 UI | 暂时保留 | 必须登记且默认开启 | `releaseGateEvidence` 指向设备/发布签收 |
+| `complete` | 新 UI | 必须删除 | 必须删除 | 发布证据与 `legacyUiRemovalEvidence` 齐全，blocker 清零 |
 
-状态不能从 `experiment` 直接靠修改默认值跳到 `complete`。新实现先完成迁移卡的设备与发布门禁，
-进入 `default_observation`；稳定版本周期无回退后，再以独立变更删除旧入口、XML/View、适配器、
-Koin 绑定、资源与开关，并把签收记录填入 `removalEvidence`。
+UI 状态不能从 `experiment` 直接靠修改默认值跳到 `complete`。正式 `impl` 也不会自动推动 UI
+状态：设备与发布门禁通过后才能进入 `default_observation`；稳定版本周期无回退后，再以独立变更
+删除旧入口、XML/View、资源与开关。实现适配器可在 `formal_impl` 切换完成时提前删除。
 
 ## 自动治理范围
 
@@ -30,21 +42,22 @@ Koin 绑定、资源与开关，并把签收记录填入 `removalEvidence`。
 
 1. 所有 `USE_COMPOSE_*_FEATURE` BuildConfig 开关必须在登记表中，登记表也不能声明不存在的开关。
 2. Gradle property、BuildConfig 常量与默认值必须完全一致，并拒绝重复或非标准声明，防止实验入口被误设为默认。
-3. 实验态和默认观察态必须保留登记的旧适配器、迁移卡、API/UI 模块和主源码开关消费点。
-4. 每张迁移卡必须明确删除条件，实验态必须记录尚未满足的 blocker。
-5. 默认观察态必须提供仓库内的设备/发布签收文件；完成态还必须删除旧路径和临时开关，并提供可审计的删除签收文件。
+3. `app_adapter` 必须保留登记的兼容适配器；`formal_impl` 必须登记正式模块、切换证据和适配器删除证据，且两种实现不得共存。
+4. 实验态和默认观察态必须保留登记的旧 UI、迁移卡、API/UI 模块和主源码开关消费点。
+5. 每张迁移卡必须明确删除条件；两条状态线分别记录尚未满足的 `implementationBlocker` 与 `uiBlocker`。
+6. 默认观察态必须提供仓库内的设备/发布签收文件；完成态还必须删除旧 UI 和临时开关，并提供可审计的删除签收文件。
 
 ## 当前登记
 
-| Feature | 状态 | 删除许可 | 主要 blocker |
-|---|---|---|---|
-| bookshelf | experiment | 否 | 正式 impl、Release/R8、设备矩阵、稳定版本观察 |
-| settings | experiment | 否 | 设置子页边界、设备矩阵、稳定版本观察 |
-| catalog | experiment | 否 | 正式 impl、子 route、设备矩阵、稳定版本观察 |
-| rss | experiment | 否 | DAO/解析接缝、子 route、设备矩阵、稳定版本观察 |
-| readaloud | experiment | 否 | 模块安全 Session Gateway、子页、设备矩阵、稳定版本观察 |
-| reader | experiment | 否 | 功能 parity、性能、内存、无障碍、稳定版本观察 |
-| ai | experiment | 否 | 正式 impl、子 route、设备矩阵、稳定版本观察 |
+| Feature | 实现状态 | UI 状态 | 删除许可 | 主要 blocker |
+|---|---|---|---|---|
+| bookshelf | app_adapter | experiment | 否 | 正式 impl、Release/R8、设备矩阵 |
+| settings | app_adapter | experiment | 否 | 偏好接缝、设置子页边界、设备矩阵 |
+| catalog | app_adapter | experiment | 否 | 规则/网络/持久化接缝、子 route、设备矩阵 |
+| rss | app_adapter | experiment | 否 | DAO/解析接缝、子 route、设备矩阵 |
+| readaloud | app_adapter | experiment | 否 | 模块安全 Session Gateway、子页、设备矩阵 |
+| reader | app_adapter | experiment | 否 | ReaderSession 模块化、功能 parity、性能与无障碍 |
+| ai | app_adapter | experiment | 否 | 持久化/生成协议接缝、子 route、设备矩阵 |
 
 ## 删除执行清单
 

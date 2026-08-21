@@ -1,5 +1,7 @@
 package io.legado.app.help
 
+import io.legado.app.data.compat.*
+
 import android.webkit.JavascriptInterface
 import android.webkit.WebSettings
 import androidx.annotation.Keep

@@ -12,6 +12,7 @@ import io.legado.app.constant.BookType
 import io.legado.app.data.entities.Book
 import io.legado.app.data.entities.Server
 import io.legado.app.data.repository.BookImportRepository
+import io.legado.app.data.repository.BookRepository
 import io.legado.app.data.repository.RemoteBookRepository
 import io.legado.app.domain.gateway.ImportBookSettingsGateway
 import io.legado.app.domain.gateway.OtherSettingsGateway
@@ -113,6 +114,7 @@ class RemoteBookViewModel(
     @Suppress("UNUSED_PARAMETER")
     private val savedStateHandle: SavedStateHandle,
     private val repository: RemoteBookRepository,
+    private val bookRepository: BookRepository,
     private val bookImportRepository: BookImportRepository,
     private val importBookSettingsGateway: ImportBookSettingsGateway,
     private val otherSettingsGateway: OtherSettingsGateway,
@@ -289,7 +291,7 @@ class RemoteBookViewModel(
                         book.origin = BookType.webDavTag + CustomUrl(remoteBook.path)
                             .putAttribute("serverID", webDav.serverID)
                             .toString()
-                        book.save()
+                        bookRepository.save(book)
                     }
                 }
             }

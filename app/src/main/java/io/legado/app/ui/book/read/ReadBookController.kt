@@ -1,5 +1,7 @@
 package io.legado.app.ui.book.read
 
+import io.legado.app.data.compat.*
+
 import android.annotation.SuppressLint
 import android.app.SearchManager
 import android.content.Intent

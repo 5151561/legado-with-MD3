@@ -14,7 +14,10 @@ fun BookshelfBookRecord.toUiItem(): BookUiItem {
     kind?.splitNotBlank(",", "\n")?.filter { it.isNotBlank() }?.let {
         tagList.addAll(it.filterNot(tagList::contains))
     }
-    if (!wordCount.isNullOrBlank() && !tagList.contains(wordCount)) tagList.add(wordCount)
+    val displayWordCount = wordCount
+    if (!displayWordCount.isNullOrBlank() && !tagList.contains(displayWordCount)) {
+        tagList.add(displayWordCount)
+    }
     return BookUiItem(book = this, displayTags = tagList.toImmutableList())
 }
 

@@ -184,8 +184,7 @@ class AudioPlayCoordinator(
     fun setOpenCredits(seconds: Int) {
         AudioPlay.book?.let {
             it.setOpenCredits(seconds.coerceIn(0, 180))
-            // save() 内含同步 DAO 调用，放到后台线程执行，避免主线程写库
-            Coroutine.async { it.save() }
+            Coroutine.async { bookRepository.save(it) }
         }
         refresh()
     }
@@ -193,7 +192,7 @@ class AudioPlayCoordinator(
     fun setCloseCredits(seconds: Int) {
         AudioPlay.book?.let {
             it.setCloseCredits(seconds.coerceIn(0, 180))
-            Coroutine.async { it.save() }
+            Coroutine.async { bookRepository.save(it) }
         }
         refresh()
     }

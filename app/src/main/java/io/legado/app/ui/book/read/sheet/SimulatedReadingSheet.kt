@@ -105,7 +105,6 @@ fun SimulatedReadingSheet(
                         book.setDailyChapters(dailyChapters.toIntOrNull() ?: 0)
                         book.setStartChapter(startChapter.toIntOrNull() ?: 0)
                         book.setReadSimulating(enabled)
-                        book.save()
                         onApply()
                         onDismissRequest()
                     },

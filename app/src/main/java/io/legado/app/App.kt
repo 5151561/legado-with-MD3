@@ -25,9 +25,18 @@ import io.legado.app.constant.AppConst.channelIdReadAloud
 import io.legado.app.constant.AppConst.channelIdWeb
 import io.legado.app.constant.PreferKey
 import io.legado.app.data.appDb
+import io.legado.app.data.compat.LegacyBookPersistence
+import io.legado.app.data.compat.LegacyBookModelRuntime
+import io.legado.app.data.compat.LegacyBookChapterModelRuntime
+import io.legado.app.data.compat.LegacyDictRuleRuntime
 import io.legado.app.data.entities.Book
 import io.legado.app.data.entities.BookChapter
 import io.legado.app.data.entities.BookSource
+import io.legado.app.data.runtime.EntityVariableRuntime
+import io.legado.app.data.runtime.EntityVariableStore
+import io.legado.app.data.runtime.BookModelRuntimeRegistry
+import io.legado.app.data.runtime.BookChapterModelRuntimeRegistry
+import io.legado.app.data.runtime.DictRuleRuntimeRegistry
 import io.legado.app.data.entities.HttpTTS
 import io.legado.app.data.entities.RssSource
 import io.legado.app.data.entities.rule.BookInfoRule
@@ -55,6 +64,7 @@ import io.legado.app.help.DispatchersMonitor
 import io.legado.app.help.LifecycleHelp
 import io.legado.app.help.RuleBigDataHelp
 import io.legado.app.help.book.BookHelp
+import io.legado.app.help.book.applyTagGroupRulesForBook
 import io.legado.app.help.config.AppConfig
 import io.legado.app.help.config.AppConfigStore
 import io.legado.app.help.config.LocalConfig
@@ -124,6 +134,40 @@ class App : Application(), SingletonImageLoader.Factory {
                 readerUiModule,
                 aiUiModule,
             )
+        }
+        val legacyDatabase = appDb
+        BookModelRuntimeRegistry.runtime = LegacyBookModelRuntime
+        DictRuleRuntimeRegistry.runtime = LegacyDictRuleRuntime
+        BookChapterModelRuntimeRegistry.runtime = LegacyBookChapterModelRuntime
+        LegacyBookChapterModelRuntime.replaceRuleTimeoutHandler = { rule ->
+            legacyDatabase.replaceRuleDao.update(rule)
+        }
+        LegacyBookPersistence.saveHandler = { book ->
+            applyTagGroupRulesForBook(book)
+            if (legacyDatabase.bookDao.has(book.bookUrl)) {
+                legacyDatabase.bookDao.update(book)
+            } else {
+                legacyDatabase.bookDao.insert(book)
+            }
+        }
+        EntityVariableRuntime.store = object : EntityVariableStore {
+            override fun putBook(bookUrl: String, key: String, value: String?) =
+                RuleBigDataHelp.putBookVariable(bookUrl, key, value)
+
+            override fun getBook(bookUrl: String, key: String): String? =
+                RuleBigDataHelp.getBookVariable(bookUrl, key)
+
+            override fun putChapter(bookUrl: String, chapterUrl: String, key: String, value: String?) =
+                RuleBigDataHelp.putChapterVariable(bookUrl, chapterUrl, key, value)
+
+            override fun getChapter(bookUrl: String, chapterUrl: String, key: String): String? =
+                RuleBigDataHelp.getChapterVariable(bookUrl, chapterUrl, key)
+
+            override fun putRss(origin: String, link: String, key: String, value: String?) =
+                RuleBigDataHelp.putRssVariable(origin, link, key, value)
+
+            override fun getRss(origin: String, link: String, key: String): String? =
+                RuleBigDataHelp.getRssVariable(origin, link, key)
         }
         AppConfig.initialize(
             shellGateway = get(),

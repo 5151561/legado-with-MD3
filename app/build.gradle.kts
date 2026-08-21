@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.room)
     alias(libs.plugins.ksp)
     alias(libs.plugins.google.services)
     alias(libs.plugins.baselineprofile)
@@ -211,18 +210,9 @@ kotlin {
     }
 }
 
-room {
-    schemaDirectory("$projectDir/schemas")
-}
-
-ksp {
-    arg("room.incremental", "true")
-    arg("room.expandProjection", "true")
-    arg("room.generateKotlin", "false")
-}
-
 dependencies {
     implementation(project(":core:designsystem"))
+    implementation(project(":core:database"))
     implementation(project(":core:navigation"))
     implementation(project(":feature:bookshelf:api"))
     implementation(project(":feature:bookshelf:ui"))
@@ -272,7 +262,6 @@ dependencies {
     implementation(libs.splitties.views)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
-    ksp(libs.room.compiler)
     androidTestImplementation(libs.room.testing)
     implementation(libs.liveeventbus)
     implementation(libs.jsoup)

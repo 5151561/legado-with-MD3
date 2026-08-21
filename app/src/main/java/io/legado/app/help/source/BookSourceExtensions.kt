@@ -1,11 +1,14 @@
 package io.legado.app.help.source
 
+import io.legado.app.data.compat.*
+
 import com.script.rhino.runScriptWithContext
 import androidx.collection.LruCache
 import io.legado.app.constant.BookSourceType
 import io.legado.app.constant.BookType
 import io.legado.app.data.entities.BookSource
 import io.legado.app.data.entities.BookSourcePart
+import io.legado.app.data.entities.getBookSource
 import io.legado.app.data.entities.rule.ExploreKind
 import io.legado.app.utils.ACache
 import io.legado.app.utils.GSON

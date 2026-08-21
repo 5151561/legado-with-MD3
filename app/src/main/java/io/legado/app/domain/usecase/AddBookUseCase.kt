@@ -1,6 +1,7 @@
 package io.legado.app.domain.usecase
 
 import io.legado.app.data.entities.Book
+import io.legado.app.data.entities.getBookSource
 import io.legado.app.data.repository.BookRepository
 import io.legado.app.data.repository.BookSourceRepository
 import io.legado.app.domain.gateway.OtherSettingsGateway

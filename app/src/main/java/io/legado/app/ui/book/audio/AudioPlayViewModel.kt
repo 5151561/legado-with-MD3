@@ -170,7 +170,7 @@ class AudioPlayViewModel(
                     readSettingsGateway.currentSettings.chineseConverterType,
                 )
                 book.removeType(BookType.updateError)
-                AudioPlay.book?.delete()
+                AudioPlay.book?.let { bookRepository.deleteBook(it) }
                 bookRepository.insert(book)
             }
             if (book.isAudio) {

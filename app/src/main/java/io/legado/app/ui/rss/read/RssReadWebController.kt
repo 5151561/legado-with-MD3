@@ -2,6 +2,8 @@
 
 package io.legado.app.ui.rss.read
 
+import io.legado.app.data.compat.*
+
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context

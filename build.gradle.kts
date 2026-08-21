@@ -25,6 +25,9 @@ abstract class VerifyConfigArchitectureTask : DefaultTask() {
     @get:Input
     abstract val legacyUiDaoAccessBaseline: MapProperty<String, Int>
 
+    @get:Input
+    abstract val legacyAppDbReferenceBaseline: Property<Int>
+
     @TaskAction
     fun verify() {
         val sourceRootDir = sourceRoot.get().asFile
@@ -108,6 +111,28 @@ abstract class VerifyConfigArchitectureTask : DefaultTask() {
                         }
                 }
 
+                if ((modulePath == ":app" || modulePath == ":core:database") &&
+                    (relativePath.contains("/data/entities/") ||
+                        relativePath.contains("/data/dao/"))
+                ) {
+                    if (relativePath.startsWith("app/src/main/")) {
+                        violations += "$relativePath: Room entity/DAO 已迁入 :core:database，禁止回流到 :app"
+                    }
+                    imports.filter {
+                        it == "io.legado.app.data.appDb" ||
+                            it == "io.legado.app.model.ReadBook" ||
+                            it.startsWith("io.legado.app.help.") ||
+                            it.startsWith("io.legado.app.service.") ||
+                            it.startsWith("io.legado.app.ui.") ||
+                            it.startsWith("io.legado.app.feature.")
+                    }.forEach { forbiddenImport ->
+                        violations += "$relativePath: entity/DAO 禁止反向依赖 $forbiddenImport"
+                    }
+                    if (Regex("""\bappDb\s*\.""").containsMatchIn(text)) {
+                        violations += "$relativePath: entity/DAO 禁止直接访问 appDb"
+                    }
+                }
+
                 val compatPrefix =
                     "app/src/main/java/io/legado/app/feature/bookshelf/compat/"
                 if (relativePath.startsWith(compatPrefix)) {
@@ -132,6 +157,7 @@ abstract class VerifyConfigArchitectureTask : DefaultTask() {
                     "rss" to "LegacyRssAdapter.kt",
                     "readaloud" to "LegacyReadAloudAdapter.kt",
                     "ai" to "LegacyAiAdapter.kt",
+                    "reader" to "LegacyReaderAdapter.kt",
                 )
                 phase3CompatFiles.forEach { (feature, allowedFile) ->
                     val prefix = "app/src/main/java/io/legado/app/feature/$feature/compat/"
@@ -155,6 +181,19 @@ abstract class VerifyConfigArchitectureTask : DefaultTask() {
                                 violations += "$relativePath: readaloud 服务桥接只允许播放器协调器：$forbiddenImport"
                             }
                         }
+                    }
+                }
+
+
+                if (relativePath.startsWith("app/src/main/java/io/legado/app/feature/")) {
+                    val allowedCompatFiles = buildSet {
+                        add(compatPrefix + "LegacyBookshelfAdapter.kt")
+                        phase3CompatFiles.forEach { (feature, fileName) ->
+                            add("app/src/main/java/io/legado/app/feature/$feature/compat/$fileName")
+                        }
+                    }
+                    if (relativePath !in allowedCompatFiles) {
+                        violations += "$relativePath: :app 禁止新增 feature 业务实现或兼容适配器"
                     }
                 }
             }
@@ -318,6 +357,18 @@ abstract class VerifyConfigArchitectureTask : DefaultTask() {
             }
         }
 
+        val appDbReferences = kotlinFiles.sumOf { file ->
+            Regex("""\bappDb\b""").findAll(file.readText()).count()
+        }
+        val allowedAppDbReferences = legacyAppDbReferenceBaseline.get()
+        if (appDbReferences > allowedAppDbReferences) {
+            violations += "app/src/main/java: 新增了 " +
+                "${appDbReferences - allowedAppDbReferences} 个全局 appDb 引用"
+        } else if (appDbReferences < allowedAppDbReferences) {
+            violations += "app/src/main/java: 已减少全局 appDb 引用，请将基线从 " +
+                "$allowedAppDbReferences 下调到 $appDbReferences"
+        }
+
         val sourcePaths = kotlinFiles.mapTo(hashSetOf()) {
             it.relativeTo(sourceRootDir).invariantSeparatorsPath
         }
@@ -364,7 +415,8 @@ abstract class VerifyConfigArchitectureTask : DefaultTask() {
                             add("$sourceModule 禁止依赖 :app")
                         }
 
-                        sourceModule.startsWith(":core:") && target.startsWith(":feature:") -> {
+                        sourceModule.startsWith(":core:") &&
+                            (target == ":app" || target.startsWith(":feature:")) -> {
                             add("$sourceModule 禁止依赖 $target")
                         }
                     }
@@ -405,6 +457,17 @@ abstract class VerifyArchitectureGuardFixtureTask : DefaultTask() {
             ":feature:fixture:api 禁止依赖 :feature:bookshelf:impl",
         )) {
             "feature API 架构护栏夹具未被正确拒绝：$apiViolations"
+        }
+
+        val coreViolations = VerifyConfigArchitectureTask.findForbiddenModuleDependencies(
+            sourceModule = ":core:fixture",
+            buildScript = fixture.get().asFile.readText(),
+        )
+        check(coreViolations.toSet() == setOf(
+            ":core:fixture 禁止依赖 :app",
+            ":core:fixture 禁止依赖 :feature:bookshelf:impl",
+        )) {
+            "core 架构护栏夹具未被正确拒绝：$coreViolations"
         }
     }
 }
@@ -503,13 +566,19 @@ abstract class VerifyFeatureMigrationGovernanceTask : DefaultTask() {
             val gradleProperty = required(feature, "gradleProperty")
             val buildConfig = required(feature, "buildConfig")
             val cardPath = required(feature, "card")
-            val legacyPath = required(feature, "legacyPath")
-            val status = required(feature, "status")
+            val legacyUiPath = required(feature, "legacyUiPath")
+            val compatAdapterPath = required(feature, "compatAdapterPath")
+            val formalImplModule = required(feature, "formalImplModule")
+            val implementationStatus = required(feature, "implementationStatus")
+            val implementationEvidence = required(feature, "implementationEvidence")
+            val adapterRemovalEvidence = required(feature, "adapterRemovalEvidence")
+            val implementationBlocker = required(feature, "implementationBlocker")
+            val uiStatus = required(feature, "uiStatus")
             val defaultEnabled = required(feature, "defaultEnabled")
             val removalAllowed = required(feature, "legacyRemovalAllowed")
-            val gateEvidence = required(feature, "gateEvidence")
-            val removalEvidence = required(feature, "removalEvidence")
-            val blocker = required(feature, "blocker")
+            val releaseGateEvidence = required(feature, "releaseGateEvidence")
+            val legacyUiRemovalEvidence = required(feature, "legacyUiRemovalEvidence")
+            val uiBlocker = required(feature, "uiBlocker")
 
             if (!gradleProperties.add(gradleProperty)) {
                 violations += "$feature.gradleProperty 与其他 feature 重复：$gradleProperty"
@@ -517,8 +586,11 @@ abstract class VerifyFeatureMigrationGovernanceTask : DefaultTask() {
             if (!buildConfigConstants.add(buildConfig)) {
                 violations += "$feature.buildConfig 与其他 feature 重复：$buildConfig"
             }
-            if (status !in setOf("experiment", "default_observation", "complete")) {
-                violations += "$feature.status 非法：$status"
+            if (implementationStatus !in setOf("app_adapter", "formal_impl")) {
+                violations += "$feature.implementationStatus 非法：$implementationStatus"
+            }
+            if (uiStatus !in setOf("experiment", "default_observation", "complete")) {
+                violations += "$feature.uiStatus 非法：$uiStatus"
             }
             if (defaultEnabled !in setOf("true", "false")) {
                 violations += "$feature.defaultEnabled 必须是 true 或 false"
@@ -535,11 +607,66 @@ abstract class VerifyFeatureMigrationGovernanceTask : DefaultTask() {
                     violations += "$feature.card 必须明确记录删除条件：$cardPath"
                 }
             }
-            val legacy = resolveRelative(feature, "legacyPath", legacyPath)
+            val legacyUi = resolveRelative(feature, "legacyUiPath", legacyUiPath)
+            val compatAdapter = resolveRelative(feature, "compatAdapterPath", compatAdapterPath)
             val apiModule = root.resolve("feature/$feature/api")
             val uiModule = root.resolve("feature/$feature/ui")
 
-            when (status) {
+            when (implementationStatus) {
+                "app_adapter" -> {
+                    if (formalImplModule != "none") {
+                        violations += "$feature app_adapter 状态 formalImplModule 必须为 none"
+                    }
+                    if (implementationEvidence != "none" || adapterRemovalEvidence != "none") {
+                        violations += "$feature app_adapter 状态不得伪造实现切换或适配器删除证据"
+                    }
+                    if (implementationBlocker == "none") {
+                        violations += "$feature app_adapter 状态必须记录正式实现 blocker"
+                    }
+                    if (compatAdapter?.isFile != true) {
+                        violations += "$feature app_adapter 状态兼容适配器不存在：$compatAdapterPath"
+                    }
+                }
+
+                "formal_impl" -> {
+                    if (formalImplModule == "none") {
+                        violations += "$feature formal_impl 状态必须登记正式 impl 模块"
+                    } else {
+                        val impl = resolveRelative(feature, "formalImplModule", formalImplModule)
+                        if (impl?.isDirectory != true) {
+                            violations += "$feature 正式 impl 模块不存在：$formalImplModule"
+                        }
+                    }
+                    val switchEvidence = resolveRelative(
+                        feature,
+                        "implementationEvidence",
+                        implementationEvidence,
+                    )
+                    if (implementationEvidence == "none" || switchEvidence?.isFile != true) {
+                        violations += "$feature formal_impl 状态必须提供实现切换证据"
+                    }
+                    val adapterEvidence = resolveRelative(
+                        feature,
+                        "adapterRemovalEvidence",
+                        adapterRemovalEvidence,
+                    )
+                    if (adapterRemovalEvidence == "none" || adapterEvidence?.isFile != true) {
+                        violations += "$feature formal_impl 状态必须提供适配器删除证据"
+                    }
+                    if (implementationBlocker != "none") {
+                        violations += "$feature formal_impl 状态 implementationBlocker 必须为 none"
+                    }
+                    if (compatAdapter?.exists() == true) {
+                        violations += "$feature formal_impl 状态仍残留 app 兼容适配器：$compatAdapterPath"
+                    }
+                }
+            }
+
+            if (!apiModule.isDirectory || !uiModule.isDirectory) {
+                violations += "$feature 必须同时存在 api/ui 模块"
+            }
+
+            when (uiStatus) {
                 "experiment" -> {
                     if (defaultEnabled != "false") {
                         violations += "$feature 实验态必须默认关闭"
@@ -547,20 +674,17 @@ abstract class VerifyFeatureMigrationGovernanceTask : DefaultTask() {
                     if (removalAllowed != "false") {
                         violations += "$feature 实验态禁止删除旧路径"
                     }
-                    if (removalEvidence != "none") {
-                        violations += "$feature 实验态 removalEvidence 必须为 none"
+                    if (legacyUiRemovalEvidence != "none") {
+                        violations += "$feature 实验态 legacyUiRemovalEvidence 必须为 none"
                     }
-                    if (gateEvidence != "none") {
-                        violations += "$feature 实验态 gateEvidence 必须为 none"
+                    if (releaseGateEvidence != "none") {
+                        violations += "$feature 实验态 releaseGateEvidence 必须为 none"
                     }
-                    if (blocker == "none") {
+                    if (uiBlocker == "none") {
                         violations += "$feature 实验态必须记录阻塞删除的条件"
                     }
-                    if (legacy != null && !legacy.isFile) {
-                        violations += "$feature 实验态旧路径登记不存在：$legacyPath"
-                    }
-                    if (!apiModule.isDirectory || !uiModule.isDirectory) {
-                        violations += "$feature 实验态必须同时存在 api/ui 模块"
+                    if (legacyUi?.isFile != true) {
+                        violations += "$feature 实验态旧 UI 登记不存在：$legacyUiPath"
                     }
                     activeFlags[buildConfig] = gradleProperty to defaultEnabled
                 }
@@ -572,18 +696,22 @@ abstract class VerifyFeatureMigrationGovernanceTask : DefaultTask() {
                     if (removalAllowed != "false") {
                         violations += "$feature 默认观察态仍禁止删除旧路径"
                     }
-                    if (removalEvidence != "none") {
-                        violations += "$feature 默认观察态 removalEvidence 必须为 none"
+                    if (legacyUiRemovalEvidence != "none") {
+                        violations += "$feature 默认观察态 legacyUiRemovalEvidence 必须为 none"
                     }
-                    val evidence = resolveRelative(feature, "gateEvidence", gateEvidence)
-                    if (gateEvidence == "none" || evidence?.isFile != true) {
+                    val evidence = resolveRelative(
+                        feature,
+                        "releaseGateEvidence",
+                        releaseGateEvidence,
+                    )
+                    if (releaseGateEvidence == "none" || evidence?.isFile != true) {
                         violations += "$feature 默认观察态必须提供存在的设备/发布签收证据"
                     }
-                    if (blocker == "none") {
+                    if (uiBlocker == "none") {
                         violations += "$feature 默认观察态必须记录完成删除前的剩余门禁"
                     }
-                    if (legacy != null && !legacy.isFile) {
-                        violations += "$feature 默认观察态旧路径登记不存在：$legacyPath"
+                    if (legacyUi?.isFile != true) {
+                        violations += "$feature 默认观察态旧 UI 登记不存在：$legacyUiPath"
                     }
                     activeFlags[buildConfig] = gradleProperty to defaultEnabled
                 }
@@ -595,29 +723,37 @@ abstract class VerifyFeatureMigrationGovernanceTask : DefaultTask() {
                     if (removalAllowed != "true") {
                         violations += "$feature 完成态必须明确允许删除旧路径"
                     }
-                    if (blocker != "none") {
-                        violations += "$feature 完成态 blocker 必须为 none"
+                    if (uiBlocker != "none") {
+                        violations += "$feature 完成态 uiBlocker 必须为 none"
                     }
-                    if (legacy != null && legacy.exists()) {
-                        violations += "$feature 完成态仍残留旧路径：$legacyPath"
+                    if (legacyUi?.exists() == true) {
+                        violations += "$feature 完成态仍残留旧 UI：$legacyUiPath"
                     }
                     if (buildConfig.isNotEmpty() && Regex("\\b${Regex.escape(buildConfig)}\\b")
                             .containsMatchIn(sourceText)
                     ) {
                         violations += "$feature 完成态仍在主源码引用临时开关 $buildConfig"
                     }
-                    val evidence = resolveRelative(feature, "removalEvidence", removalEvidence)
-                    if (removalEvidence == "none" || evidence?.isFile != true) {
+                    val evidence = resolveRelative(
+                        feature,
+                        "legacyUiRemovalEvidence",
+                        legacyUiRemovalEvidence,
+                    )
+                    if (legacyUiRemovalEvidence == "none" || evidence?.isFile != true) {
                         violations += "$feature 完成态必须提供存在的删除签收证据"
                     }
-                    val gate = resolveRelative(feature, "gateEvidence", gateEvidence)
-                    if (gateEvidence == "none" || gate?.isFile != true) {
+                    val gate = resolveRelative(
+                        feature,
+                        "releaseGateEvidence",
+                        releaseGateEvidence,
+                    )
+                    if (releaseGateEvidence == "none" || gate?.isFile != true) {
                         violations += "$feature 完成态必须保留设备/发布签收证据"
                     }
                 }
             }
 
-            if (status != "complete" && buildConfig.isNotEmpty() &&
+            if (uiStatus != "complete" && buildConfig.isNotEmpty() &&
                 !Regex("\\b${Regex.escape(buildConfig)}\\b").containsMatchIn(sourceText)
             ) {
                 violations += "$feature 主源码没有消费登记的临时开关 $buildConfig"
@@ -744,6 +880,7 @@ val verifyConfigArchitecture = tasks.register<VerifyConfigArchitectureTask>(
             "io/legado/app/ui/widget/keyboard/KeyboardToolPop.kt" to 1,
         )
     )
+    legacyAppDbReferenceBaseline.set(430)
 }
 
 val verifyArchitectureGuardFixture = tasks.register<VerifyArchitectureGuardFixtureTask>(

@@ -1,12 +1,6 @@
-plugins { alias(libs.plugins.android.library); alias(libs.plugins.compose.compiler) }
+plugins { id("legado.feature.ui") }
 android {
     namespace = "io.legado.app.feature.ai.ui"
-    compileSdk = 37
-    defaultConfig { minSdk = 26; consumerProguardFiles("consumer-rules.pro") }
-    buildFeatures { compose = true }
-    compileOptions { sourceCompatibility = JavaVersion.VERSION_21; targetCompatibility = JavaVersion.VERSION_21 }
-    kotlin.jvmToolchain(21)
-    lint { checkDependencies = true; targetSdk = 37 }
 }
 dependencies {
     api(project(":feature:ai:api")); implementation(project(":core:designsystem"))

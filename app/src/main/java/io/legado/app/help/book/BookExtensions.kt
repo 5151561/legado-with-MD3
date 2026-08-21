@@ -11,6 +11,7 @@ import io.legado.app.constant.AppPattern
 import io.legado.app.constant.BookSourceType
 import io.legado.app.constant.BookType
 import io.legado.app.data.appDb
+import io.legado.app.data.compat.LegacyBookPersistence
 import io.legado.app.data.dao.BookDao
 import io.legado.app.data.dao.BookGroupDao
 import io.legado.app.data.entities.BaseBook
@@ -210,7 +211,7 @@ fun Book.getLocalUri(): Uri {
                 appDb.runInTransaction {
 
                     if (oldBook.bookUrl == newBookUrl) {
-                        save()
+                        LegacyBookPersistence.save(this)
                     } else {
                         val newBook = oldBook.copy(bookUrl = newBookUrl)
                         appDb.bookDao.replace(oldBook, newBook)
@@ -242,7 +243,7 @@ fun Book.getLocalUri(): Uri {
 
             appDb.runInTransaction {
                 if (oldBook.bookUrl == newBookUrl) {
-                    save()
+                    LegacyBookPersistence.save(this)
                 } else {
                     val newBook = oldBook.copy(bookUrl = newBookUrl)
                     appDb.bookDao.replace(oldBook, newBook)

@@ -3,6 +3,7 @@ package io.legado.app.domain.usecase
 import io.legado.app.data.entities.Book
 import io.legado.app.data.entities.BookChapter
 import io.legado.app.data.entities.BookSource
+import io.legado.app.data.entities.getBookSource
 import io.legado.app.data.entities.SearchBook
 import io.legado.app.domain.gateway.BookSearchGateway
 import io.legado.app.domain.gateway.ChangeSourceSettingsGateway

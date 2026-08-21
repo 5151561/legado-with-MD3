@@ -1,5 +1,7 @@
 package io.legado.app.ui.book.source.edit
 
+import io.legado.app.data.compat.*
+
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

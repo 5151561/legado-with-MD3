@@ -1,5 +1,7 @@
 package io.legado.app.ui.rss.article
 
+import io.legado.app.data.compat.*
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect

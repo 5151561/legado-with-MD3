@@ -13,6 +13,7 @@ import io.legado.app.data.AppDatabase
 import io.legado.app.data.entities.Book
 import io.legado.app.data.entities.Book.ReadConfig
 import io.legado.app.data.entities.BookChapter
+import io.legado.app.data.repository.BookRepository
 import io.legado.app.domain.gateway.OtherSettingsGateway
 import io.legado.app.domain.gateway.ReadSettingsGateway
 import io.legado.app.exception.NoStackTraceException
@@ -50,6 +51,7 @@ sealed interface MangaReaderActionPaymentResult {
 class MangaReaderActionRepository(
     private val application: Application,
     private val database: AppDatabase,
+    private val bookRepository: BookRepository,
     private val imageLoader: ImageLoader,
     private val otherSettingsGateway: OtherSettingsGateway,
     private val readSettingsGateway: ReadSettingsGateway,
@@ -73,14 +75,14 @@ class MangaReaderActionRepository(
             chineseConverterType = readSettingsGateway.currentSettings.chineseConverterType,
         )
         book.removeType(BookType.updateError)
-        database.bookDao.getBook(currentBookUrl)?.delete()
+        database.bookDao.getBook(currentBookUrl)?.let { bookRepository.deleteBook(it) }
         database.bookDao.insert(book)
         database.bookChapterDao.insert(*toc.toTypedArray())
         postEvent(EventBus.SOURCE_CHANGED, book.bookUrl)
     }
 
     suspend fun removeTemporaryBook(bookUrl: String) {
-        database.bookDao.getBook(bookUrl)?.delete()
+        database.bookDao.getBook(bookUrl)?.let { bookRepository.deleteBook(it) }
     }
 
     suspend fun addCurrentBookToShelf(bookUrl: String) {

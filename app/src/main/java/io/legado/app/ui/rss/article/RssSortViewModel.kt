@@ -1,5 +1,7 @@
 package io.legado.app.ui.rss.article
 
+import io.legado.app.data.compat.*
+
 import android.app.Application
 import androidx.lifecycle.MutableLiveData
 import io.legado.app.base.BaseViewModel

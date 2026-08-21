@@ -1,5 +1,7 @@
 package io.legado.app.domain.usecase
 
+import io.legado.app.data.compat.*
+
 import com.script.rhino.runScriptWithContext
 import io.legado.app.data.entities.RssSource
 

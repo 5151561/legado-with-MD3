@@ -20,6 +20,7 @@ import io.legado.app.data.appDb
 import io.legado.app.data.entities.BookGroup
 import io.legado.app.databinding.DialogRecyclerViewBinding
 import io.legado.app.databinding.ItemBookGroupManageBinding
+import io.legado.app.help.book.getManageName
 //import io.legado.app.lib.theme.accentColor
 //import io.legado.app.lib.theme.backgroundColor
 //import io.legado.app.lib.theme.primaryColor

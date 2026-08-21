@@ -9,6 +9,7 @@ import io.legado.app.data.appDb
 import io.legado.app.data.entities.Book
 import io.legado.app.data.entities.BookProgress
 import io.legado.app.data.entities.BookSource
+import io.legado.app.data.repository.BookRepository
 import io.legado.app.help.AppWebDav
 import io.legado.app.help.CacheManager
 import io.legado.app.help.book.BookHelp
@@ -28,17 +29,20 @@ import io.legado.app.utils.printOnDebug
 import io.legado.app.utils.stackTraceStr
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import splitties.init.appCtx
 import java.io.File
 import java.util.WeakHashMap
 import java.util.concurrent.TimeUnit
 
-object BookController {
+object BookController : KoinComponent {
 
     private lateinit var book: Book
     private var bookSource: BookSource? = null
     private var bookUrl: String = ""
     private val defaultCoverCache by lazy { WeakHashMap<Drawable, Bitmap>() }
+    private val bookRepository: BookRepository by inject()
 
     /**
      * 书架所有书籍
@@ -229,7 +233,7 @@ object BookController {
         val returnData = ReturnData()
         GSON.fromJsonObject<Book>(postData).getOrNull()?.let { book ->
             AppWebDav.uploadBookProgress(book)
-            book.save()
+            bookRepository.save(book)
             return returnData.setData("")
         }
         return returnData.setErrorMsg("格式不对")
@@ -238,10 +242,10 @@ object BookController {
     /**
      * 删除书籍
      */
-    fun deleteBook(postData: String?): ReturnData {
+    suspend fun deleteBook(postData: String?): ReturnData {
         val returnData = ReturnData()
         GSON.fromJsonObject<Book>(postData).getOrNull()?.let { book ->
-            book.delete()
+            bookRepository.deleteBook(book)
             return returnData.setData("")
         }
         return returnData.setErrorMsg("格式不对")

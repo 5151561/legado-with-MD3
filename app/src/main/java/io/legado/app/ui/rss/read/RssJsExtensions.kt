@@ -1,5 +1,7 @@
 package io.legado.app.ui.rss.read
 
+import io.legado.app.data.compat.*
+
 import android.webkit.JavascriptInterface
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
