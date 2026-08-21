@@ -49,11 +49,15 @@ import io.legado.app.domain.gateway.AppLocaleGateway
 import io.legado.app.domain.gateway.AppShellSettingsGateway
 import io.legado.app.domain.gateway.BackupSettingsGateway
 import io.legado.app.domain.gateway.ReadStyleGateway
+import io.legado.app.feature.bookshelf.impl.bookshelfImplModule
 import io.legado.app.feature.bookshelf.ui.bookshelfUiModule
+import io.legado.app.feature.ai.impl.aiImplModule
 import io.legado.app.feature.ai.ui.aiUiModule
+import io.legado.app.feature.catalog.impl.catalogImplModule
 import io.legado.app.feature.catalog.ui.catalogUiModule
 import io.legado.app.feature.readaloud.ui.readAloudUiModule
 import io.legado.app.feature.reader.ui.readerUiModule
+import io.legado.app.feature.rss.impl.rssImplModule
 import io.legado.app.feature.rss.ui.rssUiModule
 import io.legado.app.feature.settings.ui.settingsUiModule
 import io.legado.app.help.AppFreezeMonitor
@@ -126,12 +130,16 @@ class App : Application(), SingletonImageLoader.Factory {
             modules(
                 appDatabaseModule,
                 appModule,
+                bookshelfImplModule,
                 bookshelfUiModule,
                 settingsUiModule,
+                catalogImplModule,
                 catalogUiModule,
+                rssImplModule,
                 rssUiModule,
                 readAloudUiModule,
                 readerUiModule,
+                aiImplModule,
                 aiUiModule,
             )
         }

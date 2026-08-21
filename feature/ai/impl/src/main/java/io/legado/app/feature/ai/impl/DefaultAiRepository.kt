@@ -1,0 +1,65 @@
+package io.legado.app.feature.ai.impl
+
+import io.legado.app.domain.model.AiTaskType
+import io.legado.app.feature.ai.api.AiCommandResult
+import io.legado.app.feature.ai.api.AiCommands
+import io.legado.app.feature.ai.api.AiModelSummary
+import io.legado.app.feature.ai.api.AiOverview
+import io.legado.app.feature.ai.api.AiOverviewQuery
+import io.legado.app.feature.ai.api.AiProviderSummary
+import io.legado.app.feature.ai.api.AiQueryState
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
+
+/**
+ * AI overview implementation. Room is the single source of truth for providers, models and presets;
+ * writing the default model stays with the app shell through [AiDefaultModelHost].
+ */
+internal class DefaultAiRepository(
+    private val store: AiProfileStore,
+    private val defaultModelHost: AiDefaultModelHost,
+) : AiOverviewQuery, AiCommands {
+
+    override fun observeOverview() = flow {
+        emit(AiQueryState.Loading)
+        emitAll(
+            combine(
+                store.observeProviders(),
+                store.observeModels(),
+                store.observePresets(),
+            ) { providers, models, presets ->
+                val defaultModelId = presets.firstOrNull {
+                    it.taskType == AiTaskType.TRANSLATE_CHAPTER && it.isDefault
+                }?.modelProfileId
+                val providerEnabled = providers.associate { it.id to it.enabled }
+                AiQueryState.Data(
+                    AiOverview(
+                        providers = providers.map {
+                            AiProviderSummary(it.id, it.name, it.protocol, it.enabled)
+                        },
+                        models = models.map {
+                            AiModelSummary(
+                                id = it.id,
+                                providerId = it.providerId,
+                                name = it.displayName,
+                                modelId = it.modelId,
+                                // 供应商停用时其模型一律视为不可用
+                                enabled = it.enabled && providerEnabled[it.providerId] == true,
+                                isDefault = it.id == defaultModelId,
+                            )
+                        },
+                        presetCount = presets.size,
+                    )
+                )
+            }.catch { emit(AiQueryState.Failed(retryable = true)) },
+        )
+    }
+
+    override suspend fun setDefaultModel(modelId: String): AiCommandResult =
+        runCatching { defaultModelHost.setDefaultModel(modelId) }.fold(
+            onSuccess = { AiCommandResult.Success },
+            onFailure = { AiCommandResult.Failure(it.message) },
+        )
+}

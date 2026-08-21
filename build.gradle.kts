@@ -28,6 +28,23 @@ abstract class VerifyConfigArchitectureTask : DefaultTask() {
     @get:Input
     abstract val legacyAppDbReferenceBaseline: Property<Int>
 
+    /**
+     * 已经拥有正式 impl 的 feature API 接口：绑定权归 `:feature:<name>:impl`，
+     * `:app` 只加载 Koin module 并提供宿主接缝，不得再自行绑定。
+     */
+    private val formalImplBoundApis = setOf(
+        "io.legado.app.feature.bookshelf.api.BookshelfQuery",
+        "io.legado.app.feature.bookshelf.api.BookshelfCommands",
+        "io.legado.app.feature.bookshelf.api.BookshelfGroupCommands",
+        "io.legado.app.feature.bookshelf.api.BookshelfPreferencesGateway",
+        "io.legado.app.feature.rss.api.RssQuery",
+        "io.legado.app.feature.rss.api.RssCommands",
+        "io.legado.app.feature.catalog.api.CatalogQuery",
+        "io.legado.app.feature.catalog.api.CatalogCommands",
+        "io.legado.app.feature.ai.api.AiOverviewQuery",
+        "io.legado.app.feature.ai.api.AiCommands",
+    )
+
     @TaskAction
     fun verify() {
         val sourceRootDir = sourceRoot.get().asFile
@@ -133,30 +150,19 @@ abstract class VerifyConfigArchitectureTask : DefaultTask() {
                     }
                 }
 
-                val compatPrefix =
-                    "app/src/main/java/io/legado/app/feature/bookshelf/compat/"
-                if (relativePath.startsWith(compatPrefix)) {
-                    if (relativePath != compatPrefix + "LegacyBookshelfAdapter.kt") {
-                        violations += "$relativePath: bookshelf 临时兼容接缝只允许单一适配器文件"
-                    }
-                    imports.filter {
-                        it == "io.legado.app.data.appDb" ||
-                            it.startsWith("io.legado.app.data.dao.") ||
-                            it.startsWith("io.legado.app.help.config.") ||
-                            it.startsWith("io.legado.app.model.") ||
-                            it.startsWith("io.legado.app.service.") ||
-                            it.startsWith("io.legado.app.ui.")
-                    }.forEach { forbiddenImport ->
-                        violations += "$relativePath: 临时适配器禁止扩大到 $forbiddenImport"
+                // Phase 7/8：已建立正式 impl 的 feature，:app 不得再绑定其 API 接口或重建适配器。
+                if (modulePath == ":app" && relativePath.startsWith("app/src/main/")) {
+                    imports.filter { it in formalImplBoundApis }.forEach { forbiddenImport ->
+                        val feature = forbiddenImport.removePrefix("io.legado.app.feature.")
+                            .substringBefore('.')
+                        violations += "$relativePath: $feature API 只由 " +
+                            ":feature:$feature:impl 绑定，:app 禁止导入 $forbiddenImport"
                     }
                 }
 
                 val phase3CompatFiles = mapOf(
                     "settings" to "LegacySettingsAdapter.kt",
-                    "catalog" to "LegacyCatalogAdapter.kt",
-                    "rss" to "LegacyRssAdapter.kt",
                     "readaloud" to "LegacyReadAloudAdapter.kt",
-                    "ai" to "LegacyAiAdapter.kt",
                     "reader" to "LegacyReaderAdapter.kt",
                 )
                 phase3CompatFiles.forEach { (feature, allowedFile) ->
@@ -187,7 +193,6 @@ abstract class VerifyConfigArchitectureTask : DefaultTask() {
 
                 if (relativePath.startsWith("app/src/main/java/io/legado/app/feature/")) {
                     val allowedCompatFiles = buildSet {
-                        add(compatPrefix + "LegacyBookshelfAdapter.kt")
                         phase3CompatFiles.forEach { (feature, fileName) ->
                             add("app/src/main/java/io/legado/app/feature/$feature/compat/$fileName")
                         }
