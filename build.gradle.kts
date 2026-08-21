@@ -409,6 +409,239 @@ abstract class VerifyArchitectureGuardFixtureTask : DefaultTask() {
     }
 }
 
+@DisableCachingByDefault(because = "迁移治理任务没有输出文件")
+abstract class VerifyFeatureMigrationGovernanceTask : DefaultTask() {
+
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val registryFile: RegularFileProperty
+
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val appBuildFile: RegularFileProperty
+
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val appMainSourceFiles: ConfigurableFileCollection
+
+    @get:Internal
+    abstract val projectRoot: DirectoryProperty
+
+    @TaskAction
+    fun verifyGovernance() {
+        val root = projectRoot.get().asFile
+        val registry = java.util.Properties().apply {
+            registryFile.get().asFile.reader(Charsets.UTF_8).use { load(it) }
+        }
+        val violations = mutableListOf<String>()
+        val featureIds = registry.getProperty("features")
+            ?.split(',')
+            ?.map(String::trim)
+            ?.filter(String::isNotEmpty)
+            .orEmpty()
+
+        if (featureIds.isEmpty()) {
+            violations += "迁移登记表必须声明非空 features"
+        }
+        featureIds.groupingBy { it }.eachCount()
+            .filterValues { it > 1 }
+            .keys
+            .forEach { violations += "迁移登记表重复声明 feature：$it" }
+
+        val appBuildText = appBuildFile.get().asFile.readText()
+        val declaredFlagEntries = Regex(
+            """buildConfigField\(\s*"boolean"\s*,\s*"([A-Z0-9_]+)"\s*,\s*providers\.gradleProperty\("([A-Za-z0-9]+)"\)\.getOrElse\("(true|false)"\)\s*,?\s*\)"""
+        ).findAll(appBuildText)
+            .map { match ->
+                match.groupValues[1] to Pair(match.groupValues[2], match.groupValues[3])
+            }
+            .filter { (constant, _) ->
+                constant.startsWith("USE_COMPOSE_") && constant.endsWith("_FEATURE")
+            }
+            .toList()
+        declaredFlagEntries.groupingBy { it.first }.eachCount()
+            .filterValues { it > 1 }
+            .keys
+            .forEach { violations += "app/build.gradle.kts 重复声明迁移开关：$it" }
+        val declaredFlags = declaredFlagEntries.toMap()
+        val mentionedBuildConfigFlags = Regex(""""(USE_COMPOSE_[A-Z0-9_]+_FEATURE)"""")
+            .findAll(appBuildText)
+            .map { it.groupValues[1] }
+            .toSet()
+        (mentionedBuildConfigFlags - declaredFlags.keys).forEach {
+            violations += "app/build.gradle.kts 的迁移开关声明无法按治理格式解析：$it"
+        }
+        val sourceText = appMainSourceFiles.files
+            .asSequence()
+            .filter { it.isFile && it.extension in setOf("kt", "java") }
+            .joinToString(separator = "\n") { it.readText() }
+        val activeFlags = mutableMapOf<String, Pair<String, String>>()
+        val gradleProperties = mutableSetOf<String>()
+        val buildConfigConstants = mutableSetOf<String>()
+
+        fun required(feature: String, field: String): String {
+            val key = "$feature.$field"
+            return registry.getProperty(key)?.trim().orEmpty().also { value ->
+                if (value.isEmpty()) violations += "$key 不能为空"
+            }
+        }
+
+        fun resolveRelative(feature: String, field: String, value: String): File? {
+            if (value.isEmpty()) return null
+            val candidate = File(value)
+            if (candidate.isAbsolute || value.split('/', '\\').any { it == ".." }) {
+                violations += "$feature.$field 必须是仓库内相对路径：$value"
+                return null
+            }
+            return root.resolve(value)
+        }
+
+        featureIds.forEach { feature ->
+            if (!Regex("[a-z][a-z0-9]*").matches(feature)) {
+                violations += "非法 feature id：$feature"
+            }
+            val gradleProperty = required(feature, "gradleProperty")
+            val buildConfig = required(feature, "buildConfig")
+            val cardPath = required(feature, "card")
+            val legacyPath = required(feature, "legacyPath")
+            val status = required(feature, "status")
+            val defaultEnabled = required(feature, "defaultEnabled")
+            val removalAllowed = required(feature, "legacyRemovalAllowed")
+            val gateEvidence = required(feature, "gateEvidence")
+            val removalEvidence = required(feature, "removalEvidence")
+            val blocker = required(feature, "blocker")
+
+            if (!gradleProperties.add(gradleProperty)) {
+                violations += "$feature.gradleProperty 与其他 feature 重复：$gradleProperty"
+            }
+            if (!buildConfigConstants.add(buildConfig)) {
+                violations += "$feature.buildConfig 与其他 feature 重复：$buildConfig"
+            }
+            if (status !in setOf("experiment", "default_observation", "complete")) {
+                violations += "$feature.status 非法：$status"
+            }
+            if (defaultEnabled !in setOf("true", "false")) {
+                violations += "$feature.defaultEnabled 必须是 true 或 false"
+            }
+            if (removalAllowed !in setOf("true", "false")) {
+                violations += "$feature.legacyRemovalAllowed 必须是 true 或 false"
+            }
+
+            val card = resolveRelative(feature, "card", cardPath)
+            if (card != null) {
+                if (!card.isFile) {
+                    violations += "$feature.card 不存在：$cardPath"
+                } else if ("删除条件" !in card.readText() && "删除与后续条件" !in card.readText()) {
+                    violations += "$feature.card 必须明确记录删除条件：$cardPath"
+                }
+            }
+            val legacy = resolveRelative(feature, "legacyPath", legacyPath)
+            val apiModule = root.resolve("feature/$feature/api")
+            val uiModule = root.resolve("feature/$feature/ui")
+
+            when (status) {
+                "experiment" -> {
+                    if (defaultEnabled != "false") {
+                        violations += "$feature 实验态必须默认关闭"
+                    }
+                    if (removalAllowed != "false") {
+                        violations += "$feature 实验态禁止删除旧路径"
+                    }
+                    if (removalEvidence != "none") {
+                        violations += "$feature 实验态 removalEvidence 必须为 none"
+                    }
+                    if (gateEvidence != "none") {
+                        violations += "$feature 实验态 gateEvidence 必须为 none"
+                    }
+                    if (blocker == "none") {
+                        violations += "$feature 实验态必须记录阻塞删除的条件"
+                    }
+                    if (legacy != null && !legacy.isFile) {
+                        violations += "$feature 实验态旧路径登记不存在：$legacyPath"
+                    }
+                    if (!apiModule.isDirectory || !uiModule.isDirectory) {
+                        violations += "$feature 实验态必须同时存在 api/ui 模块"
+                    }
+                    activeFlags[buildConfig] = gradleProperty to defaultEnabled
+                }
+
+                "default_observation" -> {
+                    if (defaultEnabled != "true") {
+                        violations += "$feature 默认观察态必须默认开启"
+                    }
+                    if (removalAllowed != "false") {
+                        violations += "$feature 默认观察态仍禁止删除旧路径"
+                    }
+                    if (removalEvidence != "none") {
+                        violations += "$feature 默认观察态 removalEvidence 必须为 none"
+                    }
+                    val evidence = resolveRelative(feature, "gateEvidence", gateEvidence)
+                    if (gateEvidence == "none" || evidence?.isFile != true) {
+                        violations += "$feature 默认观察态必须提供存在的设备/发布签收证据"
+                    }
+                    if (blocker == "none") {
+                        violations += "$feature 默认观察态必须记录完成删除前的剩余门禁"
+                    }
+                    if (legacy != null && !legacy.isFile) {
+                        violations += "$feature 默认观察态旧路径登记不存在：$legacyPath"
+                    }
+                    activeFlags[buildConfig] = gradleProperty to defaultEnabled
+                }
+
+                "complete" -> {
+                    if (defaultEnabled != "true") {
+                        violations += "$feature 完成态必须记录新实现为默认入口"
+                    }
+                    if (removalAllowed != "true") {
+                        violations += "$feature 完成态必须明确允许删除旧路径"
+                    }
+                    if (blocker != "none") {
+                        violations += "$feature 完成态 blocker 必须为 none"
+                    }
+                    if (legacy != null && legacy.exists()) {
+                        violations += "$feature 完成态仍残留旧路径：$legacyPath"
+                    }
+                    if (buildConfig.isNotEmpty() && Regex("\\b${Regex.escape(buildConfig)}\\b")
+                            .containsMatchIn(sourceText)
+                    ) {
+                        violations += "$feature 完成态仍在主源码引用临时开关 $buildConfig"
+                    }
+                    val evidence = resolveRelative(feature, "removalEvidence", removalEvidence)
+                    if (removalEvidence == "none" || evidence?.isFile != true) {
+                        violations += "$feature 完成态必须提供存在的删除签收证据"
+                    }
+                    val gate = resolveRelative(feature, "gateEvidence", gateEvidence)
+                    if (gateEvidence == "none" || gate?.isFile != true) {
+                        violations += "$feature 完成态必须保留设备/发布签收证据"
+                    }
+                }
+            }
+
+            if (status != "complete" && buildConfig.isNotEmpty() &&
+                !Regex("\\b${Regex.escape(buildConfig)}\\b").containsMatchIn(sourceText)
+            ) {
+                violations += "$feature 主源码没有消费登记的临时开关 $buildConfig"
+            }
+        }
+
+        if (declaredFlags != activeFlags) {
+            val unregistered = declaredFlags.keys - activeFlags.keys
+            val missing = activeFlags.keys - declaredFlags.keys
+            val mismatched = declaredFlags.keys.intersect(activeFlags.keys)
+                .filter { declaredFlags[it] != activeFlags[it] }
+            unregistered.forEach { violations += "app/build.gradle.kts 存在未登记迁移开关：$it" }
+            missing.forEach { violations += "迁移登记表中的开关未在 app/build.gradle.kts 声明：$it" }
+            mismatched.forEach {
+                violations += "迁移开关 $it 的 Gradle property 或默认值与登记表不一致"
+            }
+        }
+
+        check(violations.isEmpty()) {
+            violations.joinToString(prefix = "Feature 迁移治理失败:\n", separator = "\n")
+        }
+    }
+}
+
 buildscript {
     extra.apply {
         set("compile_sdk_version", 36)
@@ -521,8 +754,21 @@ val verifyArchitectureGuardFixture = tasks.register<VerifyArchitectureGuardFixtu
     fixture.set(layout.projectDirectory.file("tools/architecture-fixtures/feature-ui.gradle.kts"))
 }
 
+val verifyFeatureMigrationGovernance = tasks.register<VerifyFeatureMigrationGovernanceTask>(
+    "verifyFeatureMigrationGovernance"
+) {
+    group = "verification"
+    description = "校验 Compose feature 灰度开关、迁移卡与旧路径删除许可保持一致"
+    registryFile.set(layout.projectDirectory.file("config/compose-feature-migrations.properties"))
+    appBuildFile.set(layout.projectDirectory.file("app/build.gradle.kts"))
+    appMainSourceFiles.from(
+        fileTree("app/src/main") { include("**/*.kt", "**/*.java") }.files,
+    )
+    projectRoot.set(layout.projectDirectory)
+}
+
 verifyConfigArchitecture.configure {
-    dependsOn(verifyArchitectureGuardFixture)
+    dependsOn(verifyArchitectureGuardFixture, verifyFeatureMigrationGovernance)
 }
 
 subprojects {

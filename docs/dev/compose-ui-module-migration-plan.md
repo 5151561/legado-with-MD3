@@ -1,6 +1,6 @@
 # Compose UI 重做与业务模块化迁移计划
 
-> 状态：Phase 0、Phase 1 已完成；Phase 2、Phase 3、Phase 4 工程实现与范围内自动验证已完成，灰度入口默认关闭，设备人工矩阵待发布前执行
+> 状态：Phase 0、Phase 1 已完成；Phase 2、Phase 3、Phase 4 工程实现与范围内自动验证已完成；Phase 5 治理门禁已建立，灰度入口默认关闭，旧路径删除等待发布与稳定版本证据
 > 日期：2026-08-21
 > 范围：Android 端 Compose UI 的重做，以及为它提供稳定边界的业务模块化。**不包含** `modules/web/` Vue 前端重做，也不把内嵌 Ktor 服务改造成独立云端后端。
 
@@ -326,6 +326,12 @@ Lint、架构护栏，以及开启 `readerFeatureEnabled` 的 `:app:compileAppDe
 不改变默认 renderer。
 
 ### Phase 5：删除旧路径并强化治理
+
+实施产物：[`phase5-migration-governance.md`](./phase5-migration-governance.md) 与
+[`config/compose-feature-migrations.properties`](../../config/compose-feature-migrations.properties)。
+七个灰度 feature 的开关、默认状态、迁移卡、旧适配器和删除 blocker 已统一登记；
+`verifyFeatureMigrationGovernance` 已接入架构门禁。当前所有 feature 均为 `experiment`，没有一项
+满足删除条件，因此本批只强化治理，不伪造稳定版本或设备签收，也不提前删除旧路径。
 
 **目的**：让迁移带来真实的维护收益，而不是长期双轨。
 
