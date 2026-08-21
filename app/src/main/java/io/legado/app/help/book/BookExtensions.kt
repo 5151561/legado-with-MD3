@@ -58,12 +58,7 @@ val Book.isVideo: Boolean
     get() = isType(BookType.video)
 
 val Book.isLocal: Boolean
-    get() {
-        if (type == 0) {
-            return origin == BookType.localTag || origin.startsWith(BookType.webDavTag)
-        }
-        return isType(BookType.local)
-    }
+    get() = isLocalBook()
 
 val Book.isLocalTxt: Boolean
     get() = isLocal && originName.endsWith(".txt", true)

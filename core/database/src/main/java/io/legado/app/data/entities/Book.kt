@@ -158,6 +158,16 @@ data class Book(
 
     fun getRealAuthor() = author.replace(AppPattern.authorRegex, "")
 
+    /**
+     * 是否本地书籍。旧字段 type 为 0 的历史数据只能靠 origin 判定，因此保留双分支。
+     * `io.legado.app.help.book.isLocal` 与书架实现共用这一个判定，避免两处规则漂移。
+     */
+    fun isLocalBook(): Boolean = if (type == 0) {
+        origin == BookType.localTag || origin.startsWith(BookType.webDavTag)
+    } else {
+        type and BookType.local > 0
+    }
+
     fun getUnreadChapterNum() = max(
         BookModelRuntimeRegistry.runtime.simulatedTotalChapterNum(this) - durChapterIndex - 1,
         0,

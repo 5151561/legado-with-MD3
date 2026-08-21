@@ -16,20 +16,6 @@ object AiProtocol {
     const val GOOGLE_TRANSLATE = "google_translate"
 }
 
-object AiTaskType {
-    const val CHAT = "chat"
-    const val TRANSLATE_CHAPTER = "translate_chapter"
-    const val SUMMARIZE_CHAPTER = "summarize_chapter"
-    const val SUMMARIZE_BOOK = "summarize_book"
-    const val EXPLAIN_SELECTION = "explain_selection"
-    const val CLEAN_SELECTION = "clean_selection"
-    const val TEXT_FACTORY = "text_factory"
-    const val REWRITE_TEXT = "rewrite_text"
-    const val ANALYZE_SPEECH = "analyze_speech"
-    const val IDENTIFY_CHARACTERS = "identify_characters"
-    const val BOOKSHELF_AUTO_GROUP = "bookshelf_auto_group"
-}
-
 object AiPromptTemplate {
     const val DEFAULT_CHAPTER_SUMMARY =
         "Summarize the following fiction chapter in the reader's language. Keep it concise, cover key events, character changes, conflicts, and unresolved hooks. Do not invent facts."
