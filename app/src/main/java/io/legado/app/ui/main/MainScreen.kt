@@ -63,7 +63,10 @@ import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import io.legado.app.BuildConfig
 import io.legado.app.R
+import io.legado.app.feature.bookshelf.ui.BookshelfOpenBookRequest
+import io.legado.app.feature.bookshelf.ui.BookshelfRouteScreen as FeatureBookshelfRouteScreen
 import io.legado.app.ui.main.bookshelf.BookShelfItem
 import io.legado.app.ui.main.bookshelf.BookshelfRouteScreen
 import io.legado.app.ui.main.bookshelf.BookshelfViewModel
@@ -110,7 +113,7 @@ fun MainScreen(
     onNavigateToLocalImport: () -> Unit,
     onNavigateToCache: (Long) -> Unit,
     onNavigateToBookCacheManage: () -> Unit,
-    onOpenBookshelfBook: (BookShelfItem) -> Unit,
+    onOpenBookshelfBook: (BookshelfOpenBookRequest) -> Unit,
     onNavigateToBackupSettings: () -> Unit,
     onNavigateToBookInfo: (name: String, author: String, bookUrl: String, origin: String?, coverPath: String?, sharedCoverKey: String?) -> Unit,
     onNavigateToExploreShow: (title: String?, sourceUrl: String, exploreUrl: String?) -> Unit,
@@ -413,33 +416,61 @@ fun MainScreen(
                                 animatedVisibilityScope = animatedVisibilityScope,
                             )
 
-                            MainDestination.Bookshelf -> BookshelfRouteScreen(
-                                scrollToTopRequest = bookshelfScrollToTopRequest,
-                                onScrollToTopRequestHandled = { handledRequest ->
-                                    if (bookshelfScrollToTopRequest == handledRequest) {
-                                        bookshelfScrollToTopRequest = 0L
-                                    }
-                                },
-                                onBookClick = { book ->
-                                    onOpenBookshelfBook(book)
-                                },
-                                onBookLongClick = { book, sharedCoverKey ->
-                                    onNavigateToBookInfo(
-                                        book.name,
-                                        book.author,
-                                        book.bookUrl,
-                                        book.origin,
-                                        book.getDisplayCover(),
-                                        sharedCoverKey
+                            MainDestination.Bookshelf -> {
+                                if (BuildConfig.USE_COMPOSE_BOOKSHELF_FEATURE) {
+                                    FeatureBookshelfRouteScreen(
+                                        scrollToTopRequest = bookshelfScrollToTopRequest,
+                                        onScrollToTopRequestHandled = { handledRequest ->
+                                            if (bookshelfScrollToTopRequest == handledRequest) {
+                                                bookshelfScrollToTopRequest = 0L
+                                            }
+                                        },
+                                        onOpenBook = onOpenBookshelfBook,
+                                        onOpenBookInfo = { book ->
+                                            onNavigateToBookInfo(
+                                                book.name,
+                                                book.author,
+                                                book.id,
+                                                book.origin,
+                                                book.coverUrl,
+                                                null,
+                                            )
+                                        },
+                                        onNavigateToLocalImport = onNavigateToLocalImport,
+                                        onNavigateToRemoteImport = onNavigateToRemoteImport,
+                                        onNavigateToGlobalSearch = onNavigateToSearch,
+                                        onNavigateToManage = onNavigateToCache,
                                     )
-                                },
-                                onNavigateToSearch = { query -> onNavigateToSearch(query) },
-                                onNavigateToRemoteImport = onNavigateToRemoteImport,
-                                onNavigateToLocalImport = onNavigateToLocalImport,
-                                onNavigateToCache = onNavigateToCache,
-                                sharedTransitionScope = sharedTransitionScope,
-                                animatedVisibilityScope = animatedVisibilityScope,
-                            )
+                                } else {
+                                    BookshelfRouteScreen(
+                                        scrollToTopRequest = bookshelfScrollToTopRequest,
+                                        onScrollToTopRequestHandled = { handledRequest ->
+                                            if (bookshelfScrollToTopRequest == handledRequest) {
+                                                bookshelfScrollToTopRequest = 0L
+                                            }
+                                        },
+                                        onBookClick = { book ->
+                                            onOpenBookshelfBook(book.toFeatureOpenRequest())
+                                        },
+                                        onBookLongClick = { book, sharedCoverKey ->
+                                            onNavigateToBookInfo(
+                                                book.name,
+                                                book.author,
+                                                book.bookUrl,
+                                                book.origin,
+                                                book.getDisplayCover(),
+                                                sharedCoverKey
+                                            )
+                                        },
+                                        onNavigateToSearch = { query -> onNavigateToSearch(query) },
+                                        onNavigateToRemoteImport = onNavigateToRemoteImport,
+                                        onNavigateToLocalImport = onNavigateToLocalImport,
+                                        onNavigateToCache = onNavigateToCache,
+                                        sharedTransitionScope = sharedTransitionScope,
+                                        animatedVisibilityScope = animatedVisibilityScope,
+                                    )
+                                }
+                            }
 
                             MainDestination.Explore -> ExploreRouteScreen(
                                 onOpenExploreShow = onNavigateToExploreShow,
@@ -613,3 +644,14 @@ private fun NavigationIcon(
         AppIcon(icon, contentDescription = null, modifier = modifier)
     }
 }
+
+private fun BookShelfItem.toFeatureOpenRequest() = BookshelfOpenBookRequest(
+    id = bookUrl,
+    name = name,
+    author = author,
+    origin = origin,
+    coverUrl = getDisplayCover(),
+    isLocal = isLocal,
+    isAudio = isAudio,
+    isImage = isImage,
+)

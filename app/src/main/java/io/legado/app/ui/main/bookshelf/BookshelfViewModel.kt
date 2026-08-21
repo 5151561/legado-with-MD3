@@ -17,6 +17,7 @@ import io.legado.app.data.repository.BookSourceRepository
 import io.legado.app.data.repository.BookshelfRepository
 import io.legado.app.data.repository.UploadRepository
 import io.legado.app.domain.usecase.AddBookUseCase
+import io.legado.app.domain.model.BookshelfExportItem
 import io.legado.app.domain.usecase.BatchCacheDownloadUseCase
 import io.legado.app.domain.usecase.ExportBookshelfUseCase
 import io.legado.app.domain.usecase.ImportBookshelfUseCase
@@ -1133,7 +1134,7 @@ class BookshelfViewModel(
 
     fun exportToUri(uri: Uri, items: List<BookUiItem>) {
         execute {
-            exportBookshelfUseCase.exportToUri(uri, items).getOrThrow()
+            exportBookshelfUseCase.exportToUri(uri, items.map(BookUiItem::toExportItem)).getOrThrow()
         }.onSuccess {
             _effects.tryEmit(BookshelfEffect.ShowSnackbar("导出成功"))
         }.onError {
@@ -1143,7 +1144,7 @@ class BookshelfViewModel(
 
     fun uploadBookshelf(items: List<BookUiItem>) {
         execute {
-            val json = exportBookshelfUseCase.exportToJson(items).getOrThrow()
+            val json = exportBookshelfUseCase.exportToJson(items.map(BookUiItem::toExportItem)).getOrThrow()
             uploadRepository.upload(
                 fileName = "bookshelf.json",
                 file = json,
@@ -1163,7 +1164,7 @@ class BookshelfViewModel(
     fun exportBookshelf(items: List<BookUiItem>?, success: (file: File) -> Unit) {
         execute {
             items ?: throw NoStackTraceException("书籍不能为空")
-            exportBookshelfUseCase.exportToFile(items).getOrThrow()
+            exportBookshelfUseCase.exportToFile(items.map(BookUiItem::toExportItem)).getOrThrow()
         }.onSuccess {
             success(it)
         }.onError {
@@ -1214,3 +1215,9 @@ class BookshelfViewModel(
     }
 
 }
+
+private fun BookUiItem.toExportItem() = BookshelfExportItem(
+    bookUrl = book.bookUrl,
+    name = book.name,
+    author = book.author,
+)

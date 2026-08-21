@@ -40,6 +40,7 @@ import io.legado.app.domain.gateway.AppLocaleGateway
 import io.legado.app.domain.gateway.AppShellSettingsGateway
 import io.legado.app.domain.gateway.BackupSettingsGateway
 import io.legado.app.domain.gateway.ReadStyleGateway
+import io.legado.app.feature.bookshelf.ui.bookshelfUiModule
 import io.legado.app.help.AppFreezeMonitor
 import io.legado.app.help.AppWebDav
 import io.legado.app.help.CrashHandler
@@ -106,7 +107,7 @@ class App : Application(), SingletonImageLoader.Factory {
         } else null
         startKoin {
             androidContext(this@App)
-            modules(appDatabaseModule, appModule)
+            modules(appDatabaseModule, appModule, bookshelfUiModule)
         }
         AppConfig.initialize(
             shellGateway = get(),

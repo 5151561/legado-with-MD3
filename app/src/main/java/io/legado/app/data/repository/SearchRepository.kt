@@ -8,7 +8,7 @@ import io.legado.app.data.entities.SearchKeyword
 import io.legado.app.domain.gateway.BookSearchGateway
 import io.legado.app.domain.model.BookSearchScope
 import io.legado.app.domain.usecase.BookShelfKey
-import io.legado.app.ui.main.bookshelf.BookShelfItem
+import io.legado.app.data.model.BookshelfBookRecord
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -20,7 +20,7 @@ interface SearchRepository {
     val enabledSources: Flow<List<BookSourcePart>>
     val bookshelfKeys: Flow<Set<BookShelfKey>>
 
-    fun searchBookshelf(query: String): Flow<List<BookShelfItem>>
+    fun searchBookshelf(query: String): Flow<List<BookshelfBookRecord>>
     fun searchHistory(query: String): Flow<List<SearchKeyword>>
 
     suspend fun saveSearchKeyword(keyword: String)
@@ -55,7 +55,7 @@ class SearchRepositoryImpl(
             .toSet()
     }
 
-    override fun searchBookshelf(query: String): Flow<List<BookShelfItem>> {
+    override fun searchBookshelf(query: String): Flow<List<BookshelfBookRecord>> {
         val keyword = query.trim()
         return if (keyword.isBlank()) {
             flowOf(emptyList())

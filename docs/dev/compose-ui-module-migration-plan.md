@@ -1,6 +1,6 @@
 # Compose UI 重做与业务模块化迁移计划
 
-> 状态：Phase 0、Phase 1 已完成；Phase 2 尚未开始
+> 状态：Phase 0、Phase 1 已完成；Phase 2 实现与范围内自动验证已完成，灰度入口默认关闭，设备人工矩阵待发布前执行
 > 日期：2026-08-21
 > 范围：Android 端 Compose UI 的重做，以及为它提供稳定边界的业务模块化。**不包含** `modules/web/` Vue 前端重做，也不把内嵌 Ktor 服务改造成独立云端后端。
 
@@ -230,6 +230,12 @@ Modal Bottom Sheet、按钮、图标和进度组件；`:app` 的旧 `ui/theme` �
 
 ### Phase 2：书架作为首个垂直切片
 
+实施产物：[`bookshelf-phase2-migration-card.md`](./bookshelf-phase2-migration-card.md)。已建立
+`:feature:bookshelf:api` 与 `:feature:bookshelf:ui`，由 `:app` 中受架构护栏约束的单一临时适配器
+接入现有 Room Flow、Repository 和 UseCase。DAO 书架查询投影已移出 UI 包，书架导出 UseCase
+也不再依赖 UI item；由于 `AppDatabase` 尚未下沉到合法的 core 接缝，本阶段没有创建会反向依赖
+`:app` 的伪 `impl`。新入口由 `-PbookshelfFeatureEnabled=true` 启用，默认仍渲染旧页面。
+
 **目的**：验证“Compose 前端 → feature API → SSOT → Room”的完整路径。书架是 P0 主路径，业务边界比阅读器稳定，适合作为首刀。
 
 模块与职责：
@@ -343,10 +349,10 @@ Release 验证和删除条件。只有前一个 feature 的边界和验收稳定
 3. **M1.1**：建立 `:core:designsystem` 的主题消费接缝、最小模块与无业务依赖组件；保留旧 `ui/theme` 兼容包装，让一个非核心小页面试用。
 4. **M1.2**：建立 feature entry 聚合与根导航策略接缝；保持 `MainNavGraph` / `MainNavigator` 的所有现有路由行为。
 5. **M1.3**：扩展架构扫描到所有模块，并增加 Gradle 禁止依赖检查。
-6. **M2.1**：建立 `:feature:bookshelf:api`，由 `:app` 薄适配器接入既有 SSOT；不创建依赖 `:app` 的 `impl`。
-7. **M2.2**：实现新的书架 Compose Screen 与 UDF Contract，默认不替换旧入口。
-8. **M2.3**：移除正式实现所需的 Repository→UI 反向依赖；条件成熟时建立 `:feature:bookshelf:impl` 并以单一 Koin 绑定替换临时适配器。
-9. **M2.4**：完成测试、多窗口/无障碍和 `assembleAppRelease` 验收后，灰度切换书架入口；记录旧路径与临时适配器删除条件。
+6. **M2.1（已完成）**：建立 `:feature:bookshelf:api`，由 `:app` 薄适配器接入既有 SSOT；未创建依赖 `:app` 的 `impl`。
+7. **M2.2（已完成）**：实现新的书架 Compose Screen 与 UDF Contract，默认不替换旧入口。
+8. **M2.3（已完成当前前置）**：书架 DAO/Repository 与导出 UseCase 已移除对书架 UI 类型的反向依赖；正式 `impl` 等 `AppDatabase` 合法下沉后创建。
+9. **M2.4（范围内自动验证完成，设备矩阵待发布前执行）**：灰度编译开关、回退路径、命令/SSOT/架构测试和删除条件已建立；Debug APK、书架模块 Lint/单测已通过，全 App 既有测试/Lint 阻塞与未执行的 Release/R8 已记录在迁移卡；手机、横屏/分屏、大字体、TalkBack 仍按迁移卡逐项签收。
 
 ## 9. 决策记录与待确认项
 

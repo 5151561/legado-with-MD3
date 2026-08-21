@@ -4,7 +4,7 @@ import android.content.Context
 import android.net.Uri
 import com.google.gson.stream.JsonWriter
 import io.legado.app.data.repository.BookRepository
-import io.legado.app.ui.main.bookshelf.BookUiItem
+import io.legado.app.domain.model.BookshelfExportItem
 import io.legado.app.utils.FileUtils
 import io.legado.app.utils.GSON
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +17,7 @@ class ExportBookshelfUseCase(
     private val context: Context,
     private val bookRepository: BookRepository
 ) {
-    suspend fun exportToUri(uri: Uri, items: List<BookUiItem>): Result<Unit> =
+    suspend fun exportToUri(uri: Uri, items: List<BookshelfExportItem>): Result<Unit> =
         withContext(Dispatchers.IO) {
             kotlin.runCatching {
                 context.contentResolver.openOutputStream(uri)?.use { out ->
@@ -26,9 +26,9 @@ class ExportBookshelfUseCase(
                     writer.beginArray()
                     items.forEach {
                         val bookMap = hashMapOf<String, String?>()
-                        bookMap["name"] = it.book.name
-                        bookMap["author"] = it.book.author
-                        val fullBook = bookRepository.getBook(it.book.bookUrl)
+                        bookMap["name"] = it.name
+                        bookMap["author"] = it.author
+                        val fullBook = bookRepository.getBook(it.bookUrl)
                         bookMap["intro"] = fullBook?.getDisplayIntro()
                         GSON.toJson(bookMap, bookMap::class.java, writer)
                     }
@@ -38,7 +38,7 @@ class ExportBookshelfUseCase(
             }
         }
 
-    suspend fun exportToFile(items: List<BookUiItem>): Result<File> = withContext(Dispatchers.IO) {
+    suspend fun exportToFile(items: List<BookshelfExportItem>): Result<File> = withContext(Dispatchers.IO) {
         kotlin.runCatching {
             val path = "${context.filesDir}/books.json"
             FileUtils.delete(path)
@@ -49,9 +49,9 @@ class ExportBookshelfUseCase(
                 writer.beginArray()
                 items.forEach {
                     val bookMap = hashMapOf<String, String?>()
-                    bookMap["name"] = it.book.name
-                    bookMap["author"] = it.book.author
-                    val fullBook = bookRepository.getBook(it.book.bookUrl)
+                    bookMap["name"] = it.name
+                    bookMap["author"] = it.author
+                    val fullBook = bookRepository.getBook(it.bookUrl)
                     bookMap["intro"] = fullBook?.getDisplayIntro()
                     GSON.toJson(bookMap, bookMap::class.java, writer)
                 }
@@ -62,14 +62,14 @@ class ExportBookshelfUseCase(
         }
     }
 
-    suspend fun exportToJson(items: List<BookUiItem>): Result<String> =
+    suspend fun exportToJson(items: List<BookshelfExportItem>): Result<String> =
         withContext(Dispatchers.IO) {
             kotlin.runCatching {
                 val list = items.map {
                     val bookMap = hashMapOf<String, String?>()
-                    bookMap["name"] = it.book.name
-                    bookMap["author"] = it.book.author
-                    val fullBook = bookRepository.getBook(it.book.bookUrl)
+                    bookMap["name"] = it.name
+                    bookMap["author"] = it.author
+                    val fullBook = bookRepository.getBook(it.bookUrl)
                     bookMap["intro"] = fullBook?.getDisplayIntro()
                     bookMap
                 }

@@ -57,6 +57,11 @@ android {
         versionCode = System.getenv("COMMIT_NUMBER")?.toInt()?.let { 10000 + it } ?: 32640
         versionName = System.getenv("APP_VERSION_NAME") ?: projectVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField(
+            "boolean",
+            "USE_COMPOSE_BOOKSHELF_FEATURE",
+            providers.gradleProperty("bookshelfFeatureEnabled").getOrElse("false"),
+        )
 
         buildConfigField("String", "Cronet_Version", "\"${project.findProperty("CronetVersion")}\"")
         buildConfigField(
@@ -189,6 +194,8 @@ ksp {
 dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
+    implementation(project(":feature:bookshelf:api"))
+    implementation(project(":feature:bookshelf:ui"))
     implementation(libs.androidx.profileinstaller)
     "baselineProfile"(project(":baselineprofile"))
     coreLibraryDesugaring(libs.desugar)

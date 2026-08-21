@@ -4,6 +4,7 @@ import io.legado.app.data.dao.BookChapterDao
 import io.legado.app.data.dao.BookDao
 import io.legado.app.data.entities.Book
 import io.legado.app.domain.model.BookGroupAssignment
+import io.legado.app.domain.model.BookOrderAssignment
 import io.legado.app.domain.model.CacheableBook
 import io.legado.app.domain.model.DeletableBook
 import io.legado.app.domain.repository.BookDomainRepository
@@ -43,6 +44,9 @@ class BookDomainRepositoryImpl(
         }
     }
 
+    override suspend fun getBookOrders(bookUrls: Set<String>): List<BookOrderAssignment> =
+        getBooks(bookUrls).map { BookOrderAssignment(it.bookUrl, it.order) }
+
     override suspend fun updateBookGroups(assignments: List<BookGroupAssignment>) {
         if (assignments.isEmpty()) return
         val groups = assignments.associateBy { it.bookUrl }
@@ -54,6 +58,17 @@ class BookDomainRepositoryImpl(
         if (books.isNotEmpty()) {
             bookDao.update(*books.toTypedArray())
         }
+    }
+
+    override suspend fun updateBookOrders(assignments: List<BookOrderAssignment>) {
+        if (assignments.isEmpty()) return
+        val orders = assignments.associateBy { it.bookUrl }
+        val books = getBooks(orders.keys).mapNotNull { book ->
+            orders[book.bookUrl]?.let { assignment ->
+                if (book.order == assignment.order) null else book.copy(order = assignment.order)
+            }
+        }
+        if (books.isNotEmpty()) bookDao.update(*books.toTypedArray())
     }
 
     override suspend fun removeGroupFromBooks(groupId: Long) {

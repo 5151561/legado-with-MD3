@@ -37,8 +37,14 @@ import io.legado.app.data.repository.BookSourceRepository
 import io.legado.app.data.repository.BookmarkRepository
 import io.legado.app.data.repository.BookshelfAutoGroupPromptRepository
 import io.legado.app.data.repository.BookshelfAutoGroupRepository
+import io.legado.app.data.repository.BookshelfDeleteOriginalRepository
 import io.legado.app.data.repository.BookshelfRepository
 import io.legado.app.data.repository.BookshelfSettingsRepository
+import io.legado.app.feature.bookshelf.api.BookshelfCommands
+import io.legado.app.feature.bookshelf.api.BookshelfGroupCommands
+import io.legado.app.feature.bookshelf.api.BookshelfPreferencesGateway
+import io.legado.app.feature.bookshelf.api.BookshelfQuery
+import io.legado.app.feature.bookshelf.compat.LegacyBookshelfAdapter
 import io.legado.app.data.repository.CacheBookDownloadRepository
 import io.legado.app.data.repository.ChangeSourceSettingsRepository
 import io.legado.app.data.repository.ChapterSpeechRepository
@@ -118,6 +124,8 @@ import io.legado.app.domain.gateway.BookCacheDownloadGateway
 import io.legado.app.domain.gateway.BookContentProcessGateway
 import io.legado.app.domain.gateway.BookExportSettingsGateway
 import io.legado.app.domain.gateway.BookGroupMutationGateway
+import io.legado.app.domain.gateway.BookGroupOrderGateway
+import io.legado.app.domain.gateway.BookshelfDeleteOriginalGateway
 import io.legado.app.domain.gateway.BookKnowledgeGateway
 import io.legado.app.domain.gateway.BookMarkingGateway
 import io.legado.app.domain.gateway.BookSearchGateway
@@ -193,6 +201,8 @@ import io.legado.app.domain.usecase.ImportBookshelfUseCase
 import io.legado.app.domain.usecase.PrepareChapterSpeechPlanUseCase
 import io.legado.app.domain.usecase.RefineSpeechWithAiUseCase
 import io.legado.app.domain.usecase.RefreshTocUseCase
+import io.legado.app.domain.usecase.ReorderBookGroupsUseCase
+import io.legado.app.domain.usecase.ReorderBooksUseCase
 import io.legado.app.domain.usecase.RelocateMarkingTargetUseCase
 import io.legado.app.domain.usecase.RemoveBookGroupAssignmentUseCase
 import io.legado.app.domain.usecase.ResolveBookShelfStateUseCase
@@ -336,6 +346,7 @@ val appModule = module {
     singleOf(::BookRepository)
     singleOf(::BookImportRepository)
     singleOf(::BookGroupRepository)
+    single<BookGroupOrderGateway> { get<BookGroupRepository>() }
     singleOf(::BookmarkRepository)
     singleOf(::BookCacheManageRepository)
     singleOf(::TagGroupRuleApplier)
@@ -344,6 +355,12 @@ val appModule = module {
     single<BookshelfAutoGroupPromptGateway> { BookshelfAutoGroupPromptRepository(get()) }
     singleOf(::BookSourceRepository)
     singleOf(::BookshelfRepository)
+    single<BookshelfDeleteOriginalGateway> { BookshelfDeleteOriginalRepository() }
+    singleOf(::LegacyBookshelfAdapter)
+    single<BookshelfQuery> { get<LegacyBookshelfAdapter>() }
+    single<BookshelfPreferencesGateway> { get<LegacyBookshelfAdapter>() }
+    single<BookshelfCommands> { get<LegacyBookshelfAdapter>() }
+    single<BookshelfGroupCommands> { get<LegacyBookshelfAdapter>() }
     singleOf(::DictRuleRepository)
     singleOf(::TxtTocRuleRepository)
     single {
@@ -434,6 +451,8 @@ val appModule = module {
     single { HomeDashboardUseCase(get(), Clock.System) }
     singleOf(::RemoveBookGroupAssignmentUseCase)
     singleOf(::UpdateBooksGroupUseCase)
+    singleOf(::ReorderBooksUseCase)
+    singleOf(::ReorderBookGroupsUseCase)
     singleOf(::UploadReadingProgressUseCase)
     singleOf(::ResolveBookShelfStateUseCase)
     singleOf(::RefreshTocUseCase)

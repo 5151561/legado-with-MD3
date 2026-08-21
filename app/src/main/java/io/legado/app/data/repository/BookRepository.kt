@@ -6,7 +6,7 @@ import io.legado.app.data.dao.BookDao
 import io.legado.app.data.dao.GroupBookCount
 import io.legado.app.data.entities.Book
 import io.legado.app.data.entities.BookChapter
-import io.legado.app.ui.main.bookshelf.BookShelfItem
+import io.legado.app.data.model.BookshelfBookRecord
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -62,7 +62,7 @@ class BookRepository(
         }
     }
 
-    fun flowBookShelfByGroup(groupId: Long): Flow<List<BookShelfItem>> {
+    fun flowBookShelfByGroup(groupId: Long): Flow<List<BookshelfBookRecord>> {
         return bookDao.flowBookShelfByGroup(groupId)
     }
 
@@ -78,7 +78,7 @@ class BookRepository(
         return bookDao.flowUserGroupBookCount(groupId)
     }
 
-    fun flowGroupPreview(groupId: Long): Flow<List<BookShelfItem>> {
+    fun flowGroupPreview(groupId: Long): Flow<List<BookshelfBookRecord>> {
         return bookDao.flowGroupPreview(groupId)
     }
 

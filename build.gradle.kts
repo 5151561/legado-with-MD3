@@ -84,6 +84,47 @@ abstract class VerifyConfigArchitectureTask : DefaultTask() {
                         violations += "$relativePath: feature UI 禁止直接访问 appDb"
                     }
                 }
+
+                if (modulePath.startsWith(":feature:") && modulePath.endsWith(":api")) {
+                    imports.filter {
+                        it.startsWith("android.") ||
+                            it.startsWith("androidx.compose.") ||
+                            it.startsWith("androidx.room.") ||
+                            it.startsWith("io.legado.app.data.") ||
+                            it.startsWith("io.legado.app.domain.") ||
+                            it.startsWith("io.legado.app.model.") ||
+                            it.startsWith("io.legado.app.ui.")
+                    }.forEach { forbiddenImport ->
+                        violations += "$relativePath: feature API 禁止泄漏实现类型 $forbiddenImport"
+                    }
+                }
+
+                if (modulePath == ":app" &&
+                    (relativePath.contains("/data/") || relativePath.contains("/domain/"))
+                ) {
+                    imports.filter { it.startsWith("io.legado.app.ui.main.bookshelf.") }
+                        .forEach { forbiddenImport ->
+                            violations += "$relativePath: bookshelf 数据/业务实现禁止反向依赖 $forbiddenImport"
+                        }
+                }
+
+                val compatPrefix =
+                    "app/src/main/java/io/legado/app/feature/bookshelf/compat/"
+                if (relativePath.startsWith(compatPrefix)) {
+                    if (relativePath != compatPrefix + "LegacyBookshelfAdapter.kt") {
+                        violations += "$relativePath: bookshelf 临时兼容接缝只允许单一适配器文件"
+                    }
+                    imports.filter {
+                        it == "io.legado.app.data.appDb" ||
+                            it.startsWith("io.legado.app.data.dao.") ||
+                            it.startsWith("io.legado.app.help.config.") ||
+                            it.startsWith("io.legado.app.model.") ||
+                            it.startsWith("io.legado.app.service.") ||
+                            it.startsWith("io.legado.app.ui.")
+                    }.forEach { forbiddenImport ->
+                        violations += "$relativePath: 临时适配器禁止扩大到 $forbiddenImport"
+                    }
+                }
             }
 
         moduleBuildFiles.files
@@ -274,8 +315,15 @@ abstract class VerifyConfigArchitectureTask : DefaultTask() {
                 targets.forEach { target ->
                     when {
                         sourceModule.startsWith(":feature:") && sourceModule.endsWith(":ui") &&
-                            (target == ":core:database" ||
+                            (target == ":app" || target == ":core:database" ||
                                 (target.startsWith(":feature:") && target.endsWith(":impl"))) -> {
+                            add("$sourceModule 禁止依赖 $target")
+                        }
+
+                        sourceModule.startsWith(":feature:") && sourceModule.endsWith(":api") &&
+                            (target == ":app" || target.startsWith(":core:") ||
+                                (target.startsWith(":feature:") &&
+                                    !target.endsWith(":api"))) -> {
                             add("$sourceModule 禁止依赖 $target")
                         }
 
@@ -308,10 +356,23 @@ abstract class VerifyArchitectureGuardFixtureTask : DefaultTask() {
             buildScript = fixture.get().asFile.readText(),
         )
         check(violations.toSet() == setOf(
+            ":feature:fixture:ui 禁止依赖 :app",
             ":feature:fixture:ui 禁止依赖 :core:database",
             ":feature:fixture:ui 禁止依赖 :feature:bookshelf:impl",
         )) {
             "架构护栏夹具未被正确拒绝：$violations"
+        }
+
+        val apiViolations = VerifyConfigArchitectureTask.findForbiddenModuleDependencies(
+            sourceModule = ":feature:fixture:api",
+            buildScript = fixture.get().asFile.readText(),
+        )
+        check(apiViolations.toSet() == setOf(
+            ":feature:fixture:api 禁止依赖 :app",
+            ":feature:fixture:api 禁止依赖 :core:database",
+            ":feature:fixture:api 禁止依赖 :feature:bookshelf:impl",
+        )) {
+            "feature API 架构护栏夹具未被正确拒绝：$apiViolations"
         }
     }
 }
@@ -349,13 +410,13 @@ val verifyConfigArchitecture = tasks.register<VerifyConfigArchitectureTask>(
     sourceRoot.set(layout.projectDirectory.dir("app/src/main/java"))
     projectRoot.set(layout.projectDirectory)
     moduleSourceFiles.from(
-        fileTree("app") { include("src/**/*.kt") },
-        fileTree("core") { include("*/src/**/*.kt") },
-        fileTree("feature") { include("**/src/**/*.kt") },
+        fileTree("app") { include("src/**/*.kt") }.files,
+        fileTree("core") { include("*/src/**/*.kt") }.files,
+        fileTree("feature") { include("**/src/**/*.kt") }.files,
     )
     moduleBuildFiles.from(
-        fileTree("core") { include("*/build.gradle", "*/build.gradle.kts") },
-        fileTree("feature") { include("**/build.gradle", "**/build.gradle.kts") },
+        fileTree("core") { include("*/build.gradle", "*/build.gradle.kts") }.files,
+        fileTree("feature") { include("**/build.gradle", "**/build.gradle.kts") }.files,
     )
     legacyPreferenceCallBaseline.set(
         mapOf(

@@ -2,9 +2,11 @@ package io.legado.app.data.repository
 
 import io.legado.app.data.dao.BookGroupDao
 import io.legado.app.data.entities.BookGroup
+import io.legado.app.domain.gateway.BookGroupOrderGateway
+import io.legado.app.domain.model.BookGroupOrderAssignment
 import kotlinx.coroutines.flow.Flow
 
-class BookGroupRepository(private val bookGroupDao: BookGroupDao) {
+class BookGroupRepository(private val bookGroupDao: BookGroupDao) : BookGroupOrderGateway {
 
     fun flowAll(): Flow<List<BookGroup>> {
         return bookGroupDao.flowAll()
@@ -52,5 +54,18 @@ class BookGroupRepository(private val bookGroupDao: BookGroupDao) {
 
     suspend fun clearCover(groupId: Long) {
         bookGroupDao.clearCover(groupId)
+    }
+
+    override suspend fun getGroupOrders(groupIds: Set<Long>): List<BookGroupOrderAssignment> =
+        groupIds.mapNotNull { id ->
+            bookGroupDao.getByID(id)?.let { BookGroupOrderAssignment(it.groupId, it.order) }
+        }
+
+    override suspend fun updateGroupOrders(assignments: List<BookGroupOrderAssignment>) {
+        val byId = assignments.associateBy { it.groupId }
+        val groups = byId.keys.mapNotNull { id ->
+            bookGroupDao.getByID(id)?.let { group -> group.copy(order = byId.getValue(id).order) }
+        }
+        if (groups.isNotEmpty()) bookGroupDao.update(*groups.toTypedArray())
     }
 }

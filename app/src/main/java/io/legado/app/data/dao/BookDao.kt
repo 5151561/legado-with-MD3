@@ -13,7 +13,7 @@ import io.legado.app.data.entities.BookGroup
 import io.legado.app.data.entities.BookSource
 import io.legado.app.domain.model.CacheableBook
 import io.legado.app.help.book.isNotShelf
-import io.legado.app.ui.main.bookshelf.BookShelfItem
+import io.legado.app.data.model.BookshelfBookRecord
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -56,7 +56,7 @@ interface BookDao {
         }
     }
 
-    fun flowBookShelfByGroup(groupId: Long): Flow<List<BookShelfItem>> {
+    fun flowBookShelfByGroup(groupId: Long): Flow<List<BookshelfBookRecord>> {
         return when (groupId) {
             BookGroup.IdRoot -> flowBookShelfRoot()
             BookGroup.IdAll -> flowBookShelf()
@@ -123,7 +123,7 @@ interface BookDao {
         and (select show from book_groups where groupId = ${BookGroup.IdNetNone}) != 1
         """
     )
-    fun flowBookShelfRoot(): Flow<List<BookShelfItem>>
+    fun flowBookShelfRoot(): Flow<List<BookshelfBookRecord>>
 
     @Query("SELECT * FROM books order by durChapterTime desc")
     fun flowAll(): Flow<List<Book>>
@@ -162,7 +162,7 @@ interface BookDao {
     ORDER BY durChapterTime DESC
 """
     )
-    fun flowBookShelf(): Flow<List<BookShelfItem>>
+    fun flowBookShelf(): Flow<List<BookshelfBookRecord>>
 
     @Query("SELECT * FROM books WHERE type & ${BookType.audio} > 0")
     fun flowAudio(): Flow<List<Book>>
@@ -198,7 +198,7 @@ interface BookDao {
         AND $PUBLIC_BOOK_FILTER
         """
     )
-    fun flowBookShelfAudio(): Flow<List<BookShelfItem>>
+    fun flowBookShelfAudio(): Flow<List<BookshelfBookRecord>>
 
     @Query("SELECT * FROM books WHERE type & ${BookType.local} > 0")
     fun flowLocal(): Flow<List<Book>>
@@ -234,7 +234,7 @@ interface BookDao {
         AND $PUBLIC_BOOK_FILTER
         """
     )
-    fun flowBookShelfLocal(): Flow<List<BookShelfItem>>
+    fun flowBookShelfLocal(): Flow<List<BookshelfBookRecord>>
 
     @Query(
         """
@@ -276,7 +276,7 @@ interface BookDao {
         and $PUBLIC_BOOK_FILTER
         """
     )
-    fun flowBookShelfNetNoGroup(): Flow<List<BookShelfItem>>
+    fun flowBookShelfNetNoGroup(): Flow<List<BookshelfBookRecord>>
 
     @Query(
         """
@@ -318,7 +318,7 @@ interface BookDao {
         and $PUBLIC_BOOK_FILTER
         """
     )
-    fun flowBookShelfLocalNoGroup(): Flow<List<BookShelfItem>>
+    fun flowBookShelfLocalNoGroup(): Flow<List<BookshelfBookRecord>>
 
     @Query("SELECT * FROM books WHERE (`group` & :group) > 0")
     fun flowByUserGroup(group: Long): Flow<List<Book>>
@@ -354,7 +354,7 @@ interface BookDao {
         AND ((SELECT isPrivate FROM book_groups WHERE groupId = :group) = 1 OR $PUBLIC_BOOK_FILTER)
         """
     )
-    fun flowBookShelfByUserGroup(group: Long): Flow<List<BookShelfItem>>
+    fun flowBookShelfByUserGroup(group: Long): Flow<List<BookshelfBookRecord>>
 
     @Query(
         "SELECT * FROM books WHERE name like '%'||:key||'%' or author like '%'||:key||'%' or originName like '%'||:key||'%'"
@@ -393,7 +393,7 @@ interface BookDao {
         AND $PUBLIC_BOOK_FILTER
         """
     )
-    fun flowBookShelfSearch(key: String): Flow<List<BookShelfItem>>
+    fun flowBookShelfSearch(key: String): Flow<List<BookshelfBookRecord>>
 
     @Query("SELECT * FROM books where type & ${BookType.updateError} > 0 order by durChapterTime desc")
     fun flowUpdateError(): Flow<List<Book>>
@@ -430,7 +430,7 @@ interface BookDao {
         order by durChapterTime desc
         """
     )
-    fun flowBookShelfUpdateError(): Flow<List<BookShelfItem>>
+    fun flowBookShelfUpdateError(): Flow<List<BookshelfBookRecord>>
 
     @Query("""SELECT * FROM books WHERE durChapterIndex = 0 AND durChapterPos = 0""")
     fun flowUnread(): Flow<List<Book>>
@@ -466,7 +466,7 @@ interface BookDao {
         AND $PUBLIC_BOOK_FILTER
         """
     )
-    fun flowBookShelfUnread(): Flow<List<BookShelfItem>>
+    fun flowBookShelfUnread(): Flow<List<BookshelfBookRecord>>
 
     @Query("""SELECT * FROM books WHERE totalChapterNum > 0 AND durChapterIndex >= totalChapterNum - 1""")
     fun flowReadFinished(): Flow<List<Book>>
@@ -502,7 +502,7 @@ interface BookDao {
         AND $PUBLIC_BOOK_FILTER
         """
     )
-    fun flowBookShelfReadFinished(): Flow<List<BookShelfItem>>
+    fun flowBookShelfReadFinished(): Flow<List<BookshelfBookRecord>>
 
     @Query(
         """SELECT * FROM books WHERE totalChapterNum > 0 AND durChapterIndex >= totalChapterNum - 1 AND canUpdate = 1"""
@@ -540,7 +540,7 @@ interface BookDao {
         AND $PUBLIC_BOOK_FILTER
         """
     )
-    fun flowBookShelfReadFinishedUpdate(): Flow<List<BookShelfItem>>
+    fun flowBookShelfReadFinishedUpdate(): Flow<List<BookshelfBookRecord>>
 
     @Query(
         """SELECT * FROM books WHERE totalChapterNum > 0 AND durChapterIndex >= totalChapterNum - 1 AND canUpdate = 0"""
@@ -578,7 +578,7 @@ interface BookDao {
         AND $PUBLIC_BOOK_FILTER
         """
     )
-    fun flowBookShelfReadFinishedComplete(): Flow<List<BookShelfItem>>
+    fun flowBookShelfReadFinishedComplete(): Flow<List<BookshelfBookRecord>>
 
     @Query("""SELECT * FROM books WHERE totalChapterNum > 0 AND durChapterIndex > 0 AND durChapterIndex < totalChapterNum - 1""")
     fun flowReading(): Flow<List<Book>>
@@ -614,7 +614,7 @@ interface BookDao {
         AND $PUBLIC_BOOK_FILTER
         """
     )
-    fun flowBookShelfReading(): Flow<List<BookShelfItem>>
+    fun flowBookShelfReading(): Flow<List<BookshelfBookRecord>>
 
     @Query("SELECT * FROM books WHERE type & ${BookType.image} > 0")
     fun flowManga(): Flow<List<Book>>
@@ -650,7 +650,7 @@ interface BookDao {
         AND $PUBLIC_BOOK_FILTER
         """
     )
-    fun flowBookShelfManga(): Flow<List<BookShelfItem>>
+    fun flowBookShelfManga(): Flow<List<BookshelfBookRecord>>
 
     @Query("SELECT * FROM books WHERE type & ${BookType.text} > 0")
     fun flowText(): Flow<List<Book>>
@@ -686,7 +686,7 @@ interface BookDao {
         AND $PUBLIC_BOOK_FILTER
         """
     )
-    fun flowBookShelfText(): Flow<List<BookShelfItem>>
+    fun flowBookShelfText(): Flow<List<BookshelfBookRecord>>
 
     @Query("SELECT * FROM books WHERE (`group` & :group) > 0")
     fun getBooksByGroup(group: Long): List<Book>
@@ -863,7 +863,7 @@ interface BookDao {
     )
     fun flowUserGroupBookCount(groupId: Long): Flow<Int>
 
-    fun flowGroupPreview(groupId: Long): Flow<List<BookShelfItem>> {
+    fun flowGroupPreview(groupId: Long): Flow<List<BookshelfBookRecord>> {
         return when (groupId) {
             BookGroup.IdRoot -> flowBookShelfRootPreview()
             BookGroup.IdAll -> flowBookShelfPreview()
@@ -899,7 +899,7 @@ interface BookDao {
         LIMIT 10
         """
     )
-    fun flowBookShelfPreview(): Flow<List<BookShelfItem>>
+    fun flowBookShelfPreview(): Flow<List<BookshelfBookRecord>>
 
     @Query(
         """
@@ -918,7 +918,7 @@ interface BookDao {
         LIMIT 10
         """
     )
-    fun flowBookShelfRootPreview(): Flow<List<BookShelfItem>>
+    fun flowBookShelfRootPreview(): Flow<List<BookshelfBookRecord>>
 
     @Query(
         """
@@ -935,7 +935,7 @@ interface BookDao {
         LIMIT 10
         """
     )
-    fun flowBookShelfLocalPreview(): Flow<List<BookShelfItem>>
+    fun flowBookShelfLocalPreview(): Flow<List<BookshelfBookRecord>>
 
     @Query(
         """
@@ -952,7 +952,7 @@ interface BookDao {
         LIMIT 10
         """
     )
-    fun flowBookShelfAudioPreview(): Flow<List<BookShelfItem>>
+    fun flowBookShelfAudioPreview(): Flow<List<BookshelfBookRecord>>
 
     @Query(
         """
@@ -970,7 +970,7 @@ interface BookDao {
         LIMIT 10
         """
     )
-    fun flowBookShelfNetNoGroupPreview(): Flow<List<BookShelfItem>>
+    fun flowBookShelfNetNoGroupPreview(): Flow<List<BookshelfBookRecord>>
 
     @Query(
         """
@@ -988,7 +988,7 @@ interface BookDao {
         LIMIT 10
         """
     )
-    fun flowBookShelfLocalNoGroupPreview(): Flow<List<BookShelfItem>>
+    fun flowBookShelfLocalNoGroupPreview(): Flow<List<BookshelfBookRecord>>
 
     @Query(
         """
@@ -1005,7 +1005,7 @@ interface BookDao {
         LIMIT 10
         """
     )
-    fun flowBookShelfMangaPreview(): Flow<List<BookShelfItem>>
+    fun flowBookShelfMangaPreview(): Flow<List<BookshelfBookRecord>>
 
     @Query(
         """
@@ -1022,7 +1022,7 @@ interface BookDao {
         LIMIT 10
         """
     )
-    fun flowBookShelfTextPreview(): Flow<List<BookShelfItem>>
+    fun flowBookShelfTextPreview(): Flow<List<BookshelfBookRecord>>
 
     @Query(
         """
@@ -1039,7 +1039,7 @@ interface BookDao {
         LIMIT 10
         """
     )
-    fun flowBookShelfUpdateErrorPreview(): Flow<List<BookShelfItem>>
+    fun flowBookShelfUpdateErrorPreview(): Flow<List<BookshelfBookRecord>>
 
     @Query(
         """
@@ -1056,7 +1056,7 @@ interface BookDao {
         LIMIT 10
         """
     )
-    fun flowBookShelfUnreadPreview(): Flow<List<BookShelfItem>>
+    fun flowBookShelfUnreadPreview(): Flow<List<BookshelfBookRecord>>
 
     @Query(
         """
@@ -1073,7 +1073,7 @@ interface BookDao {
         LIMIT 10
         """
     )
-    fun flowBookShelfReadingPreview(): Flow<List<BookShelfItem>>
+    fun flowBookShelfReadingPreview(): Flow<List<BookshelfBookRecord>>
 
     @Query(
         """
@@ -1090,7 +1090,7 @@ interface BookDao {
         LIMIT 10
         """
     )
-    fun flowBookShelfReadFinishedPreview(): Flow<List<BookShelfItem>>
+    fun flowBookShelfReadFinishedPreview(): Flow<List<BookshelfBookRecord>>
 
     @Query(
         """
@@ -1107,7 +1107,7 @@ interface BookDao {
         LIMIT 10
         """
     )
-    fun flowBookShelfReadFinishedUpdatePreview(): Flow<List<BookShelfItem>>
+    fun flowBookShelfReadFinishedUpdatePreview(): Flow<List<BookshelfBookRecord>>
 
     @Query(
         """
@@ -1124,7 +1124,7 @@ interface BookDao {
         LIMIT 10
         """
     )
-    fun flowBookShelfReadFinishedCompletePreview(): Flow<List<BookShelfItem>>
+    fun flowBookShelfReadFinishedCompletePreview(): Flow<List<BookshelfBookRecord>>
 
     @Query(
         """
@@ -1141,5 +1141,5 @@ interface BookDao {
         LIMIT 10
         """
     )
-    fun flowBookShelfPreviewByUserGroup(groupId: Long): Flow<List<BookShelfItem>>
+    fun flowBookShelfPreviewByUserGroup(groupId: Long): Flow<List<BookshelfBookRecord>>
 }

@@ -330,11 +330,13 @@ fun MainActivity.mainEntryProvider(
             },
             onOpenBookshelfBook = { book ->
                 if (book.isAudio) {
-                    this@mainEntryProvider.startActivityForBook(book)
+                    this@mainEntryProvider.startActivity(
+                        MainActivity.createAudioPlayIntent(this@mainEntryProvider, book.id)
+                    )
                 } else if (!book.isLocal && book.isImage && showMangaUi) {
-                    onNavigateToRoute(MainRouteReadManga(bookUrl = book.bookUrl))
+                    onNavigateToRoute(MainRouteReadManga(bookUrl = book.id))
                 } else {
-                    onNavigateToRoute(MainRouteReadBook(bookUrl = book.bookUrl))
+                    onNavigateToRoute(MainRouteReadBook(bookUrl = book.id))
                 }
             },
             onNavigateToBackupSettings = {

@@ -1,17 +1,17 @@
 package io.legado.app.data.repository
 
 import io.legado.app.data.entities.BookGroup
-import io.legado.app.ui.main.bookshelf.BookShelfItem
+import io.legado.app.data.model.BookshelfBookRecord
 import io.legado.app.utils.cnCompare
 import kotlin.math.max
 
 class BookshelfRepository {
     fun sortBooks(
-        list: List<BookShelfItem>,
+        list: List<BookshelfBookRecord>,
         group: BookGroup?,
         sort: Int,
         sortOrder: Int
-    ): List<BookShelfItem> {
+    ): List<BookshelfBookRecord> {
         val bookSort = if (group != null && group.bookSort >= 0) {
             group.bookSort
         } else {
