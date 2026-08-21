@@ -1,13 +1,17 @@
 # Phase 5 旧路径删除与治理
 
-> 状态：治理门禁已建立；当前没有 feature 获得旧路径删除许可
-> 日期：2026-08-21
+> 状态：治理门禁已建立；bookshelf、rss、catalog、ai 的实现已转正，但当前仍没有 feature 获得旧路径删除许可
+> 日期：2026-08-22
 
 ## 当前结论
 
-Phase 2–4 的七个 Compose feature 均仍处于受控实验态。它们的迁移卡要求正式实现接缝、子流程
-覆盖、设备矩阵、Release/R8 或稳定版本观察中的一项或多项；这些证据尚未全部签收，因此本阶段
-不删除旧 UI、兼容适配器或构建期开关，也不把任何 Compose 入口改成默认。
+Phase 2–4 的七个 Compose feature 的 **UI** 均仍处于受控实验态。它们的迁移卡要求子流程覆盖、
+设备矩阵、Release/R8 或稳定版本观察中的一项或多项；这些证据尚未全部签收，因此不删除旧 UI
+或构建期开关，也不把任何 Compose 入口改成默认。
+
+**实现**状态是另一条线：bookshelf、rss、catalog、ai 已在 Phase 7–8 完成正式 `impl` 切换，
+对应的 `:app` 兼容适配器已随切换证据一并删除；settings、readaloud、reader 仍由兼容适配器提供，
+各自的 blocker 见下表。
 
 统一登记表为 [`config/compose-feature-migrations.properties`](../../config/compose-feature-migrations.properties)。
 `verifyFeatureMigrationGovernance` 已接入 `verifyConfigArchitecture`，编译和 assemble 任务会间接执行。
@@ -49,15 +53,19 @@ UI 状态不能从 `experiment` 直接靠修改默认值跳到 `complete`。正�
 
 ## 当前登记
 
-| Feature | 实现状态 | UI 状态 | 删除许可 | 主要 blocker |
-|---|---|---|---|---|
-| bookshelf | app_adapter | experiment | 否 | 正式 impl、Release/R8、设备矩阵 |
-| settings | app_adapter | experiment | 否 | 偏好接缝、设置子页边界、设备矩阵 |
-| catalog | app_adapter | experiment | 否 | 规则/网络/持久化接缝、子 route、设备矩阵 |
-| rss | app_adapter | experiment | 否 | DAO/解析接缝、子 route、设备矩阵 |
-| readaloud | app_adapter | experiment | 否 | 模块安全 Session Gateway、子页、设备矩阵 |
-| reader | app_adapter | experiment | 否 | ReaderSession 模块化、功能 parity、性能与无障碍 |
-| ai | app_adapter | experiment | 否 | 持久化/生成协议接缝、子 route、设备矩阵 |
+| Feature | 实现状态 | UI 状态 | 删除许可 | 实现 blocker | UI blocker |
+|---|---|---|---|---|---|
+| bookshelf | formal_impl | experiment | 否 | 无 | Release/R8 复验、设备矩阵、稳定版本观察 |
+| settings | app_adapter | experiment | 否 | `:core:preferences` 未建立；设置 Gateway 及其模型仍是 `:app` 领域类型 | 主题即时刷新、返回栈、大字体、TalkBack、稳定版本观察 |
+| catalog | formal_impl | experiment | 否 | 无 | 规则语义、导入兼容、详情/发现恢复、稳定版本观察 |
+| rss | formal_impl | experiment | 否 | 无 | JS 单 URL、WebView/外链、返回栈、稳定版本观察 |
+| readaloud | app_adapter | experiment | 否 | 播放服务未暴露模块安全 Session API | 锁屏、耳机、中断、缓存、进程恢复、稳定版本观察 |
+| reader | app_adapter | experiment | 否 | `ReadBook` 运行时单例未模块化；Phase 4 决策门未通过 | 专项 parity、帧率、内存、无障碍、稳定版本观察 |
+| ai | formal_impl | experiment | 否 | 无（`setDefaultModel` 仍由 app 唯一写入，属登记在案的宿主接缝） | 取消、工具确认、错误恢复、密钥不泄漏、稳定版本观察 |
+
+已转正 feature 的切换与适配器删除证据登记在 [`docs/dev/evidence/`](./evidence/)，
+迁移卡见 [bookshelf](./bookshelf-phase7-migration-card.md)、[rss](./rss-phase8-migration-card.md)、
+[catalog](./catalog-phase8-migration-card.md)、[ai](./ai-phase8-migration-card.md)。
 
 ## 删除执行清单
 

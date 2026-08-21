@@ -93,18 +93,34 @@ Additional top-level packages:
 
 Modules: `:app`, `:modules:book` (epub/TXT parsing, namespace `me.ag2s`), `:modules:rhino` (Rhino JS wrapper, namespace `com.script`). There is also a Vue 3 web frontend in `modules/web/` (pnpm, separate from the Android build).
 
+The Compose migration adds `core` and `feature` modules (see [`docs/dev/compose-ui-module-migration-plan.md`](docs/dev/compose-ui-module-migration-plan.md)):
+
+- `:core:database` — the single Room schema, entities, DAOs, migrations, converters
+- `:core:designsystem`, `:core:navigation` — theme/component seam and the root navigation protocol
+- `:feature:<name>:api` — domain language, queries, commands, gateways (no Room, Android, or Compose types)
+- `:feature:<name>:impl` — the business implementation and its own Koin module
+- `:feature:<name>:ui` — Contract / ViewModel / Screen
+
+Dependency direction is enforced by Gradle. Run `./gradlew verifyMigrationGovernance` to check all of it at once. The rules: UI must not reach `:core:database`, `:app`, or any `impl`; `api` must not depend on `core`, `app`, or non-api modules; `impl` must not depend on `:app`; `core` must not depend on `feature`. Every formal `impl` must depend on its `api`, declare exactly one Koin module, and ship a `*ContractTest.kt`.
+
+Build conventions live in `build-logic/` (`legado.android.library`, `legado.android.compose`, `legado.feature.api`, `legado.feature.ui`, `legado.feature.impl`) — do not re-declare compileSdk/minSdk/toolchain in a module build file.
+
+`bookshelf`, `rss`, `catalog` and `ai` already have formal `impl` modules; `settings`, `readaloud` and `reader` are still served by compatibility adapters under `app/src/main/java/io/legado/app/feature/<name>/compat/`. Do not add new adapters there — the architecture guard rejects them. Feature gating and removal conditions are tracked in `config/compose-feature-migrations.properties`.
+
 ## Dependency Injection (Koin)
 
-Two modules loaded in `App.onCreate()`:
+`App.onCreate()` loads the two app modules plus each feature's own modules:
 
 ```kotlin
 startKoin {
-    modules(appDatabaseModule, appModule)
+    modules(appDatabaseModule, appModule, bookshelfImplModule, bookshelfUiModule, /* ... */)
 }
 ```
 
 - **`di/appDatabaseModule.kt`** — Singleton `AppDatabase` + factory bindings for all 22 DAOs
 - **`di/appModule.kt`** — Singletons (repositories, use cases, gateways, Coil `ImageLoader`), `viewModelOf` / `viewModel { }` for all ViewModels, some parameterized definitions
+- **`di/*HostAdapters.kt`** — app shell seams a feature `impl` needs (preferences, rule engine, file/service side effects). These forward to existing owners and must not contain feature business rules.
+- **`feature:<name>:impl` Koin modules** — the only binding of that feature's API interfaces. `:app` loads them; it must never bind those interfaces itself.
 
 Gateways are bound to their repository implementations explicitly (e.g., `single<LocalBookGateway> { LocalBookRepository(get()) }`), not through `singleOf`.
 

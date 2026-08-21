@@ -1,7 +1,7 @@
 # Compose UI 重做与业务模块化迁移计划
 
-> 状态：Phase 0、Phase 1 已完成；Phase 2、Phase 3、Phase 4 工程实现与范围内自动验证已完成；Phase 5 已建立治理门禁，但七个 feature 仍为实验态，旧路径尚未删除；Phase 6 已完成，完整 Room schema、entity、DAO、migration 与 converter 已物理迁入 `:core:database`；Phase 7–9 尚未实施
-> 日期：2026-08-21
+> 状态：Phase 0、Phase 1 已完成；Phase 2、Phase 3、Phase 4 工程实现与范围内自动验证已完成；Phase 5 已建立治理门禁；Phase 6 已完成，完整 Room schema、entity、DAO、migration 与 converter 已物理迁入 `:core:database`；Phase 7 已完成；Phase 8 的实现模块化已完成 bookshelf、rss、catalog、ai 四项，settings、readaloud、reader 仍被各自的前置条件阻塞，UI 转正（`default_observation` / `complete`）全部未发生；Phase 9 的 `:app` 瘦身、治理聚合与构建度量已完成可自动化的部分，全局 `appDb` 兼容入口与旧 UI 删除仍待剩余 feature 转正
+> 日期：2026-08-22
 > 范围：Android 端 Compose UI 的重做，以及为它提供稳定边界的业务模块化。**不包含** `modules/web/` Vue 前端重做，也不把内嵌 Ktor 服务改造成独立云端后端。
 
 ## 1. 目标与非目标
@@ -448,7 +448,7 @@ Phase 6 的数据库阻断已清零；Phase 7 可以开始书架正式 impl，�
 
 ### Phase 7：书架正式实现垂直切片
 
-**状态**：计划中；Phase 6 前置数据库接缝已满足。
+**状态**：已完成。实施产物：[`bookshelf-phase7-migration-card.md`](./bookshelf-phase7-migration-card.md)、[`phase7-9-migration-record.md`](./phase7-9-migration-record.md)。
 
 **目的**：用书架证明 `Compose UI → feature API → feature impl → Room SSOT` 的完整模块链路，
 并把首个业务实现及其 Koin 绑定从 `:app` 移出。
@@ -486,9 +486,14 @@ Phase 6 的数据库阻断已清零；Phase 7 可以开始书架正式 impl，�
 
 回滚：只切换 API 实现绑定或 UI 消费者；数据库和持久化格式不变，同一构建中始终只有一个写实现。
 
+2026-08-22 实施记录：`:feature:bookshelf:impl` 已建立并成为书架四个 API 接口的唯一 Koin 绑定；
+`LegacyBookshelfAdapter` 及其映射测试已删除，断言并入 `BookshelfImplContractTest`；架构护栏改为
+禁止 `:app` 导入书架 API 接口与重建适配器。`Book.isLocal` 判定下沉为 `Book.isLocalBook()`，
+`help/book/BookExtensions` 改为委托。旧书架 UI 与 `bookshelfFeatureEnabled` 未改变。
+
 ### Phase 8：按风险逐个完成正式实现与 UI 转正
 
-**状态**：计划中，书架正式实现稳定后开始。
+**状态**：实现模块化完成 4/7（bookshelf、rss、catalog、ai）；settings、readaloud、reader 被各自前置条件阻塞。UI 转正（`default_observation` / `complete`）一个都未发生——它需要 Release/R8 可安装产物之外的设备矩阵与稳定版本观察，属于人工签收门禁。
 
 **目的**：复制 Phase 7 已验证的模式，但不要求所有 feature 使用相同内部结构，也不同时开启七个入口。
 
@@ -518,9 +523,24 @@ experiment → default_observation → complete
 验收：单个 feature 达到 `complete` 时，必须不存在 app adapter、旧 UI 入口、临时 BuildConfig/Gradle
 开关和重复 Koin 绑定；搜索、架构测试、Release 产物、设备签收和删除记录全部可审计。
 
+2026-08-22 实施记录：
+
+| Feature | 实现状态 | 迁移卡 | 剩余阻塞 |
+|---|---|---|---|
+| bookshelf | `formal_impl` | [Phase 7 卡](./bookshelf-phase7-migration-card.md) | UI 转正的设备矩阵与稳定版本观察 |
+| rss | `formal_impl` | [Phase 8.3 卡](./rss-phase8-migration-card.md) | 同上 |
+| catalog | `formal_impl` | [Phase 8.4 卡](./catalog-phase8-migration-card.md) | 同上 |
+| ai | `formal_impl` | [Phase 8.5 卡](./ai-phase8-migration-card.md) | 同上；`setDefaultModel` 仍由 app 唯一写入 |
+| settings | `app_adapter` | [Phase 3 卡](./settings-phase3-migration-card.md) | `:core:preferences` 未建立；三个设置 Gateway 及其模型仍是 `:app` 领域类型，`impl` 无法在不复制读取规则的前提下承接 |
+| readaloud | `app_adapter` | [Phase 3 卡](./readaloud-phase3-migration-card.md) | 播放服务未暴露模块安全 Session API，桥接仍需 `ui.book.readaloud.player` 协调器 |
+| reader | `app_adapter` | [Phase 4 卡](./reader-phase4-migration-card.md) | `ReadBook` 运行时单例未模块化；Phase 4 决策门未通过 |
+
+被阻塞的三个 feature 没有建立"只做映射"的空壳 `impl`：那会把 `:app` 的读取或写入规则复制一份，
+违反第 3.3 节的单一所有者与第 3.4 节的"不引入双实现"。
+
 ### Phase 9：`:app` 瘦身与持续治理
 
-**状态**：计划中，随 Phase 7–8 渐进实施，最终统一收口。
+**状态**：可自动化的部分已完成（feature 业务实现出栈、护栏聚合、构建度量、文档更新）；全局 `appDb` 兼容入口删除与旧 UI/开关清理仍等待剩余 feature 转正。
 
 **目的**：让 `:app` 真正成为应用外壳，并证明模块化降低了变更影响，而不是只增加 Gradle 项目数。
 
@@ -550,6 +570,20 @@ experiment → default_observation → complete
 - 关键用户旅程、备份/恢复、深链、进程恢复、Release/R8 和设备矩阵保持通过。
 - 已完成 feature 搜索不到旧入口、适配器、双写路径和临时开关。
 - 模块化前后的构建反馈与变更影响有记录；若没有收益，允许合并模块而不是继续细拆。
+
+2026-08-22 实施记录：
+
+- `:app` 不再持有 bookshelf / rss / catalog / ai 的业务实现，也不再逐接口绑定它们的 API；
+  `app/src/main/java/io/legado/app/feature/` 下只剩 settings、readaloud、reader 三个兼容适配器。
+- 新增根任务 `verifyMigrationGovernance`，聚合 `verifyConfigArchitecture`（含护栏夹具与迁移登记表）
+  与全部子模块的 `verifyModuleDependencies`，CI 只需执行这一个任务。
+- 架构护栏新增"已建立正式 impl 的 feature API 禁止在 `:app` 中被导入"的棘轮，并同步收回了
+  bookshelf / rss / catalog / ai 的兼容适配器白名单。
+- 构建度量（本机、配置缓存命中）：只改 `:feature:bookshelf:impl` 的实现文件时，
+  `:app:assembleAppDebug` 只重编译该模块（`:app` 因 ABI 未变而免于重编），耗时约 11s；
+  只改 `:app` 的装配文件时同样只重编译 `:app`，耗时约 11s。模块拆分没有让反馈变慢。
+- 未完成：全局 `appDb` 兼容入口（生产引用基线仍为 430）、旧 UI 与临时开关删除，
+  它们分别依赖剩余 feature 的实现模块化与 UI 转正。
 
 ## 6. Koin、导航与兼容策略
 
@@ -609,11 +643,12 @@ experiment → default_observation → complete
 20. **M6.2（已完成）**：已建立最小 convention plugin 和可测试的模块依赖护栏；未升级工具链。
 21. **M6.3（已完成）**：Room 模型已移除直接 `appDb`/UI/Reader 反向依赖，持久化归 Repository/兼容边界，app 行为通过显式运行时契约注入；schema 未改变。
 22. **M6.4（已完成）**：完整 Room schema、104 个 entity/DAO、migration、converter 与 database factory 已物理迁入 `:core:database`；`:app` 仅保留装配与旧入口兼容层。
-23. **M7.1**：建立 `:feature:bookshelf:impl`，让 app adapter 与正式 impl 通过同一套 API/SSOT 契约测试。
-24. **M7.2**：一次性切换书架 Koin 绑定到正式 impl，删除 app adapter，保持旧 UI 仍可作为消费者回退。
-25. **M8.1**：书架完成 Release/R8、设备矩阵与进程恢复后进入 `default_observation`；稳定版本观察通过后删除旧 UI 和开关。
-26. **M8.2–M8.7**：按 settings、rss、catalog、ai、readaloud、reader 顺序逐项完成正式实现与 UI 转正；不得批量开启。
-27. **M9.1**：删除全局 `appDb` 兼容入口和已迁移的 app 业务实现，收紧 `:app` 增长棘轮并记录构建收益。
+23. **M7.1（已完成）**：建立 `:feature:bookshelf:impl`；旧适配器的契约断言已并入 `BookshelfImplContractTest`，对正式实现执行同一套契约。
+24. **M7.2（已完成）**：书架 Koin 绑定一次性切到正式 impl，`LegacyBookshelfAdapter` 已删除，旧 UI 仍可作为消费者回退。
+25. **M8.1（未开始）**：书架 UI 转正等待设备矩阵、进程恢复与稳定版本观察的人工签收；Release/R8 产物已可构建，但不等于设备签收。
+26. **M8.3 / M8.4 / M8.5（已完成实现模块化）**：rss、catalog、ai 已建立正式 impl 并删除各自的 app adapter；UI 仍为 `experiment`。
+27. **M8.2 / M8.6 / M8.7（阻塞）**：settings 等待 `:core:preferences` 与设置 Gateway 所有权下沉；readaloud 等待播放服务的模块安全 Session API；reader 等待 `ReadBook` 运行时模块化与 Phase 4 决策门。
+28. **M9.1（部分完成）**：已迁移 feature 的业务实现与逐接口绑定已移出 `:app`，新增 `verifyMigrationGovernance` 聚合门禁并记录构建度量；全局 `appDb` 兼容入口的删除仍等待剩余 feature。
 
 ## 9. 决策记录与待确认项
 

@@ -920,3 +920,18 @@ subprojects {
         }
     }
 }
+
+/**
+ * Phase 9 治理入口：CI 只需要跑这一个任务就能覆盖配置架构护栏、模块依赖方向、
+ * 正式 impl 的最小交付物和 feature 迁移登记表。
+ */
+tasks.register("verifyMigrationGovernance") {
+    group = "verification"
+    description = "聚合迁移期的全部架构与治理检查"
+    dependsOn(verifyConfigArchitecture)
+    dependsOn(
+        subprojects.map { subproject ->
+            subproject.tasks.matching { it.name == "verifyModuleDependencies" }
+        }
+    )
+}
