@@ -65,8 +65,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import io.legado.app.BuildConfig
 import io.legado.app.R
+import io.legado.app.domain.model.BookSearchScope
 import io.legado.app.feature.bookshelf.ui.BookshelfOpenBookRequest
 import io.legado.app.feature.bookshelf.ui.BookshelfRouteScreen as FeatureBookshelfRouteScreen
+import io.legado.app.feature.catalog.ui.CatalogRouteScreen as FeatureCatalogRouteScreen
+import io.legado.app.feature.rss.api.RssOpenTarget
+import io.legado.app.feature.rss.ui.RssRouteScreen as FeatureRssRouteScreen
 import io.legado.app.ui.main.bookshelf.BookShelfItem
 import io.legado.app.ui.main.bookshelf.BookshelfRouteScreen
 import io.legado.app.ui.main.bookshelf.BookshelfViewModel
@@ -472,35 +476,98 @@ fun MainScreen(
                                 }
                             }
 
-                            MainDestination.Explore -> ExploreRouteScreen(
-                                onOpenExploreShow = onNavigateToExploreShow,
-                                onOpenLogin = { sourceUrl ->
-                                    onNavigateToSourceLogin(
-                                        io.legado.app.ui.login.SourceLoginType.BookSource,
-                                        sourceUrl,
+                            MainDestination.Explore -> {
+                                if (BuildConfig.USE_COMPOSE_CATALOG_FEATURE) {
+                                    FeatureCatalogRouteScreen(
+                                        onOpenDiscovery = { title, sourceUrl ->
+                                            onNavigateToExploreShow(title, sourceUrl, null)
+                                        },
+                                        onSearchSource = { name, sourceUrl ->
+                                            onNavigateToScopedSearch(
+                                                BookSearchScope.encodeSource(name, sourceUrl)
+                                            )
+                                        },
+                                        onLogin = { sourceUrl ->
+                                            onNavigateToSourceLogin(
+                                                io.legado.app.ui.login.SourceLoginType.BookSource,
+                                                sourceUrl,
+                                            )
+                                        },
+                                        onEdit = onNavigateToBookSourceEdit,
+                                        onGlobalSearch = { onNavigateToSearch(null) },
+                                        onSourceManage = onNavigateToBookSourceManage,
+                                        onImport = onNavigateToBookSourceManage,
                                     )
-                                },
-                                onOpenEdit = onNavigateToBookSourceEdit,
-                                onOpenSearch = onNavigateToScopedSearch,
-                            )
-                            MainDestination.Rss -> RssRouteScreen(
-                                onOpenSort = { sourceUrl, sortUrl, key ->
-                                    onNavigateToRssSort(sourceUrl, sortUrl, key)
-                                },
-                                onOpenRead = { title, origin, link, openUrl, startPage ->
-                                    onNavigateToRssRead(title, origin, link, openUrl, startPage)
-                                },
-                                onOpenFavorites = onNavigateToRssFavorites,
-                                onOpenRuleSub = onNavigateToRuleSub,
-                                onOpenLogin = { sourceUrl ->
-                                    onNavigateToSourceLogin(
-                                        io.legado.app.ui.login.SourceLoginType.RssSource,
-                                        sourceUrl,
+                                } else {
+                                    ExploreRouteScreen(
+                                        onOpenExploreShow = onNavigateToExploreShow,
+                                        onOpenLogin = { sourceUrl ->
+                                            onNavigateToSourceLogin(
+                                                io.legado.app.ui.login.SourceLoginType.BookSource,
+                                                sourceUrl,
+                                            )
+                                        },
+                                        onOpenEdit = onNavigateToBookSourceEdit,
+                                        onOpenSearch = onNavigateToScopedSearch,
                                     )
-                                },
-                                onOpenSourceEdit = onNavigateToRssSourceEdit,
-                                onOpenSourceManage = onNavigateToRssSourceManage,
-                            )
+                                }
+                            }
+                            MainDestination.Rss -> {
+                                if (BuildConfig.USE_COMPOSE_RSS_FEATURE) {
+                                    FeatureRssRouteScreen(
+                                        onOpen = { target ->
+                                            when (target) {
+                                                is RssOpenTarget.Sort -> onNavigateToRssSort(
+                                                    target.sourceId,
+                                                    null,
+                                                    null,
+                                                )
+                                                is RssOpenTarget.Read -> onNavigateToRssRead(
+                                                    target.title,
+                                                    target.origin,
+                                                    target.link,
+                                                    target.openUrl,
+                                                    target.startPage,
+                                                )
+                                                is RssOpenTarget.External -> {
+                                                    context.startActivity(
+                                                        Intent(Intent.ACTION_VIEW, target.url.toUri())
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        onLogin = { sourceUrl ->
+                                            onNavigateToSourceLogin(
+                                                io.legado.app.ui.login.SourceLoginType.RssSource,
+                                                sourceUrl,
+                                            )
+                                        },
+                                        onEdit = onNavigateToRssSourceEdit,
+                                        onFavorites = onNavigateToRssFavorites,
+                                        onManage = onNavigateToRssSourceManage,
+                                        onRuleSubscriptions = onNavigateToRuleSub,
+                                    )
+                                } else {
+                                    RssRouteScreen(
+                                        onOpenSort = { sourceUrl, sortUrl, key ->
+                                            onNavigateToRssSort(sourceUrl, sortUrl, key)
+                                        },
+                                        onOpenRead = { title, origin, link, openUrl, startPage ->
+                                            onNavigateToRssRead(title, origin, link, openUrl, startPage)
+                                        },
+                                        onOpenFavorites = onNavigateToRssFavorites,
+                                        onOpenRuleSub = onNavigateToRuleSub,
+                                        onOpenLogin = { sourceUrl ->
+                                            onNavigateToSourceLogin(
+                                                io.legado.app.ui.login.SourceLoginType.RssSource,
+                                                sourceUrl,
+                                            )
+                                        },
+                                        onOpenSourceEdit = onNavigateToRssSourceEdit,
+                                        onOpenSourceManage = onNavigateToRssSourceManage,
+                                    )
+                                }
+                            }
                             MainDestination.My -> MyRouteScreen(
                                 onOpenSettings = onOpenSettings,
                                 onNavigateToChat = onNavigateToChat,

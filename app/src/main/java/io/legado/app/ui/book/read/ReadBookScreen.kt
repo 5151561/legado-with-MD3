@@ -17,6 +17,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.ImageLoader
 import io.legado.app.R
+import io.legado.app.BuildConfig
 import io.legado.app.data.repository.ReadPreferences
 import io.legado.app.domain.gateway.CoverSettingsGateway
 import io.legado.app.domain.usecase.BookmarkTargetVerdict
@@ -50,6 +51,7 @@ import io.legado.app.ui.book.read.sheet.ToolButtonConfigSheet
 import io.legado.app.ui.book.read.sheet.UnderlineConfigSheet
 import io.legado.app.ui.book.readaloud.player.ReadAloudPlayerEffect
 import io.legado.app.ui.book.readaloud.player.ReadAloudPlayerViewModel
+import io.legado.app.feature.readaloud.ui.ReadAloudRouteScreen as FeatureReadAloudRouteScreen
 import io.legado.app.ui.dict.DictSheet
 import io.legado.app.ui.theme.LegadoTheme
 import io.legado.app.ui.theme.rememberImageSeedColor
@@ -502,15 +504,29 @@ fun ReadBookScreen(
         ReadBookSheet.ReadAloudPlayer -> ReadAloudPage.Player
         else -> null
     }
-    ReadAloudScreen(
-        page = readAloudPage,
-        state = state,
-        playerState = aloudPlayerState,
-        playerTheme = playerTheme,
-        onIntent = onIntent,
-        onPlayerIntent = aloudPlayerViewModel::onIntent,
-        onDismissRequest = dismissSheet,
-    )
+    if (BuildConfig.USE_COMPOSE_READALOUD_FEATURE &&
+        state.activeSheet is ReadBookSheet.ReadAloudPlayer
+    ) {
+        FeatureReadAloudRouteScreen(
+            onBack = dismissSheet,
+            onOpenVoices = { onIntent(ReadBookIntent.OpenTtsEnginesAndVoices) },
+            onOpenCache = { onIntent(ReadBookIntent.OpenTtsCache) },
+            onOpenSettings = {
+                onIntent(ReadBookIntent.ShowSheet(ReadBookSheet.ReadAloudConfig))
+            },
+            onSwitchToClassic = { onIntent(ReadBookIntent.OpenClassicReadAloudControls) },
+        )
+    } else {
+        ReadAloudScreen(
+            page = readAloudPage,
+            state = state,
+            playerState = aloudPlayerState,
+            playerTheme = playerTheme,
+            onIntent = onIntent,
+            onPlayerIntent = aloudPlayerViewModel::onIntent,
+            onDismissRequest = dismissSheet,
+        )
+    }
     LaunchedEffect(state.activeSheet) {
         if (state.activeSheet is ReadBookSheet.ReadAloudPlayer) {
             aloudPlayerViewModel.onIntent(

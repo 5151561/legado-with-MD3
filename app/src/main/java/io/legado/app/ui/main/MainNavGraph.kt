@@ -32,6 +32,7 @@ import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigation3.ui.NavDisplay
 import coil3.ImageLoader
 import io.legado.app.R
+import io.legado.app.BuildConfig
 import io.legado.app.constant.BookType
 import io.legado.app.constant.Status
 import io.legado.app.domain.model.BookSearchScope
@@ -45,6 +46,8 @@ import io.legado.app.ui.about.AboutEffect
 import io.legado.app.ui.about.AboutScreen
 import io.legado.app.ui.about.AboutViewModel
 import io.legado.app.ui.ai.chat.AiChatRouteScreen
+import io.legado.app.feature.ai.ui.AiRouteScreen as FeatureAiRouteScreen
+import io.legado.app.feature.settings.ui.SettingsRouteScreen as FeatureSettingsRouteScreen
 import io.legado.app.ui.book.audio.AudioPlayEffect
 import io.legado.app.ui.book.audio.AudioPlayIntent
 import io.legado.app.ui.book.audio.AudioPlayScreenContent
@@ -422,18 +425,33 @@ fun MainActivity.mainEntryProvider(
     }
 
     entry<MainRouteSettings> {
-        ConfigNavScreen(
-            onBackClick = { onNavigateBack() },
-            onNavigateToOther = { backStack.add(MainRouteSettingsOther) },
-            onNavigateToRead = { backStack.add(MainRouteSettingsRead) },
-            onNavigateToCover = { backStack.add(MainRouteSettingsCover) },
-            onNavigateToTheme = { backStack.add(MainRouteSettingsTheme) },
-            onNavigateToBackup = { backStack.add(MainRouteSettingsBackup) },
-            onNavigateToAi = { backStack.add(MainRouteSettingsAi) },
-            onNavigateToDownloadCache = { backStack.add(MainRouteSettingsDownloadCache) },
-            onNavigateToTranslation = { backStack.add(MainRouteSettingsTranslation) },
-            onNavigateToLab = { backStack.add(MainRouteSettingsLabConfig) }
-        )
+        if (BuildConfig.USE_COMPOSE_SETTINGS_FEATURE) {
+            FeatureSettingsRouteScreen(
+                onBack = onNavigateBack,
+                onOpenTheme = { backStack.add(MainRouteSettingsTheme) },
+                onOpenInterface = { backStack.add(MainRouteSettingsOther) },
+                onOpenDownloadCache = { backStack.add(MainRouteSettingsDownloadCache) },
+                onOpenBackup = { backStack.add(MainRouteSettingsBackup) },
+                onOpenRead = { backStack.add(MainRouteSettingsRead) },
+                onOpenCover = { backStack.add(MainRouteSettingsCover) },
+                onOpenAi = { backStack.add(MainRouteSettingsAi) },
+                onOpenTranslation = { backStack.add(MainRouteSettingsTranslation) },
+                onOpenLab = { backStack.add(MainRouteSettingsLabConfig) },
+            )
+        } else {
+            ConfigNavScreen(
+                onBackClick = { onNavigateBack() },
+                onNavigateToOther = { backStack.add(MainRouteSettingsOther) },
+                onNavigateToRead = { backStack.add(MainRouteSettingsRead) },
+                onNavigateToCover = { backStack.add(MainRouteSettingsCover) },
+                onNavigateToTheme = { backStack.add(MainRouteSettingsTheme) },
+                onNavigateToBackup = { backStack.add(MainRouteSettingsBackup) },
+                onNavigateToAi = { backStack.add(MainRouteSettingsAi) },
+                onNavigateToDownloadCache = { backStack.add(MainRouteSettingsDownloadCache) },
+                onNavigateToTranslation = { backStack.add(MainRouteSettingsTranslation) },
+                onNavigateToLab = { backStack.add(MainRouteSettingsLabConfig) },
+            )
+        }
     }
 
     entry<MainRouteSettingsOther> {
@@ -470,23 +488,37 @@ fun MainActivity.mainEntryProvider(
     }
 
     entry<MainRouteSettingsAi> {
-        AiConfigRouteScreen(
-            onBackClick = { onNavigateBack() },
-            onNavigateToProviderEdit = { providerId ->
-                backStack.add(MainRouteSettingsAiProviderEdit(providerId = providerId))
-            },
-            onNavigateToModelEdit = { providerId, modelProfileId ->
-                backStack.add(
-                    MainRouteSettingsAiModelEdit(
-                        providerId = providerId,
-                        modelProfileId = modelProfileId
+        if (BuildConfig.USE_COMPOSE_AI_FEATURE) {
+            FeatureAiRouteScreen(
+                onBack = onNavigateBack,
+                onOpenChat = { backStack.add(MainRouteAiChat) },
+                onAddProvider = { backStack.add(MainRouteSettingsAiProviderEdit()) },
+                onEditProvider = { backStack.add(MainRouteSettingsAiProviderEdit(it)) },
+                onEditModel = { providerId, modelId ->
+                    backStack.add(MainRouteSettingsAiModelEdit(providerId, modelId))
+                },
+                onOpenSummaryPrompt = { backStack.add(MainRouteSettingsAiSummary) },
+                onOpenPromptSettings = { backStack.add(MainRouteSettingsAiPrompt) },
+            )
+        } else {
+            AiConfigRouteScreen(
+                onBackClick = { onNavigateBack() },
+                onNavigateToProviderEdit = { providerId ->
+                    backStack.add(MainRouteSettingsAiProviderEdit(providerId = providerId))
+                },
+                onNavigateToModelEdit = { providerId, modelProfileId ->
+                    backStack.add(
+                        MainRouteSettingsAiModelEdit(
+                            providerId = providerId,
+                            modelProfileId = modelProfileId
+                        )
                     )
-                )
-            },
-            onNavigateToTranslation = { backStack.add(MainRouteSettingsTranslation) },
-            onNavigateToAiSummary = { backStack.add(MainRouteSettingsAiSummary) },
-            onNavigateToAiPrompt = { backStack.add(MainRouteSettingsAiPrompt) }
-        )
+                },
+                onNavigateToTranslation = { backStack.add(MainRouteSettingsTranslation) },
+                onNavigateToAiSummary = { backStack.add(MainRouteSettingsAiSummary) },
+                onNavigateToAiPrompt = { backStack.add(MainRouteSettingsAiPrompt) }
+            )
+        }
     }
 
     entry<MainRouteSettingsAiSummary> {

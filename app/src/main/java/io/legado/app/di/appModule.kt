@@ -45,6 +45,19 @@ import io.legado.app.feature.bookshelf.api.BookshelfGroupCommands
 import io.legado.app.feature.bookshelf.api.BookshelfPreferencesGateway
 import io.legado.app.feature.bookshelf.api.BookshelfQuery
 import io.legado.app.feature.bookshelf.compat.LegacyBookshelfAdapter
+import io.legado.app.feature.ai.api.AiCommands
+import io.legado.app.feature.ai.api.AiOverviewQuery
+import io.legado.app.feature.ai.compat.LegacyAiAdapter
+import io.legado.app.feature.catalog.api.CatalogCommands
+import io.legado.app.feature.catalog.api.CatalogQuery
+import io.legado.app.feature.catalog.compat.LegacyCatalogAdapter
+import io.legado.app.feature.readaloud.api.ReadAloudSessionGateway
+import io.legado.app.feature.readaloud.compat.LegacyReadAloudAdapter
+import io.legado.app.feature.rss.api.RssCommands
+import io.legado.app.feature.rss.api.RssQuery
+import io.legado.app.feature.rss.compat.LegacyRssAdapter
+import io.legado.app.feature.settings.api.SettingsOverviewQuery
+import io.legado.app.feature.settings.compat.LegacySettingsAdapter
 import io.legado.app.data.repository.CacheBookDownloadRepository
 import io.legado.app.data.repository.ChangeSourceSettingsRepository
 import io.legado.app.data.repository.ChapterSpeechRepository
@@ -207,6 +220,7 @@ import io.legado.app.domain.usecase.RelocateMarkingTargetUseCase
 import io.legado.app.domain.usecase.RemoveBookGroupAssignmentUseCase
 import io.legado.app.domain.usecase.ResolveBookShelfStateUseCase
 import io.legado.app.domain.usecase.ResolveLocalSpeakersUseCase
+import io.legado.app.domain.usecase.ResolveRssOpenTargetUseCase
 import io.legado.app.domain.usecase.SaveBookContentProcessUseCase
 import io.legado.app.domain.usecase.SaveMarkingUseCase
 import io.legado.app.domain.usecase.SaveSearchBooksUseCase
@@ -361,6 +375,8 @@ val appModule = module {
     single<BookshelfPreferencesGateway> { get<LegacyBookshelfAdapter>() }
     single<BookshelfCommands> { get<LegacyBookshelfAdapter>() }
     single<BookshelfGroupCommands> { get<LegacyBookshelfAdapter>() }
+    singleOf(::LegacySettingsAdapter)
+    single<SettingsOverviewQuery> { get<LegacySettingsAdapter>() }
     singleOf(::DictRuleRepository)
     singleOf(::TxtTocRuleRepository)
     single {
@@ -469,6 +485,9 @@ val appModule = module {
     single<UploadRepository> { DirectLinkUploadRepository() }
     single<TranslationCacheGateway> { TranslationCacheRepositoryImpl() }
     single<AiProfileGateway> { AiProfileRepository(get()) }
+    singleOf(::LegacyAiAdapter)
+    single<AiOverviewQuery> { get<LegacyAiAdapter>() }
+    single<AiCommands> { get<LegacyAiAdapter>() }
     single<AiArtifactGateway> { AiArtifactRepository(get()) }
     single<AiChatGateway> { AiChatRepository(get()) }
     single<AiMemoryGateway> { AiMemoryRepository(get()) }
@@ -499,7 +518,14 @@ val appModule = module {
     single { ExploreRepositoryImpl(get()) }
     single<ExploreRepository> { get<ExploreRepositoryImpl>() }
     single<ExploreBooksGateway> { get<ExploreRepositoryImpl>() }
+    singleOf(::LegacyCatalogAdapter)
+    single<CatalogQuery> { get<LegacyCatalogAdapter>() }
+    single<CatalogCommands> { get<LegacyCatalogAdapter>() }
     singleOf(::RssRepository)
+    singleOf(::ResolveRssOpenTargetUseCase)
+    singleOf(::LegacyRssAdapter)
+    single<RssQuery> { get<LegacyRssAdapter>() }
+    single<RssCommands> { get<LegacyRssAdapter>() }
     singleOf(::RssFavoriteRepository)
     singleOf(::RssArticleRepository)
     singleOf(::RssReadRecordRepository)
@@ -703,6 +729,8 @@ val appModule = module {
     viewModelOf(::CloudTtsViewModel)
     viewModelOf(::TtsCacheViewModel)
     singleOf(::ReadAloudPlayerCoordinator)
+    singleOf(::LegacyReadAloudAdapter)
+    single<ReadAloudSessionGateway> { get<LegacyReadAloudAdapter>() }
     viewModelOf(::ReadAloudPlayerViewModel)
     viewModel { (bookUrl: String, entryId: String?) ->
         BookKnowledgeDetailViewModel(

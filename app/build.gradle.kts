@@ -62,6 +62,31 @@ android {
             "USE_COMPOSE_BOOKSHELF_FEATURE",
             providers.gradleProperty("bookshelfFeatureEnabled").getOrElse("false"),
         )
+        buildConfigField(
+            "boolean",
+            "USE_COMPOSE_SETTINGS_FEATURE",
+            providers.gradleProperty("settingsFeatureEnabled").getOrElse("false"),
+        )
+        buildConfigField(
+            "boolean",
+            "USE_COMPOSE_CATALOG_FEATURE",
+            providers.gradleProperty("catalogFeatureEnabled").getOrElse("false"),
+        )
+        buildConfigField(
+            "boolean",
+            "USE_COMPOSE_RSS_FEATURE",
+            providers.gradleProperty("rssFeatureEnabled").getOrElse("false"),
+        )
+        buildConfigField(
+            "boolean",
+            "USE_COMPOSE_READALOUD_FEATURE",
+            providers.gradleProperty("readAloudFeatureEnabled").getOrElse("false"),
+        )
+        buildConfigField(
+            "boolean",
+            "USE_COMPOSE_AI_FEATURE",
+            providers.gradleProperty("aiFeatureEnabled").getOrElse("false"),
+        )
 
         buildConfigField("String", "Cronet_Version", "\"${project.findProperty("CronetVersion")}\"")
         buildConfigField(
@@ -196,6 +221,16 @@ dependencies {
     implementation(project(":core:navigation"))
     implementation(project(":feature:bookshelf:api"))
     implementation(project(":feature:bookshelf:ui"))
+    implementation(project(":feature:settings:api"))
+    implementation(project(":feature:settings:ui"))
+    implementation(project(":feature:catalog:api"))
+    implementation(project(":feature:catalog:ui"))
+    implementation(project(":feature:rss:api"))
+    implementation(project(":feature:rss:ui"))
+    implementation(project(":feature:readaloud:api"))
+    implementation(project(":feature:readaloud:ui"))
+    implementation(project(":feature:ai:api"))
+    implementation(project(":feature:ai:ui"))
     implementation(libs.androidx.profileinstaller)
     "baselineProfile"(project(":baselineprofile"))
     coreLibraryDesugaring(libs.desugar)

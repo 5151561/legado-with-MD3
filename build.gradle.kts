@@ -125,6 +125,38 @@ abstract class VerifyConfigArchitectureTask : DefaultTask() {
                         violations += "$relativePath: 临时适配器禁止扩大到 $forbiddenImport"
                     }
                 }
+
+                val phase3CompatFiles = mapOf(
+                    "settings" to "LegacySettingsAdapter.kt",
+                    "catalog" to "LegacyCatalogAdapter.kt",
+                    "rss" to "LegacyRssAdapter.kt",
+                    "readaloud" to "LegacyReadAloudAdapter.kt",
+                    "ai" to "LegacyAiAdapter.kt",
+                )
+                phase3CompatFiles.forEach { (feature, allowedFile) ->
+                    val prefix = "app/src/main/java/io/legado/app/feature/$feature/compat/"
+                    if (relativePath.startsWith(prefix)) {
+                        if (relativePath != prefix + allowedFile) {
+                            violations += "$relativePath: $feature 临时兼容接缝只允许 $allowedFile"
+                        }
+                        imports.filter {
+                            it == "io.legado.app.data.appDb" ||
+                                it.startsWith("io.legado.app.data.dao.") ||
+                                it.startsWith("io.legado.app.help.config.") ||
+                                it.startsWith("io.legado.app.service.") ||
+                                (it.startsWith("io.legado.app.ui.") && feature != "readaloud")
+                        }.forEach { forbiddenImport ->
+                            violations += "$relativePath: $feature 临时适配器禁止扩大到 $forbiddenImport"
+                        }
+                        if (feature == "readaloud") {
+                            imports.filter { it.startsWith("io.legado.app.ui.") &&
+                                !it.startsWith("io.legado.app.ui.book.readaloud.player.")
+                            }.forEach { forbiddenImport ->
+                                violations += "$relativePath: readaloud 服务桥接只允许播放器协调器：$forbiddenImport"
+                            }
+                        }
+                    }
+                }
             }
 
         moduleBuildFiles.files

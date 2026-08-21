@@ -1,6 +1,6 @@
 # Compose UI 重做与业务模块化迁移计划
 
-> 状态：Phase 0、Phase 1 已完成；Phase 2 实现与范围内自动验证已完成，灰度入口默认关闭，设备人工矩阵待发布前执行
+> 状态：Phase 0、Phase 1 已完成；Phase 2、Phase 3 实现与范围内自动验证已完成，灰度入口默认关闭，设备人工矩阵待发布前执行
 > 日期：2026-08-21
 > 范围：Android 端 Compose UI 的重做，以及为它提供稳定边界的业务模块化。**不包含** `modules/web/` Vue 前端重做，也不把内嵌 Ktor 服务改造成独立云端后端。
 
@@ -265,6 +265,21 @@ Modal Bottom Sheet、按钮、图标和进度组件；`:app` 的旧 `ui/theme` �
 
 ### Phase 3：按业务域扩展 Compose feature
 
+实施产物：settings、catalog、rss、readaloud、ai 均已建立独立 `api / ui` 模块、UDF
+入口、单一 app 兼容适配器与独立构建期开关；对应迁移卡如下：
+
+- [`settings-phase3-migration-card.md`](./settings-phase3-migration-card.md)
+- [`catalog-phase3-migration-card.md`](./catalog-phase3-migration-card.md)
+- [`rss-phase3-migration-card.md`](./rss-phase3-migration-card.md)
+- [`readaloud-phase3-migration-card.md`](./readaloud-phase3-migration-card.md)
+- [`ai-phase3-migration-card.md`](./ai-phase3-migration-card.md)
+
+五个入口默认关闭，分别由 `settingsFeatureEnabled`、`catalogFeatureEnabled`、
+`rssFeatureEnabled`、`readAloudFeatureEnabled`、`aiFeatureEnabled` 启用。新 UI 不导入 DAO、
+Room 实体、`appDb`、Service 或 app 运行时对象；外部 Intent、根导航、阅读器 sheet 与现有
+子流程仍由 app host 承接。写命令继续由现有 Gateway/Repository/播放协调器唯一执行并从 SSOT
+回流，不改设置格式、Room schema、规则执行器、WebView 安全模型、播放服务或 AI 协议。
+
 **目的**：复制已验证的形态，而不是为每个页面重新发明架构。
 
 建议顺序与范围：
@@ -280,6 +295,11 @@ Modal Bottom Sheet、按钮、图标和进度组件；`:app` 的旧 `ui/theme` �
 每个 feature 都先提交一份小型“迁移卡”：旧入口、业务 API 与写命令所有者、UiState/Intent/Effect
 及 effect 唯一收集层、导航策略、业务逻辑分类（保持/等价简化/有意改变/移除）、兼容项、测试、
 Release 验证和删除条件。只有前一个 feature 的边界和验收稳定后，才复制到下一个 feature。
+
+2026-08-21 自动验证记录：五个 API/UI 模块的 Debug 单测、五个 UI 模块 Lint、
+`verifyConfigArchitecture`、全部五个灰度开关同时启用的 `:app:compileAppDebugKotlin` 与
+`:app:assembleAppDebug` 均通过。Release/R8 与手机、横屏/分屏、大字体、TalkBack、进程恢复
+仍属于发布前人工/发布构建门禁，不以本次 Debug 自动验证替代。
 
 ### Phase 4：阅读器 Compose 重做的独立决策门
 
@@ -353,6 +373,11 @@ Release 验证和删除条件。只有前一个 feature 的边界和验收稳定
 7. **M2.2（已完成）**：实现新的书架 Compose Screen 与 UDF Contract，默认不替换旧入口。
 8. **M2.3（已完成当前前置）**：书架 DAO/Repository 与导出 UseCase 已移除对书架 UI 类型的反向依赖；正式 `impl` 等 `AppDatabase` 合法下沉后创建。
 9. **M2.4（范围内自动验证完成，设备矩阵待发布前执行）**：灰度编译开关、回退路径、命令/SSOT/架构测试和删除条件已建立；Debug APK、书架模块 Lint/单测已通过，全 App 既有测试/Lint 阻塞与未执行的 Release/R8 已记录在迁移卡；手机、横屏/分屏、大字体、TalkBack 仍按迁移卡逐项签收。
+10. **M3.1（已完成）**：建立 settings API/UI、设置摘要 SSOT 投影、根导航入口与独立回退开关。
+11. **M3.2（已完成）**：建立 catalog API/UI、书源查询/命令边界、发现/搜索/导入兼容导航与独立回退开关。
+12. **M3.3（已完成）**：建立 RSS API/UI、打开目标解析 UseCase、RSS 写命令边界与独立回退开关。
+13. **M3.4（已完成）**：建立 readaloud API/UI、唯一播放协调器桥接、控制/语音/缓存入口与独立回退开关。
+14. **M3.5（已完成）**：建立 AI API/UI、profile/preset SSOT 投影、默认模型命令与会话/生成兼容入口。
 
 ## 9. 决策记录与待确认项
 
