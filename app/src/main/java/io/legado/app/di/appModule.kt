@@ -53,6 +53,8 @@ import io.legado.app.feature.catalog.api.CatalogQuery
 import io.legado.app.feature.catalog.compat.LegacyCatalogAdapter
 import io.legado.app.feature.readaloud.api.ReadAloudSessionGateway
 import io.legado.app.feature.readaloud.compat.LegacyReadAloudAdapter
+import io.legado.app.feature.reader.api.ReaderSessionGateway
+import io.legado.app.feature.reader.compat.LegacyReaderAdapter
 import io.legado.app.feature.rss.api.RssCommands
 import io.legado.app.feature.rss.api.RssQuery
 import io.legado.app.feature.rss.compat.LegacyRssAdapter
@@ -375,6 +377,8 @@ val appModule = module {
     single<BookshelfPreferencesGateway> { get<LegacyBookshelfAdapter>() }
     single<BookshelfCommands> { get<LegacyBookshelfAdapter>() }
     single<BookshelfGroupCommands> { get<LegacyBookshelfAdapter>() }
+    singleOf(::LegacyReaderAdapter)
+    single<ReaderSessionGateway> { get<LegacyReaderAdapter>() }
     singleOf(::LegacySettingsAdapter)
     single<SettingsOverviewQuery> { get<LegacySettingsAdapter>() }
     singleOf(::DictRuleRepository)

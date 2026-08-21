@@ -1,6 +1,6 @@
 # Compose UI 重做与业务模块化迁移计划
 
-> 状态：Phase 0、Phase 1 已完成；Phase 2、Phase 3 实现与范围内自动验证已完成，灰度入口默认关闭，设备人工矩阵待发布前执行
+> 状态：Phase 0、Phase 1 已完成；Phase 2、Phase 3、Phase 4 工程实现与范围内自动验证已完成，灰度入口默认关闭，设备人工矩阵待发布前执行
 > 日期：2026-08-21
 > 范围：Android 端 Compose UI 的重做，以及为它提供稳定边界的业务模块化。**不包含** `modules/web/` Vue 前端重做，也不把内嵌 Ktor 服务改造成独立云端后端。
 
@@ -303,6 +303,11 @@ Release 验证和删除条件。只有前一个 feature 的边界和验收稳定
 
 ### Phase 4：阅读器 Compose 重做的独立决策门
 
+实施产物：[`reader-phase4-migration-card.md`](./reader-phase4-migration-card.md)。已建立
+`:feature:reader:api / ui`、唯一模块安全兼容桥、互斥的编译期 renderer 开关、无动画只读正文
+闭环、边界测试和新的真机 parity/性能采集器。决策结论为“允许受控实验，不切默认”：设备
+parity、内存、帧率和无障碍矩阵通过前，旧 `ReadView` 仍是默认 renderer。
+
 **目的**：避免把最复杂的渲染与运行时系统当作普通页面迁移。
 
 阅读器进入 Compose 重做前，必须单独满足以下条件：
@@ -314,6 +319,11 @@ Release 验证和删除条件。只有前一个 feature 的边界和验收稳定
 5. 任何恢复本项的计划必须重新评审，不得默认延续已删除的 Track C。
 
 验收：以阅读器专门计划定义的功能 parity、内存、帧率、无障碍和回滚开关为准。未通过前，旧阅读器保持默认实现。
+
+2026-08-21 自动验证记录：Reader API/UI Debug 单测、Reader Phase 4 边界测试、Reader UI
+Lint、架构护栏，以及开启 `readerFeatureEnabled` 的 `:app:compileAppDebugKotlin` 与
+`:app:assembleAppDebug` 已通过。Release/R8 与设备矩阵按迁移卡作为默认切换门禁；未签收前
+不改变默认 renderer。
 
 ### Phase 5：删除旧路径并强化治理
 
@@ -378,6 +388,9 @@ Release 验证和删除条件。只有前一个 feature 的边界和验收稳定
 12. **M3.3（已完成）**：建立 RSS API/UI、打开目标解析 UseCase、RSS 写命令边界与独立回退开关。
 13. **M3.4（已完成）**：建立 readaloud API/UI、唯一播放协调器桥接、控制/语音/缓存入口与独立回退开关。
 14. **M3.5（已完成）**：建立 AI API/UI、profile/preset SSOT 投影、默认模型命令与会话/生成兼容入口。
+15. **M4.1（已完成）**：建立 reader API、不可变当前页投影与加载/错误/恢复命令语义，不向 feature 泄漏遗留运行时对象。
+16. **M4.2（已完成）**：建立无动画只读 Compose renderer、互斥单渲染所有权和默认关闭的编译期开关。
+17. **M4.3（自动门禁完成，设备矩阵待签收）**：建立边界测试与真机 parity/首帧/帧统计/往返采集器；默认切换维持 No-Go。
 
 ## 9. 决策记录与待确认项
 

@@ -85,6 +85,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import splitties.init.appCtx
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.max
 import kotlin.math.min
 
@@ -92,8 +93,8 @@ import kotlin.math.min
 /**
  * ReadBook 会话的权威只读快照。
  *
- * 只承载 ReadBook **自己拥有、并在受控 mutator 中重新发布**的会话字段，全部为廉价标量，
- * 不含可变 Book / TextChapter / List / Map，滚动高频路径也不会深拷贝章节。
+ * 只承载 ReadBook **自己拥有、并在受控 mutator 中重新发布**的会话字段，以及当前页文字的
+ * 不可变投影；不含可变 Book / TextChapter / TextPage / List / Map，也不会深拷贝整章。
  *
  * 刻意不含 `isReadingAloud` / `isLoading`：前者真实来源是 `BaseReadAloudService.isRun`
  * （独立服务，ReadBook 变更不会触发其重发），后者只有 `msg`/`loadingChapters` 间接信号；
@@ -107,6 +108,12 @@ data class LegacyReaderSnapshot(
     val chapterCount: Int = 0,
     val simulatedChapterCount: Int = 0,
     val isLocalBook: Boolean = true,
+    val chapterTitle: String = "",
+    val pageIndex: Int = 0,
+    val pageCount: Int = 0,
+    val pageText: String = "",
+    val message: String? = null,
+    val contentRevision: Long = 0L,
 )
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -203,19 +210,31 @@ object ReadBook : CoroutineScope by MainScope(), KoinComponent {
     // 已 private set）。判定用意图化谓词替代裸实体比较，避免调用方直接持有可变 Book。
 
     private val _snapshot = MutableStateFlow(LegacyReaderSnapshot())
+    private val contentRevision = AtomicLong(0L)
 
     /** 权威会话快照。每个受控 mutator 在一次原子状态转移完成后 [publishSnapshot]。 */
     val snapshot: StateFlow<LegacyReaderSnapshot> = _snapshot.asStateFlow()
 
-    private fun buildSnapshot() = LegacyReaderSnapshot(
-        bookUrl = book?.bookUrl,
-        bookName = book?.name,
-        chapterIndex = durChapterIndex,
-        chapterPos = durChapterPos,
-        chapterCount = chapterSize,
-        simulatedChapterCount = simulatedChapterSize,
-        isLocalBook = isLocalBook,
-    )
+    private fun buildSnapshot(): LegacyReaderSnapshot {
+        val chapter = curTextChapter
+        val pageIndex = chapter?.getPageIndexByCharIndex(durChapterPos)?.coerceAtLeast(0) ?: 0
+        val page = chapter?.getPage(pageIndex)
+        return LegacyReaderSnapshot(
+            bookUrl = book?.bookUrl,
+            bookName = book?.name,
+            chapterIndex = durChapterIndex,
+            chapterPos = durChapterPos,
+            chapterCount = chapterSize,
+            simulatedChapterCount = simulatedChapterSize,
+            isLocalBook = isLocalBook,
+            chapterTitle = chapter?.title.orEmpty(),
+            pageIndex = pageIndex,
+            pageCount = chapter?.pageSize ?: 0,
+            pageText = page?.text.orEmpty(),
+            message = msg,
+            contentRevision = contentRevision.get(),
+        )
+    }
 
     /**
      * 在一次原子状态转移**完成后**调用（而非每次单字段赋值后），只发一次、不暴露中间态。
@@ -223,6 +242,12 @@ object ReadBook : CoroutineScope by MainScope(), KoinComponent {
      */
     private fun publishSnapshot() {
         _snapshot.value = buildSnapshot()
+    }
+
+    /** Forces a fresh immutable projection after renderer-visible page content changes. */
+    fun publishRenderedContent() {
+        contentRevision.incrementAndGet()
+        publishSnapshot()
     }
 
     /** 当前会话是否正指向该 URL 的书。 */

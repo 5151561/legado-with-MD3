@@ -41,6 +41,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import io.legado.app.R
+import io.legado.app.BuildConfig
 import io.legado.app.constant.AppLog
 import io.legado.app.constant.BookType
 import io.legado.app.constant.ReadMenuBlurMode
@@ -48,6 +49,7 @@ import io.legado.app.help.IntentHelp
 import io.legado.app.model.ReadBook
 import io.legado.app.model.SourceCallBack
 import io.legado.app.model.translation.TranslationChapterStatus
+import io.legado.app.feature.reader.ui.ReaderRouteScreen as FeatureReaderRouteScreen
 import io.legado.app.ui.book.info.BookInfoActivity
 import io.legado.app.ui.book.read.page.ContentTextView
 import io.legado.app.ui.book.read.page.ReadView
@@ -514,29 +516,44 @@ fun ReadBookRouteScreen(
         ReaderFirstFrameTracker(
             startedAtNanos = requestedStart.takeIf { it > 0L }
                 ?: SystemClock.elapsedRealtimeNanos(),
+            renderer = if (BuildConfig.USE_COMPOSE_READER_FEATURE) "compose" else "legacy",
         )
     }
 
     Box(Modifier.fillMaxSize()) {
-        key(controller) {
-            ReadBookViewLayer(
-                modifier = Modifier,
-                onRefsReady = { controller.onRefsReady(it) },
-                onCursorTouch = controller,
-                readViewCallBack = controller,
-                readerEventListener = controller,
-                readerPageSource = controller,
-                contentTextViewCallBack = controller,
-                isDarkTheme = isDarkTheme,
-                onThemeChanged = controller::onAppThemeChanged,
-                onFirstContentDrawn = firstFrameTracker::report,
-            )
+        if (!BuildConfig.USE_COMPOSE_READER_FEATURE) {
+            key(controller) {
+                ReadBookViewLayer(
+                    modifier = Modifier,
+                    onRefsReady = { controller.onRefsReady(it) },
+                    onCursorTouch = controller,
+                    readViewCallBack = controller,
+                    readerEventListener = controller,
+                    readerPageSource = controller,
+                    contentTextViewCallBack = controller,
+                    isDarkTheme = isDarkTheme,
+                    onThemeChanged = controller::onAppThemeChanged,
+                    onFirstContentDrawn = firstFrameTracker::report,
+                )
+            }
         }
         ReadBookColorTheme(
             styleConfig = state.styleConfig,
             preferences = readPreferences,
             isDarkTheme = isDarkTheme,
         ) {
+            if (BuildConfig.USE_COMPOSE_READER_FEATURE) {
+                DisposableEffect(controller) {
+                    controller.attachComposeRenderer()
+                    onDispose { controller.detachComposeRenderer() }
+                }
+                FeatureReaderRouteScreen(
+                    onToggleMenu = controller::toggleMenu,
+                    onViewportChanged = controller::updateComposeViewport,
+                    onFirstContentDrawn = firstFrameTracker::report,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
             ReadBookMenuBar(
                 state = state,
                 preferences = readPreferences,

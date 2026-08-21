@@ -13,6 +13,7 @@ internal const val EXTRA_FIRST_FRAME_STARTED_AT_NANOS = "readerFirstFrameStarted
  */
 internal class ReaderFirstFrameTracker(
     private val startedAtNanos: Long,
+    private val renderer: String,
 ) {
     private val reported = AtomicBoolean(false)
 
@@ -20,6 +21,6 @@ internal class ReaderFirstFrameTracker(
         if (!BuildConfig.DEBUG) return
         if (!reported.compareAndSet(false, true)) return
         val durationMillis = (SystemClock.elapsedRealtimeNanos() - startedAtNanos) / 1_000_000f
-        Log.i("ReaderFirstFrame", "renderer=legacy durationMs=$durationMillis")
+        Log.i("ReaderFirstFrame", "renderer=$renderer durationMs=$durationMillis")
     }
 }

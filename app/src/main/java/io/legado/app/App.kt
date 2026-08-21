@@ -44,6 +44,7 @@ import io.legado.app.feature.bookshelf.ui.bookshelfUiModule
 import io.legado.app.feature.ai.ui.aiUiModule
 import io.legado.app.feature.catalog.ui.catalogUiModule
 import io.legado.app.feature.readaloud.ui.readAloudUiModule
+import io.legado.app.feature.reader.ui.readerUiModule
 import io.legado.app.feature.rss.ui.rssUiModule
 import io.legado.app.feature.settings.ui.settingsUiModule
 import io.legado.app.help.AppFreezeMonitor
@@ -120,6 +121,7 @@ class App : Application(), SingletonImageLoader.Factory {
                 catalogUiModule,
                 rssUiModule,
                 readAloudUiModule,
+                readerUiModule,
                 aiUiModule,
             )
         }

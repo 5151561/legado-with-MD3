@@ -84,6 +84,11 @@ android {
         )
         buildConfigField(
             "boolean",
+            "USE_COMPOSE_READER_FEATURE",
+            providers.gradleProperty("readerFeatureEnabled").getOrElse("false"),
+        )
+        buildConfigField(
+            "boolean",
             "USE_COMPOSE_AI_FEATURE",
             providers.gradleProperty("aiFeatureEnabled").getOrElse("false"),
         )
@@ -229,6 +234,8 @@ dependencies {
     implementation(project(":feature:rss:ui"))
     implementation(project(":feature:readaloud:api"))
     implementation(project(":feature:readaloud:ui"))
+    implementation(project(":feature:reader:api"))
+    implementation(project(":feature:reader:ui"))
     implementation(project(":feature:ai:api"))
     implementation(project(":feature:ai:ui"))
     implementation(libs.androidx.profileinstaller)

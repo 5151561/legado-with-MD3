@@ -219,6 +219,25 @@ class ReadBookController(
         ReadBook.registerRender(this)
     }
 
+    fun attachComposeRenderer() {
+        ReadBook.registerRender(this)
+    }
+
+    fun detachComposeRenderer() {
+        ReadBook.unregisterRender(this)
+    }
+
+    fun updateComposeViewport(widthPx: Int, heightPx: Int, density: Float) {
+        layoutController.updateViewport(
+            ReaderViewport(
+                widthPx = widthPx,
+                heightPx = heightPx,
+                density = density,
+                mode = ReaderLayoutMode.PAGED,
+            )
+        )
+    }
+
     fun onMenuVisibilityChanged(visible: Boolean) {
         val autoPager = refs?.readView?.autoPager ?: return
         if (!autoPager.isRunning) return
@@ -951,6 +970,7 @@ class ReadBookController(
         resetPageOffset: Boolean,
         success: (() -> Unit)?
     ) {
+        ReadBook.publishRenderedContent()
         postRender(ReadBookEffect.UpContent(relativePosition, resetPageOffset, success))
     }
 
@@ -999,6 +1019,7 @@ class ReadBookController(
     }
 
     override fun onLayoutPageCompleted(index: Int, page: TextPage) {
+        ReadBook.publishRenderedContent()
         handler.post {
             layoutController.publishPageLayout(index)
             upSeekBarThrottle.invoke()
@@ -1494,6 +1515,14 @@ class ReadBookController(
     }
 
     private fun keyPage(direction: PageDirection) {
+        if (refs == null) {
+            when (direction) {
+                PageDirection.NEXT -> viewModel.onIntent(ReadBookIntent.NextPage)
+                PageDirection.PREV -> viewModel.onIntent(ReadBookIntent.PrevPage)
+                else -> Unit
+            }
+            return
+        }
         refs?.readView?.cancelSelect()
         refs?.readView?.pageDelegate?.isCancel = false
         refs?.readView?.pageDelegate?.keyTurnPage(direction)

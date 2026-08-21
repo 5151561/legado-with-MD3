@@ -1,0 +1,12 @@
+<resources>
+    <string name="reader_loading">正在排版正文…</string>
+    <string name="reader_empty">暂无可显示的正文</string>
+    <string name="reader_error">正文加载失败</string>
+    <string name="reader_retry">重试</string>
+    <string name="reader_previous_page">上一页</string>
+    <string name="reader_next_page">下一页</string>
+    <string name="reader_toggle_menu">显示或隐藏阅读菜单</string>
+    <string name="reader_page_description">%1$s，第 %2$d 章，第 %3$d 页</string>
+    <string name="reader_progress">第 %1$d/%2$d 页</string>
+    <string name="reader_command_failed">阅读操作失败</string>
+</resources>
