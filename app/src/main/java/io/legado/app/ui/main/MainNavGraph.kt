@@ -47,7 +47,7 @@ import io.legado.app.ui.about.AboutScreen
 import io.legado.app.ui.about.AboutViewModel
 import io.legado.app.ui.ai.chat.AiChatRouteScreen
 import io.legado.app.feature.ai.ui.AiRouteScreen as FeatureAiRouteScreen
-import io.legado.app.feature.settings.ui.SettingsRouteScreen as FeatureSettingsRouteScreen
+import io.legado.app.feature.settings.ui.SettingsHomeRouteScreen as FeatureSettingsRouteScreen
 import io.legado.app.ui.book.audio.AudioPlayEffect
 import io.legado.app.ui.book.audio.AudioPlayIntent
 import io.legado.app.ui.book.audio.AudioPlayScreenContent
@@ -426,17 +426,14 @@ fun MainActivity.mainEntryProvider(
 
     entry<MainRouteSettings> {
         if (BuildConfig.USE_COMPOSE_SETTINGS_FEATURE) {
+            // 画板 C-01 的重设计设置主页。摘要暂为示例文案，见 SettingsHomeRouteScreen 说明。
             FeatureSettingsRouteScreen(
                 onBack = onNavigateBack,
-                onOpenTheme = { backStack.add(MainRouteSettingsTheme) },
-                onOpenInterface = { backStack.add(MainRouteSettingsOther) },
-                onOpenDownloadCache = { backStack.add(MainRouteSettingsDownloadCache) },
-                onOpenBackup = { backStack.add(MainRouteSettingsBackup) },
                 onOpenRead = { backStack.add(MainRouteSettingsRead) },
                 onOpenCover = { backStack.add(MainRouteSettingsCover) },
+                onOpenBackup = { backStack.add(MainRouteSettingsBackup) },
                 onOpenAi = { backStack.add(MainRouteSettingsAi) },
-                onOpenTranslation = { backStack.add(MainRouteSettingsTranslation) },
-                onOpenLab = { backStack.add(MainRouteSettingsLabConfig) },
+                onOpenGeneral = { backStack.add(MainRouteSettingsOther) },
             )
         } else {
             ConfigNavScreen(
