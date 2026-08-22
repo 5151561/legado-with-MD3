@@ -208,8 +208,24 @@ C-01 是重设计的第一个真实界面，用来检验 kit 的取值与 API。
 20sp（C-01 设置）两档，最初统一套用了 22sp。已拆为 `displayTitleStyle` 与
 `sectionTitleStyle` 两个默认值，并注明不可混用。
 
-**尚未验证**：视觉对稿。仓库无 Roborazzi / Paparazzi 截图测试，也无连接中的设备，
-因此无法在此渲染比对；当前一致性来自逐值对照设计稿，不等于像素级验证。
+### 截图基线
+
+已接入 Roborazzi 1.72.0（`:feature:settings:ui`），把「实现与设计稿一致」变成可执行断言：
+
+```bash
+./gradlew :feature:settings:ui:recordRoborazziDebug   # 记录基线
+./gradlew :feature:settings:ui:verifyRoborazziDebug   # 校验差异
+```
+
+基线图提交在 `feature/settings/ui/src/test/screenshots/`，渲染确定（两次 record 字节一致），
+改动任一令牌都会被检出。
+
+两项限制：
+
+- **SDK 固定为 36**。项目 targetSdk 为 37，Robolectric 4.16.1 最高支持 36，
+  不固定会以「targetSdkVersion=37 > maxSdkVersion=36」失败。
+- **无法验证 window inset**。Robolectric 下系统栏 inset 为 0，
+  edge-to-edge 的状态栏/导航栏让位仍需真机确认。
 
 ### C-01 与设计稿的三处差异（待线 A 解决）
 

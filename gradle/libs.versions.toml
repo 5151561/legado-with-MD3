@@ -64,6 +64,7 @@ protobufJavalite = "4.26.1"
 quickChineseTransfer = "0.2.17"
 room = "2.8.4"
 robolectric = "4.16.1"
+roborazzi = "1.72.0"
 splitties = "3.0.0"
 rhino = "1.8.1"
 desugar = "2.1.5"
@@ -190,6 +191,11 @@ room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-testing = { module = "androidx.room:room-testing", version.ref = "room" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazzi" }
+roborazzi-compose = { module = "io.github.takahirom.roborazzi:roborazzi-compose", version.ref = "roborazzi" }
+roborazzi-junit-rule = { module = "io.github.takahirom.roborazzi:roborazzi-junit-rule", version.ref = "roborazzi" }
+androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
+androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 
 glide-glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 glide-okhttp= { module = "com.github.bumptech.glide:okhttp3-integration", version.ref ="glide" }
@@ -261,5 +267,6 @@ google-services = { id = "com.google.gms.google-services", version = "4.4.4" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 room = { id = "androidx.room", version.ref = "room" }
 
+roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 download = { id = "de.undercouch.download", version = "5.7.0" }
 baselineprofile = { id = "androidx.baselineprofile", version.ref = "baselineprofile" }
