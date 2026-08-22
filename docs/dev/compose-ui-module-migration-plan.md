@@ -1,6 +1,6 @@
 # Compose UI 重做与业务模块化迁移计划
 
-> 状态：Phase 0、Phase 1 已完成；Phase 2、Phase 3、Phase 4 工程实现与范围内自动验证已完成；Phase 5 已建立治理门禁；Phase 6 已完成，完整 Room schema、entity、DAO、migration 与 converter 已物理迁入 `:core:database`；Phase 7 已完成；Phase 8 的实现模块化已完成 bookshelf、rss、catalog、ai 四项，settings、readaloud、reader 仍被各自的前置条件阻塞，UI 转正（`default_observation` / `complete`）全部未发生；Phase 9 的 `:app` 瘦身、治理聚合与构建度量已完成可自动化的部分，全局 `appDb` 兼容入口与旧 UI 删除仍待剩余 feature 转正
+> 状态：Phase 0、Phase 1 已完成；Phase 2、Phase 3、Phase 4 工程实现与范围内自动验证已完成；Phase 5 已建立治理门禁；Phase 6 已完成，完整 Room schema、entity、DAO、migration 与 converter 已物理迁入 `:core:database`；Phase 7 已完成；Phase 8 的实现模块化已完成 bookshelf、rss、catalog、ai 四项，settings、readaloud、reader 仍被各自的前置条件阻塞，UI 转正（`default_observation` / `complete`）全部未发生；Phase 9 的 `:app` 瘦身、治理聚合与构建度量已完成可自动化的部分；2026-08-22 确定全 App UI 重做与全新组件库，Phase 10 由「迁入既有 UI」改为「全新 UI 重做与旧 UI 删除」，组件下沉与迁入路线作废；复核同时发现七个 feature 的业务 API 合计仅 431 行，API 扩面是新 UI 的唯一关键路径；另新增 Phase 11（非 feature 持久化所有权归位）作为 `appDb` 收口前置
 > 日期：2026-08-22
 > 范围：Android 端 Compose UI 的重做，以及为它提供稳定边界的业务模块化。**不包含** `modules/web/` Vue 前端重做，也不把内嵌 Ktor 服务改造成独立云端后端。
 
@@ -501,7 +501,7 @@ Phase 6 的数据库阻断已清零；Phase 7 可以开始书架正式 impl，�
 
 | 顺序 | Feature | 实现模块化重点 | UI 转正前额外门禁 |
 |---:|---|---|---|
-| 8.1 | `bookshelf` | 正式 Room/Repository 实现、移除 app adapter | Release/R8、设备矩阵、进程恢复、稳定版本观察 |
+| 8.1 | `bookshelf` | 正式 Room/Repository 实现、移除 app adapter | 先补 Phase 10 的功能缺口，再走 Release/R8、设备矩阵、进程恢复、稳定版本观察 |
 | 8.2 | `settings` | 偏好只读/写入接缝、设置子页边界 | 主题即时刷新、返回栈、大字体、TalkBack |
 | 8.3 | `rss` | DAO、打开目标解析、文章/收藏/阅读子 route | JS 单 URL、WebView/外链、返回栈 |
 | 8.4 | `catalog` | 书源持久化、规则/网络接缝、搜索/发现/导入 | 规则语义、导入兼容、详情/发现恢复 |
@@ -585,6 +585,125 @@ experiment → default_observation → complete
 - 未完成：全局 `appDb` 兼容入口（生产引用基线仍为 430）、旧 UI 与临时开关删除，
   它们分别依赖剩余 feature 的实现模块化与 UI 转正。
 
+### Phase 10：全新 UI 重做与旧 UI 删除
+
+**状态**：规划中。实施产物：[`ui-rebuild-phase10-card.md`](./ui-rebuild-phase10-card.md)。
+
+**目的**：在全新设计与全新组件库的前提下，让业务契约层先厚到能撑住新 UI，然后逐 feature
+上线新 UI 并整块删除旧 UI。
+
+#### 10.1 路线变更记录（2026-08-22）
+
+本阶段最初写作"组件按需下沉与既有 Compose UI 迁入"，前提是新 UI 复用既有组件库、
+以行为兼容方式迁入旧页面。该前提已被否决：产品决定**全 App 重做、使用全新组件库**。
+
+据此作废下列工作，不再执行：
+
+| 作废项 | 原因 |
+|---|---|
+| 把既有 Compose 页面迁入 `feature:*:ui` | 迁进来再删是纯浪费 |
+| `app/ui/widget` 的 28933 行组件闭包下沉 | 新设计不复用这套组件 |
+| 让实验版 feature UI 追平旧 UI 功能 | 新设计的页面形态本就不同 |
+| `:core:designsystem` 现有 11 个简化平行组件（432 行） | 由新组件库取代 |
+
+已执行且不回滚的部分：`AppText`、`PillDivider`、`PillHeaderDivider` 已迁入
+`:core:designsystem`（批次 1）。回滚会波及大量未提交改动，收益为零；这三个文件将随新组件库一并替换。
+
+#### 10.2 关键结论：瓶颈是 API，不是旧 UI 代码
+
+七个 feature 的业务 API 合计仅 431 行：
+
+```text
+bookshelf 154   reader 89   rss 49   catalog 43   ai 44   readaloud 36   settings 16
+```
+
+同期 `:app` 仍有 `ui/` 179918 行、`domain/` 11727 行、`data/` 14411 行、`model/` 14767 行，
+`appDb` 直连 428 处。Phase 6–9 真正完成的是数据库下沉与四个 feature 的 impl；
+**业务契约层几乎尚未建立**。
+
+因此"删掉旧 UI 直接写新 UI"若不先扩面，新 UI 只能回头直连 `:app` 的 Repository/UseCase 或
+`appDb`，等于把刚拆掉的耦合重新长回来。**API 扩面是本阶段唯一的关键路径。**
+
+#### 10.3 双线并行
+
+```text
+线 A（业务）  api 扩面 + impl 落地，逐 feature 推进
+线 B（设计）  :core:designsystem 按新设计从头建，不从 app/ui/widget 下沉
+线 C（组装）  feature 新 UI = 线 A 的 api + 线 B 的组件      依赖 A 与 B
+线 D（清理）  新 UI 上线后整块删除旧 UI、实验版 UI 与开关     依赖 C
+```
+
+线 A 与线 B 无依赖关系，可并行。线 A 不需要看到设计稿即可开始。
+
+#### 10.4 硬约束：旧 UI 是唯一的行为规格来源
+
+旧 UI 是这些页面"到底该做什么"的唯一记录。**删除前必须先把其行为抽成 `api` 契约与测试**，
+否则新 UI 会静默漏功能，且没有任何地方能发现。
+
+每个 feature 执行顺序固定为：
+
+1. 盘点旧 UI 的全部行为（含异常路径、权限、Activity Result、进程恢复）。
+2. 在 `api` 表达为查询/命令/错误语义，并写契约测试；`impl` 落地。
+3. 新 UI 建在 `api` 上。
+4. 旧 UI 与实验版 UI 整块删除。
+
+第 2 步完成前不删任何旧 UI。这一条不因"反正要重写"而放宽。
+
+#### 10.5 删除范围
+
+每个 feature 转正时删除：旧 UI 页面、该 feature 的实验版 `feature:*:ui` 最小切片
+（七个合计 2851 行）、对应 BuildConfig 开关与 Gradle property、仅旧路径使用的资源。
+
+#### 10.6 顺序
+
+书架先行（已有正式 impl，基础最好），随后 rss、catalog、ai（均已有 impl），
+再 settings、readaloud，**阅读器最后**。
+
+阅读器不因"全 App 重做"而绕过 Phase 4 决策门：`ReadView` 是 View 实现，
+重做涉及分页、翻页、手势、选区、缓存与朗读，parity、帧率、内存与无障碍门禁继续有效。
+
+验收：
+
+- 每个 feature 的 `api` 覆盖旧 UI 的全部行为并有契约测试。
+- 新 UI 不导入 DAO、`appDb`、Room 实体、`:app` 类型或运行时单例。
+- `:core:designsystem` 不依赖 `data`、`domain`、`model` 或任意 feature。
+- 单次运行只有一个该 feature 的 UI 实现；旧 UI 与实验版切片在同一变更中删除。
+
+回滚：线 A 与线 B 各自可独立回退。线 C 未完成前旧 UI 保持默认，关闭开关即回退。
+
+### Phase 11：非 feature 持久化所有权归位（`appDb` 收口）
+
+**状态**：未开始。
+
+**目的**：解除 Phase 9 最后一项（删除全局 `appDb` 兼容入口）的阻塞。
+
+Phase 9 原先假设 `appDb` 的删除"等待剩余 feature 转正"。按引用分布该假设不成立：
+生产代码共 428 处 `appDb` 引用 / 73 个文件，大头不在任何迁移卡覆盖的 feature 内。
+
+| 区域 | 代表文件（引用数） | 现状 |
+|---|---|---|
+| 备份 / 恢复 | `help/storage/Restore.kt`(33)、`help/storage/Backup.kt`(23) | 第 3 节目标图列有 `backup-sync`，但从未立卡 |
+| 内嵌 web server | `api/controller/BookController.kt`(19) | 无迁移卡 |
+| 书源导入 | `help/source/SourceHelp.kt`(22) | 无迁移卡 |
+| 搜索 / 发现仓库 | `data/repository/SearchRepository.kt`(26)、`ExploreRepository.kt`(12) | 部分属 catalog，但仍在 `:app` |
+| 导出 / 缓存服务 | `service/ExportBookService.kt`(10) 等 | 无迁移卡 |
+| 阅读器运行时 | `model/ReadBook.kt`(18) | 由 Phase 8.7 承接 |
+
+即使 settings、readaloud、reader 三个 feature 全部转正，`appDb` 仍删不掉。
+
+工作项：
+
+1. 为 `backup-sync` 立迁移卡，把备份/恢复的数据读写归位到明确所有者。
+2. 内嵌 web server（`api/controller`）与导出/缓存服务改为经 feature api 或显式 DAO 注入，
+   不再走进程级全局入口。
+3. 书源导入的持久化归 `catalog` 所有者。
+4. 上述完成后删除 `appDb` 与 `LegacyAppDatabaseProvider`，并按 Phase 6.3 第 4 条
+   以独立工作项消除 `allowMainThreadQueries()`（仍在
+   `app/src/main/java/io/legado/app/data/LegacyAppDatabaseProvider.kt`）。
+
+验收：`appDb` 生产引用基线降为 0；`allowMainThreadQueries()` 不出现在生产源码；
+备份/恢复、web server 与导出服务的既有行为与格式不变。
+
 ## 6. Koin、导航与兼容策略
 
 ### Koin
@@ -649,6 +768,10 @@ experiment → default_observation → complete
 26. **M8.3 / M8.4 / M8.5（已完成实现模块化）**：rss、catalog、ai 已建立正式 impl 并删除各自的 app adapter；UI 仍为 `experiment`。
 27. **M8.2 / M8.6 / M8.7（阻塞）**：settings 等待 `:core:preferences` 与设置 Gateway 所有权下沉；readaloud 等待播放服务的模块安全 Session API；reader 等待 `ReadBook` 运行时模块化与 Phase 4 决策门。
 28. **M9.1（部分完成）**：已迁移 feature 的业务实现与逐接口绑定已移出 `:app`，新增 `verifyMigrationGovernance` 聚合门禁并记录构建度量；全局 `appDb` 兼容入口的删除仍等待剩余 feature。
+29. **M10.1（未开始，线 A）**：盘点旧书架 UI 全部行为，`bookshelf:api` 扩面到刷新/更新目录、批量缓存、导入导出、书架设置、分组管理与 tag 规则重放，补契约测试，`impl` 落地。
+30. **M10.2（未开始，线 B）**：按新设计从头建 `:core:designsystem` 组件库；不从 `app/ui/widget` 下沉，删除现有 11 个简化平行组件。
+31. **M10.3（未开始，线 C/D）**：书架新 UI 建在扩面后的 `api` 上；上线后整块删除旧书架 UI、实验版切片与开关，随后复制到 rss、catalog、ai、settings、readaloud，阅读器最后。
+32. **M11.1（未开始）**：为 `backup-sync`、内嵌 web server、导出/缓存服务与书源导入立卡归位持久化所有权，删除 `appDb` 与 `allowMainThreadQueries()`。
 
 ## 9. 决策记录与待确认项
 
@@ -664,6 +787,10 @@ experiment → default_observation → complete
 8. **数据库移动**：保持单一 Room schema；先去除 entity 自持久化和反向依赖，再移动模块；`allowMainThreadQueries()` 另立工作项。
 9. **基础模块**：`preferences`、`network`、`rule-engine` 只在垂直切片需要时建立，不为目标图预建空模块。
 10. **转正顺序**：一次只推进一个 feature 的默认观察与删除，阅读器始终最后并受专项门禁约束。
+11. **全 App UI 重做**（2026-08-22 定）：七个 feature 的页面全部按新设计重写，旧 UI 与实验版切片在各自 feature 新 UI 上线时整块删除；不做"迁入既有 UI"的中间态。
+12. **全新组件库**（2026-08-22 定）：`:core:designsystem` 按新设计从头建，不从 `app/ui/widget` 下沉，现有 11 个简化平行组件一并作废。
+12.1 **删除前必须先有契约**：旧 UI 是行为的唯一记录，任何 feature 在 `api` 覆盖其行为并有契约测试之前不得删除旧 UI。
+13. **稳定版本观察的可操作定义**：Release/R8 可安装产物 + 主力机日常使用 7 天无功能回退与崩溃，证据入库后方可进入 `complete`；定义见 [`phase5-migration-governance.md`](./phase5-migration-governance.md)。
 
 ## 10. 追溯表
 
@@ -679,3 +806,7 @@ experiment → default_observation → complete
 | 阅读器复杂度导致大爆炸迁移 | Phase 4 | 单独 decision gate、parity 基线和可回退路径 |
 | 临时双轨长期残留 | Phase 5、6、8 | 实现/UI 状态独立；有删除条件、稳定版本证据、搜索验证和旧资源清理 |
 | 模块数量增加但构建与变更影响无改善 | Phase 6、9 | convention plugin、构建度量和模块合并条件可验证 |
+| 业务 API 仅 431 行，撑不住新 UI | Phase 10 线 A | 每个 feature 的 api 覆盖旧 UI 全部行为并有契约测试 |
+| 新 UI 可能绕过 api 直连 `:app` / `appDb` | Phase 10 | 新 UI 不导入 DAO、`appDb`、Room 实体与 `:app` 类型 |
+| 重写导致静默丢功能 | Phase 10.4 | 删旧 UI 前行为已固化为 api 契约测试 |
+| `appDb` 的大头不在任何 feature 迁移卡覆盖范围内 | Phase 11 | `appDb` 生产引用基线降为 0；`allowMainThreadQueries()` 不在生产源码 |

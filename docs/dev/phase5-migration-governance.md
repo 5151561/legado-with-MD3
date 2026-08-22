@@ -1,6 +1,7 @@
 # Phase 5 旧路径删除与治理
 
 > 状态：治理门禁已建立；bookshelf、rss、catalog、ai 的实现已转正，但当前仍没有 feature 获得旧路径删除许可
+> 2026-08-22 修订：补入「稳定版本观察」的可操作定义；更正 bookshelf 的 `uiBlocker`——阻塞是功能缺口与组件库未下沉，不是人工签收
 > 日期：2026-08-22
 
 ## 当前结论
@@ -40,6 +41,22 @@ UI 状态不能从 `experiment` 直接靠修改默认值跳到 `complete`。正�
 状态：设备与发布门禁通过后才能进入 `default_observation`；稳定版本周期无回退后，再以独立变更
 删除旧入口、XML/View、资源与开关。实现适配器可在 `formal_impl` 切换完成时提前删除。
 
+## 稳定版本观察的可操作定义
+
+原先「一个稳定版本周期」没有可执行判据，会让所有 feature 永久停在 `experiment`。
+本项目由个人维护、无企业发布列车，因此采用下列定义：
+
+| 门禁 | 判据 | 证据字段 |
+|---|---|---|
+| 进入 `default_observation` | 功能缺口清零（该 feature 迁移卡列出的旧 UI 旅程逐项可用）+ `assembleAppRelease` 产出可安装 R8 产物 + 手机/横屏分屏/大字体/TalkBack/进程恢复验收 | `releaseGateEvidence` 指向仓库内签收文件 |
+| 进入 `complete` | 新 UI 默认开启后，**主力机日常使用 7 天无功能回退与崩溃** | `legacyUiRemovalEvidence` 记录观察起止日期、使用范围与结论 |
+
+7 天从新 UI 成为默认入口当天起算，中途出现需要关闭开关的回退则重新计时。
+观察期内旧 UI 与开关必须保留；观察通过后在**同一变更**中执行「删除执行清单」。
+
+该定义只降低流程成本，不降低证据要求：功能缺口与 Release/R8 产物仍是硬前置，
+不能用观察天数替代。
+
 ## 自动治理范围
 
 门禁会检查：
@@ -55,13 +72,19 @@ UI 状态不能从 `experiment` 直接靠修改默认值跳到 `complete`。正�
 
 | Feature | 实现状态 | UI 状态 | 删除许可 | 实现 blocker | UI blocker |
 |---|---|---|---|---|---|
-| bookshelf | formal_impl | experiment | 否 | 无 | Release/R8 复验、设备矩阵、稳定版本观察 |
+| bookshelf | formal_impl | experiment | 否 | 无 | api 仅 154 行，需按旧 UI 行为盘点扩面；新组件库未建。见 [Phase 10 卡](./ui-rebuild-phase10-card.md) |
 | settings | app_adapter | experiment | 否 | `:core:preferences` 未建立；设置 Gateway 及其模型仍是 `:app` 领域类型 | 主题即时刷新、返回栈、大字体、TalkBack、稳定版本观察 |
 | catalog | formal_impl | experiment | 否 | 无 | 规则语义、导入兼容、详情/发现恢复、稳定版本观察 |
 | rss | formal_impl | experiment | 否 | 无 | JS 单 URL、WebView/外链、返回栈、稳定版本观察 |
 | readaloud | app_adapter | experiment | 否 | 播放服务未暴露模块安全 Session API | 锁屏、耳机、中断、缓存、进程恢复、稳定版本观察 |
 | reader | app_adapter | experiment | 否 | `ReadBook` 运行时单例未模块化；Phase 4 决策门未通过 | 专项 parity、帧率、内存、无障碍、稳定版本观察 |
 | ai | formal_impl | experiment | 否 | 无（`setDefaultModel` 仍由 app 唯一写入，属登记在案的宿主接缝） | 取消、工具确认、错误恢复、密钥不泄漏、稳定版本观察 |
+
+> **2026-08-22：七个 `uiBlocker` 已全部更正。** 原措辞（"设备矩阵与稳定版本观察尚未签收"）
+> 低估了缺口。实际阻塞是业务 API 太薄——七个 feature 的 api 合计仅 431 行，撑不住任何一版
+> UI；叠加全 App 重做与全新组件库的决定，UI 转正的前置变成"api 按旧 UI 行为盘点扩面 +
+> 新组件库落地"，不是签收流程。路线见
+> [`ui-rebuild-phase10-card.md`](./ui-rebuild-phase10-card.md)。
 
 已转正 feature 的切换与适配器删除证据登记在 [`docs/dev/evidence/`](./evidence/)，
 迁移卡见 [bookshelf](./bookshelf-phase7-migration-card.md)、[rss](./rss-phase8-migration-card.md)、
