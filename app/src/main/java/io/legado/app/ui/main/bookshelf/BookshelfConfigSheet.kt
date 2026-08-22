@@ -36,8 +36,8 @@ import io.legado.app.ui.config.themeConfig.LabelColorManageSheet
 import io.legado.app.ui.config.themeConfig.TagColorPair
 import io.legado.app.ui.theme.LegadoTheme
 import io.legado.app.ui.widget.components.dialog.ColorPickerSheet
-import io.legado.app.ui.widget.components.divider.PillDivider
-import io.legado.app.ui.widget.components.divider.PillHeaderDivider
+import io.legado.app.core.designsystem.component.PillDivider
+import io.legado.app.core.designsystem.component.PillHeaderDivider
 import io.legado.app.ui.widget.components.modalBottomSheet.AppModalBottomSheet
 import io.legado.app.ui.widget.components.settingItem.CompactClickableSettingItem
 import io.legado.app.ui.widget.components.settingItem.CompactDropdownSettingItem

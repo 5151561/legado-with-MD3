@@ -101,7 +101,7 @@ import io.legado.app.ui.widget.components.settingItem.CompactClickableSettingIte
 import io.legado.app.ui.widget.components.settingItem.CompactSwitchSettingItem
 import io.legado.app.ui.widget.components.swipe.SwipeAction
 import io.legado.app.ui.widget.components.swipe.SwipeActionContainer
-import io.legado.app.ui.widget.components.text.AppText
+import io.legado.app.core.designsystem.component.AppText
 import io.legado.app.ui.widget.components.topbar.GlassMediumFlexibleTopAppBar
 import io.legado.app.ui.widget.components.topbar.GlassTopAppBarDefaults
 import io.legado.app.ui.widget.components.topbar.TopBarActionButton

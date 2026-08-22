@@ -76,7 +76,7 @@ import io.legado.app.ui.widget.components.reader.readerMenuHazeEffect
 import io.legado.app.ui.widget.components.reader.readerMenuLiquidGlassAvailable
 import io.legado.app.ui.widget.components.reader.readerMenuSurfaceBrush
 import io.legado.app.ui.widget.components.settingItem.LocalSliderDragState
-import io.legado.app.ui.widget.components.text.AppText
+import io.legado.app.core.designsystem.component.AppText
 import kotlin.math.roundToInt
 
 @Composable

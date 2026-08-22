@@ -27,10 +27,10 @@ import io.legado.app.ui.widget.components.JsonConfigEditor
 import io.legado.app.ui.widget.components.JsonRawEditor
 import io.legado.app.ui.widget.components.alert.AppAlertDialog
 import io.legado.app.ui.widget.components.card.GlassCard
-import io.legado.app.ui.widget.components.divider.PillHeaderDivider
+import io.legado.app.core.designsystem.component.PillHeaderDivider
 import io.legado.app.ui.widget.components.settingItem.CompactClickableSettingItem
 import io.legado.app.ui.widget.components.settingItem.CompactDropdownSettingItem
-import io.legado.app.ui.widget.components.text.AppText
+import io.legado.app.core.designsystem.component.AppText
 
 data class AddDialogPrefill(
     val title: String = "",

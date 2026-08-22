@@ -1,5 +1,7 @@
 package io.legado.app.ui.widget.components.text
 
+import io.legado.app.core.designsystem.component.AppText
+
 import android.content.Intent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background

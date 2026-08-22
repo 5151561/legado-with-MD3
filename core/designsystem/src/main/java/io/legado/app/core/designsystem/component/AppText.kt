@@ -1,4 +1,4 @@
-package io.legado.app.ui.widget.components.text
+package io.legado.app.core.designsystem.component
 
 
 import androidx.compose.foundation.text.BasicText
@@ -16,7 +16,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
-import io.legado.app.ui.theme.LegadoTheme
+import io.legado.app.core.designsystem.theme.LegadoTheme
 
 @Composable
 fun AppText(

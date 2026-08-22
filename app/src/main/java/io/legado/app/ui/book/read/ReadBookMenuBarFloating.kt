@@ -52,7 +52,7 @@ import io.legado.app.data.entities.Book
 import io.legado.app.data.repository.ReadPreferences
 import io.legado.app.ui.book.read.sheet.readMenuButtonInfos
 import io.legado.app.ui.theme.LegadoTheme
-import io.legado.app.ui.widget.components.divider.PillDivider
+import io.legado.app.core.designsystem.component.PillDivider
 import io.legado.app.ui.widget.components.menuItem.MenuItemIcon
 import io.legado.app.ui.widget.components.menuItem.RoundDropdownMenu
 import io.legado.app.ui.widget.components.menuItem.RoundDropdownMenuItem

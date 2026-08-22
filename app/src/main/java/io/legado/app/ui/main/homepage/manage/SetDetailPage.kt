@@ -29,8 +29,8 @@ import io.legado.app.ui.widget.components.button.SecondaryButton
 import io.legado.app.ui.widget.components.button.series.SmallPlainButton
 import io.legado.app.ui.widget.components.card.ReorderableSelectionItem
 import io.legado.app.ui.widget.components.card.SelectionItemCard
-import io.legado.app.ui.widget.components.divider.PillDivider
-import io.legado.app.ui.widget.components.text.AppText
+import io.legado.app.core.designsystem.component.PillDivider
+import io.legado.app.core.designsystem.component.AppText
 import io.legado.app.utils.move
 import kotlinx.collections.immutable.ImmutableList
 import sh.calvin.reorderable.rememberReorderableLazyListState

@@ -1,5 +1,7 @@
 package io.legado.app.ui.widget.components.text
 
+import io.legado.app.core.designsystem.component.AppText
+
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut

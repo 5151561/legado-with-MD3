@@ -88,7 +88,7 @@ import io.legado.app.ui.widget.components.reader.readerMenuLiquidGlass
 import io.legado.app.ui.widget.components.reader.readerMenuLiquidGlassAvailable
 import io.legado.app.ui.widget.components.reader.readerMenuSurfaceBrush
 import io.legado.app.ui.widget.components.text.AnimatedText
-import io.legado.app.ui.widget.components.text.AppText
+import io.legado.app.core.designsystem.component.AppText
 
 private val MangaMenuSurfaceColor: Color
     @Composable

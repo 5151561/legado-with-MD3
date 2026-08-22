@@ -13,7 +13,7 @@ import io.legado.app.ui.theme.LegadoTheme
 import io.legado.app.ui.widget.components.AppSlider
 import io.legado.app.ui.widget.components.card.NormalCard
 import io.legado.app.ui.widget.components.card.TextCard
-import io.legado.app.ui.widget.components.text.AppText
+import io.legado.app.core.designsystem.component.AppText
 
 /**
  * 播放器通用的调节滑块卡片（倍速/定时/增益等）：标题 + 数值标签 + 滑块 + 两端说明。

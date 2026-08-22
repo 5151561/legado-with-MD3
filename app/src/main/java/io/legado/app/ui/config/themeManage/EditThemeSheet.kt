@@ -38,7 +38,7 @@ import io.legado.app.ui.widget.components.settingItem.CompactClickableSettingIte
 import io.legado.app.ui.widget.components.settingItem.CompactDropdownSettingItem
 import io.legado.app.ui.widget.components.settingItem.CompactSliderSettingItem
 import io.legado.app.ui.widget.components.settingItem.CompactSwitchSettingItem
-import io.legado.app.ui.widget.components.text.AppText
+import io.legado.app.core.designsystem.component.AppText
 
 @Composable
 fun EditThemeSheet(

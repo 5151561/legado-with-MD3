@@ -25,7 +25,7 @@ import io.legado.app.help.update.AppUpdate
 import io.legado.app.ui.theme.LegadoTheme
 import io.legado.app.ui.widget.components.button.PrimaryButton
 import io.legado.app.ui.widget.components.modalBottomSheet.AppModalBottomSheet
-import io.legado.app.ui.widget.components.text.AppText
+import io.legado.app.core.designsystem.component.AppText
 import io.legado.app.ui.widget.components.text.MarkdownBlock
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -39,7 +39,7 @@ import io.legado.app.R
 import io.legado.app.domain.model.AiMessagePart
 import io.legado.app.ui.theme.LegadoTheme
 import io.legado.app.ui.widget.components.card.NormalCard
-import io.legado.app.ui.widget.components.text.AppText
+import io.legado.app.core.designsystem.component.AppText
 
 /**
  * A card displaying a group of thinking steps (reasoning + tool calls).
