@@ -11,6 +11,7 @@ dependencies {
     api(libs.androidx.compose.ui)
     api(libs.androidx.compose.material3)
     api(libs.material.kolor)
+    api(libs.kotlinx.collections.immutable)
 
     implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.compose.foundation)
