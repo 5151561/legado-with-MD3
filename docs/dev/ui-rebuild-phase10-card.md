@@ -94,8 +94,14 @@
 **已完成**：令牌层 `AppColorScheme.kt`、`ReadingPalette.kt`、`AppTypography.kt`，
 通过 `:core:designsystem:compileDebugKotlin`。与现有 `LegadoColorScheme` 并存，互不影响。
 
-**未完成**：间距与形状体系、组件 kit 与状态矩阵、自适应断点（X-01 平板三栏 / X-02 折叠屏双栏）、
-无障碍与大字体行为。
+**已完成**（续，2026-08-23）：间距与形状体系、组件 kit 与状态矩阵已落地并被八个重设计页面消费
+（C-01、M-01/M-01a、P-01、D-00、S-04/S-04a、S-06a、S-06b），18 张截图基线在
+`:feature:settings:ui`、`:feature:home:ui`、`:feature:catalog:ui` 三个模块里。
+其中 `:feature:home:ui` 是本轮新建的 UI-only 模块——首页在模块图里没有对应 feature，
+不登记进 `config/compose-feature-migrations.properties`（那张表管的是既有 Compose 页面的灰度），
+线 A 排到首页时随卡一并登记。
+
+**未完成**：自适应断点（X-01 平板三栏 / X-02 折叠屏双栏）、无障碍与大字体行为。
 
 **关键结构决定**：正文纸色独立于 App 主题（画板 N-04 明确），由阅读样式抽屉单独选择。
 现有实现把两者耦合在主题里，迁移时必须拆开。

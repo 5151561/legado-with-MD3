@@ -11,6 +11,7 @@
 | `阅读 Legado 重设计 · P0 画板墙.dc.html` | 212 KB | 24 个画板 |
 | `阅读 Legado 重设计 · P1 画板墙.dc.html` | 165 KB | 21 个画板 |
 | `阅读 Legado 重设计 · P2 画板墙.dc.html` | 81 KB | 10 个画板 |
+| `阅读 Legado 重设计 · P0 v2 画板墙.dc.html` | 72 KB | 7 个画板（2026-08-23 追加导入，见第 10 节） |
 | `support.js` | 71 KB | **与实现无关**：Design Canvas 编辑器生成的运行时（`dc-runtime`，文件头标注 do-not-edit） |
 | `画板索引.md` | — | 画板覆盖表 |
 | `_ds/material-design-3-…/` | — | MD3 令牌与组件 kit（画板引用的 CSS） |
@@ -65,6 +66,9 @@
 
 另有两个非选项变体：**纯黑正文背景**（设置项，OLED 省电）与**墨水屏模式**（黑白高对比 + 无翻页动画）。
 「背景图」是并列的另一条分支，不属于纸色预设。
+
+2026-08-23 起每档另有四个容器与文字角色（`inkFaint` / `paperHigh` / `paperHighlight` /
+`paperOutline`），供阅读面上的浮层使用，见第 9 节。
 
 ## 4. 字阶
 
@@ -187,7 +191,30 @@ Phase 10 线 B 已落地，全部通过 `:core:designsystem:compileDebugKotlin` 
 新 kit 放在 `…designsystem.kit` 包，与现有 11 个简化平行组件（`…designsystem.component`）隔离；
 后者随各 feature 迁移删除。
 
-**未实现**：空态容器（设计稿未找到明确空态画板，不凭空造）、书籍详情与目录专用组件、
+### P0 v2 一批补入的 kit（2026-08-23）
+
+| 组件 | 规格来源 |
+|---|---|
+| `AppNavigationBar` + `AppNavigationItem` | M-01 / P-01：上 12dp 下 16dp、surfaceContainer 底、五列等分；选中项 64×32dp secondaryContainer 药丸；角标 ≥16dp、error 底、10sp |
+| `AppSwitch` | M-01a / P-01：轨道 52×32dp；开态 primary + 24dp 旋钮，关态 outline 描边 + 16dp 圆点，停用态整体 50% 表达「恒开不可改」 |
+| `AppEntryRow` / `AppEntryGroupHeader` / `AppEntryGroupDivider` | P-01 / D-00：无卡平铺行，22dp 裸图标、最小高 56dp（D-00 规则组 52dp）、组标题 14sp primary、组间 1dp 分隔线 |
+| `AppTopAppBar` 的 `subtitle` + `actionTitleStyle` | S-06b：动作在上（衬线 19sp）、对象在下（11sp），选择态页面必须同时说清做什么和对谁做 |
+| `AppText(AnnotatedString)` 重载 | S-04a：一行内分色（「同时删除本地文件 /Books/…」的路径是次级信息） |
+
+`AppEntryRow` 与既有 `AppSettingRow` 是设计稿里并存的**两种行**，不是重复实现：
+带卡带圆底的是 C-01（一次配置很久不动），无卡裸图标的是「我的」与 D-00（每天要动）。
+这与设计规则「设置路由重排」把入口分到两处是同一条线。
+
+`ReadingPalette` 从 3 个角色扩到 7 个：新增 `inkFaint`、`paperHigh`、`paperHighlight`、
+`paperOutline`。阅读面上的浮层（S-06a 阅读器内目录）不能退回 App 的 surface 色阶——
+那会在正文之上开出一块与纸张无关的界面。设计稿只给出「纸」这一档的全部七个值
+（`:root` 的 `--paper` 系列），其余纸色的后四个角色按同一关系推导并逐行标注「推导值」。
+
+**顺带修掉的 kit bug**：`AppSegmentedControl` 误引 `component.AppText`（依赖旧
+`LegadoTheme`），只要不在旧主题下渲染就抛 `No LegadoColorScheme provided`。
+P-01 是第一个使用它的重设计页面，截图基线立刻把它照了出来。已改回 kit 自己的 `AppText`。
+
+**未实现**：空态容器（设计稿未找到明确空态画板，不凭空造）、
 自适应断点（X-01 平板三栏 / X-02 折叠屏双栏）、无障碍与大字体走查。
 
 **两处按设计稿保留的 40dp 控件**：分段控件与胶囊按钮视觉高均为 40dp。按钮已由外层补足到 48dp 触点；
@@ -196,9 +223,37 @@ Phase 10 线 B 已落地，全部通过 `:core:designsystem:compileDebugKotlin` 
 
 ## 10. 已落地的界面
 
-| 画板 | 位置 | 状态 |
+| 画板 | 模块 | 文件 |
 |---|---|---|
-| C-01 设置主页 | `feature/settings/ui/SettingsHomeScreen.kt` + `SettingsHomeContract.kt` | 无状态 Screen + 契约 + 日光/夜墨双预览，编译与 lint 通过 |
+| C-01 设置主页 | `:feature:settings:ui` | `SettingsHomeScreen.kt` + `SettingsHomeContract.kt` |
+| M-01 v2 首页 | `:feature:home:ui` | `HomeDashboardScreen.kt` + `HomeDashboardContract.kt` |
+| M-01a v2 首页区块设置 | `:feature:home:ui` | `HomeSectionsScreen.kt` + `HomeSectionsContract.kt` |
+| P-01 v2 我的 | `:feature:settings:ui` | `ProfileScreen.kt` + `ProfileContract.kt` |
+| D-00 源与规则枢纽 | `:feature:catalog:ui` | `SourceHubScreen.kt` + `SourceHubContract.kt` |
+| S-04 v2 / S-04a v2 书籍详情 · 更多菜单 · 移出书架确认 | `:feature:catalog:ui` | `BookDetailScreen.kt` + `BookDetailContract.kt` |
+| S-06a v2 阅读器内目录 | `:feature:catalog:ui` | `ReaderTocSheet.kt` + `ReaderTocContract.kt` |
+| S-06b v2 目录管理页 | `:feature:catalog:ui` | `TocManageScreen.kt` + `TocManageContract.kt` |
+
+全部按项目规范做成无状态 Screen：只接收 `state` 与 `onIntent`，不注入 ViewModel、不读偏好。
+数据装配等各 feature `api` 扩面后由 ViewModel 提供（Phase 10 线 A），当前用画板原始数据驱动预览。
+
+**新模块 `:feature:home:ui`**：首页在模块图里没有对应 feature（见第 6 节「设计引入了模块图未覆盖的界面」），
+M-01 / M-01a 因此落在新建的 UI-only 模块里。它**没有**登记进
+`config/compose-feature-migrations.properties`：那张表管的是既有 Compose 页面的灰度与旧路径删除，
+而首页没有可灰度的旧 Compose 实现，也还没有 `api`/`impl`。线 A 排到首页时随卡一并登记。
+
+**S-04a 的菜单与确认框画在页面内的浮层里**，没有用 `DropdownMenu` / `AlertDialog`：
+那两者各自开一个系统窗口，落在截图基线的根节点之外，稿面上的排版就无法回归；
+层级与遮罩本来也是这一页要负责的（模板 TPL-05）。
+
+**S-06a 用纸色而非 surface 色阶**：这块面板是从正文里滑出来的，换一套材质会把阅读面和操作面撕开。
+所需的四个纸面容器角色见第 9 节的 `ReadingPalette` 扩展。
+
+**对稿时按设计契约做的两处偏离**：
+（1）卡片右上角的文字动作（「阅读统计」「更多」）视觉 32dp，触点补足到 48dp，
+因此这些行比稿面高约 16dp——设计规则「触点与字号下限」优先于像素对齐；
+（2）M-01 精选格稿面写死 82dp，四格加间距比 390dp 屏的内容区宽几个 dp，改为等分，
+比例不变但窄屏与大字体下不会被裁掉。
 
 C-01 是重设计的第一个真实界面，用来检验 kit 的取值与 API。它按项目规范做成无状态 Screen：
 只接收 `state` 与 `onIntent`，不注入 ViewModel、不读偏好。数据装配等 `settings:api`
@@ -210,15 +265,17 @@ C-01 是重设计的第一个真实界面，用来检验 kit 的取值与 API。
 
 ### 截图基线
 
-已接入 Roborazzi 1.72.0（`:feature:settings:ui`），把「实现与设计稿一致」变成可执行断言：
+已接入 Roborazzi 1.72.0（`:feature:settings:ui`、`:feature:home:ui`、`:feature:catalog:ui`），
+把「实现与设计稿一致」变成可执行断言：
 
 ```bash
-./gradlew :feature:settings:ui:recordRoborazziDebug   # 记录基线
-./gradlew :feature:settings:ui:verifyRoborazziDebug   # 校验差异
+./gradlew :feature:settings:ui:recordRoborazziDebug :feature:home:ui:recordRoborazziDebug :feature:catalog:ui:recordRoborazziDebug
 ```
 
-基线图提交在 `feature/settings/ui/src/test/screenshots/`，渲染确定（两次 record 字节一致），
-改动任一令牌都会被检出。
+把 `record` 换成 `verify` 即校验差异。基线图提交在各模块的 `src/test/screenshots/`，
+渲染确定（两次 record 字节一致），改动任一令牌都会被检出。当前 18 张：
+设置主页 2、首页 2、首页区块设置 2、我的 2、源与规则枢纽 2、书籍详情 2 + 更多菜单 1 + 移出书架确认 1、
+阅读器内目录 2（纸 / 夜纸）、目录管理页 2。
 
 两项限制：
 

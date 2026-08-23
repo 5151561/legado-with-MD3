@@ -4,6 +4,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import io.legado.app.core.designsystem.theme.AppTheme
@@ -36,5 +37,29 @@ fun AppText(
     )
 }
 
-private val Color.isSpecified: Boolean
+/**
+ * 富文本重载：同一行里分色的场景（画板 S-04a 的「同时删除本地文件 /Books/…epub」——
+ * 路径是次级信息，与前半句同行但不同色）。用两个 [AppText] 拼会在换行时错位。
+ */
+@Composable
+fun AppText(
+    text: AnnotatedString,
+    modifier: Modifier = Modifier,
+    style: TextStyle? = null,
+    color: Color = Color.Unspecified,
+    maxLines: Int = Int.MAX_VALUE,
+    overflow: TextOverflow = TextOverflow.Ellipsis,
+) {
+    val base = style ?: AppTheme.typography.listBody
+    val resolved = if (color.isSpecified) color else AppTheme.colorScheme.onSurface
+    BasicText(
+        text = text,
+        modifier = modifier,
+        style = base.merge(TextStyle(color = resolved)),
+        maxLines = maxLines,
+        overflow = overflow,
+    )
+}
+
+private val Color.isSpecified
     get() = this != Color.Unspecified

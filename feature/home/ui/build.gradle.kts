@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "io.legado.app.feature.catalog.ui"
+    namespace = "io.legado.app.feature.home.ui"
 
     testOptions {
         unitTests {
@@ -20,26 +20,15 @@ roborazzi {
 }
 
 dependencies {
-    api(project(":feature:catalog:api"))
     implementation(project(":core:designsystem"))
     implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.activity.compose)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui)
     implementation(libs.compose.materialIcons)
     implementation(libs.androidx.compose.ui.tooling.preview)
     debugImplementation(libs.androidx.compose.ui.tooling)
-    implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.kotlinx.collections.immutable)
-    implementation(libs.kotlinx.coroutines.android)
-    implementation(platform(libs.koin.bom))
-    implementation(libs.koin.core)
-    implementation(libs.koin.compose)
-    implementation(libs.koin.compose.viewmodel)
     testImplementation(libs.junit)
-    testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.robolectric)
     testImplementation(libs.roborazzi)
     testImplementation(libs.roborazzi.compose)
