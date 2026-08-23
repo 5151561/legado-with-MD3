@@ -141,6 +141,32 @@ sealed interface BookDetailIntent {
     data object DismissDialog : BookDetailIntent
 }
 
+sealed interface BookDetailEffect {
+    data object NavigateBack : BookDetailEffect
+    data class ShowMessage(val text: String) : BookDetailEffect
+    data class Share(val bookId: String, val bookName: String) : BookDetailEffect
+
+    /** 继续阅读。章号由阅读器自己从书上读，这里不传。 */
+    data class OpenReader(val bookId: String) : BookDetailEffect
+
+    /** 听书归 readaloud，详情页只把书交出去。 */
+    data class OpenReadAloud(val bookId: String) : BookDetailEffect
+
+    /** 换源走画板 S-08 的统一组件。 */
+    data class OpenChangeSource(val bookId: String) : BookDetailEffect
+    data class OpenTocManage(val bookId: String) : BookDetailEffect
+    data class OpenInsights(val bookId: String) : BookDetailEffect
+    data class OpenBookDetail(val bookId: String) : BookDetailEffect
+    data class OpenGroupPicker(val bookId: String) : BookDetailEffect
+    data class OpenCoverPicker(val bookId: String) : BookDetailEffect
+    data class OpenInfoEditor(val bookId: String) : BookDetailEffect
+    data class OpenRemarkEditor(val bookId: String, val remark: String?) : BookDetailEffect
+    data class OpenVariableEditor(val bookId: String) : BookDetailEffect
+
+    /** 书已不在书架，页面该退出了。 */
+    data object CloseAfterRemoval : BookDetailEffect
+}
+
 /** 画板 S-04 v2 的原始数据，用于预览与对稿。 */
 val BookDetailPreviewState = BookDetailUiState(
     header = BookDetailHeaderUi(

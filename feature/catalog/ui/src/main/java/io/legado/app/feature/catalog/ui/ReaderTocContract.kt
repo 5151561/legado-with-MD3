@@ -78,6 +78,17 @@ sealed interface ReaderTocIntent {
     data object OpenTocManage : ReaderTocIntent
 }
 
+sealed interface ReaderTocEffect {
+    /** 跳章由阅读器执行——写 durChapterIndex 是阅读会话的事，不是目录的事。 */
+    data class JumpToChapter(val chapterId: String) : ReaderTocEffect
+    data object OpenSearch : ReaderTocEffect
+    data class OpenTocManage(val bookId: String) : ReaderTocEffect
+
+    /** 单章换源同样走画板 S-08。 */
+    data class OpenChangeSource(val bookId: String, val chapterId: String) : ReaderTocEffect
+    data class ShowMessage(val text: String) : ReaderTocEffect
+}
+
 /** 画板 S-06a v2 的原始数据，用于预览与对稿。 */
 val ReaderTocPreviewState = ReaderTocUiState(
     summary = "386 章 · 已缓存 214",

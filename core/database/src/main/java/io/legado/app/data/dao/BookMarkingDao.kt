@@ -64,4 +64,8 @@ interface BookMarkingDao {
 
     @Query("delete from book_marks where id = :id")
     suspend fun delete(id: String)
+
+    /** 同 [BookmarkDao.countByBook]，book_marks 同样按「书名 + 作者」跨源计数。 */
+    @Query("select count(*) from book_marks where bookName = :bookName and bookAuthor = :bookAuthor")
+    suspend fun countByBook(bookName: String, bookAuthor: String): Int
 }

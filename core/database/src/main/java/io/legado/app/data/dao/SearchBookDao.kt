@@ -62,6 +62,21 @@ interface SearchBookDao {
     )
     fun getEnableHasCover(name: String, author: String): List<SearchBook>
 
+    /**
+     * 书籍详情页「N 个候选源可换」的数量（画板 S-04）。
+     *
+     * 与 [getEnableHasCover] 同口径——只数启用的书源，且按源去重：
+     * 同一书源搜出多个结果不该让候选数虚高。
+     */
+    @Query(
+        """
+        select count(distinct t1.origin) from searchBooks as t1
+        inner join book_sources as t2 on t1.origin = t2.bookSourceUrl
+        where t1.name = :name and t1.author = :author and t2.enabled = 1
+        """
+    )
+    suspend fun countEnabledSources(name: String, author: String): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg searchBook: SearchBook): List<Long>
 

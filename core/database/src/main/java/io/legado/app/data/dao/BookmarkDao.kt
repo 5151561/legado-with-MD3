@@ -83,4 +83,7 @@ interface BookmarkDao {
     @Delete
     fun delete(vararg bookmark: Bookmark)
 
+    /** 书籍详情页移出书架确认框要用的条数；与列表查询同样认「书名 + 作者」跨源关联。 */
+    @Query("select count(*) from bookmarks where bookName = :bookName and bookAuthor = :bookAuthor")
+    suspend fun countByBook(bookName: String, bookAuthor: String): Int
 }

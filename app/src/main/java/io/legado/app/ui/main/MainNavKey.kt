@@ -163,6 +163,14 @@ data class MainRouteBookInfo(
     val sharedCoverKey: String? = null,
 ) : MainRoute
 
+/** 目录与章节管理（重设计画板 S-06b）。取代 `TocActivity` 的批量部分。 */
+@Serializable
+data class MainRouteTocManage(val bookUrl: String) : MainRoute
+
+/** 源与规则枢纽（重设计画板 D-00）。九类源与规则的统一入口。 */
+@Serializable
+data object MainRouteSourceHub : MainRoute
+
 @Serializable
 data class MainRouteBookCharacterDetail(
     val bookUrl: String,

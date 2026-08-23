@@ -20,6 +20,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -59,8 +62,16 @@ import io.legado.app.ui.book.explore.ExploreShowRouteScreen
 import io.legado.app.ui.book.explore.ExploreShowViewModel
 import io.legado.app.ui.book.import.local.ImportBookRouteScreen
 import io.legado.app.ui.book.import.remote.RemoteBookRouteScreen
-import io.legado.app.ui.book.info.BookInfoRouteScreen
-import io.legado.app.ui.book.info.BookInfoViewModel
+import io.legado.app.feature.catalog.ui.BookDetailEffect
+import io.legado.app.feature.catalog.ui.BookDetailScreen
+import io.legado.app.feature.catalog.ui.BookDetailViewModel
+import io.legado.app.feature.catalog.ui.SourceHubEffect
+import io.legado.app.feature.catalog.ui.SourceHubEntryId
+import io.legado.app.feature.catalog.ui.SourceHubScreen
+import io.legado.app.feature.catalog.ui.SourceHubViewModel
+import io.legado.app.feature.catalog.ui.TocManageEffect
+import io.legado.app.feature.catalog.ui.TocManageScreen
+import io.legado.app.feature.catalog.ui.TocManageViewModel
 import io.legado.app.ui.book.knowledge.BookCharacterDetailScreen
 import io.legado.app.ui.book.knowledge.BookCharacterDetailViewModel
 import io.legado.app.ui.book.knowledge.BookCharacterListScreen
@@ -660,6 +671,9 @@ fun MainActivity.mainEntryProvider(
             host = controller,
             controller = controller,
             onEffectsReady = { effectsReady.complete(Unit) },
+            onOpenBookInfo = { name, author, bookUrl ->
+                onNavigateToRoute(MainRouteBookInfo(name, author, bookUrl))
+            },
             onOpenSearch = { word, bookUrl, autoFocus ->
                 onNavigateToRoute(
                     MainRouteSearchContent(
@@ -1092,76 +1106,118 @@ fun MainActivity.mainEntryProvider(
             }
         }
     ) { route ->
-        val bookInfoViewModel = koinViewModel<BookInfoViewModel>(key = "BookInfo:${route.bookUrl}")
-        BookInfoRouteScreen(
-            bookUrl = route.bookUrl,
-            name = route.name,
-            author = route.author,
-            origin = route.origin,
-            coverPath = route.coverPath,
-            viewModel = bookInfoViewModel,
-            onBack = { onNavigateBack() },
-            onFinish = { _, _ -> onNavigateBack() },
-            onOpenSearch = { keyword ->
-                onNavigateToRoute(MainRouteSearch(key = keyword))
-            },
-            onOpenBookSourceEdit = { sourceUrl ->
-                onNavigateToRoute(MainRouteBookSourceEdit(sourceUrl))
-            },
-            onOpenSourceLogin = { sourceUrl ->
-                onNavigateToRoute(MainRouteSourceLogin(SourceLoginType.BookSource, sourceUrl))
-            },
-            onOpenReader = { bookUrl, inBookshelf, chapterChanged ->
-                onNavigateToRoute(
-                    MainRouteReadBook(
-                        bookUrl = bookUrl,
-                        inBookshelf = inBookshelf,
-                        chapterChanged = chapterChanged,
-                    )
-                )
-            },
-            onOpenMangaReader = { bookUrl, inBookshelf, chapterChanged ->
-                onNavigateToRoute(
-                    MainRouteReadManga(
-                        bookUrl = bookUrl,
-                        inBookshelf = inBookshelf,
-                        chapterChanged = chapterChanged,
-                    )
-                )
-            },
-            onOpenAudioPlay = { bookUrl, inBookshelf ->
-                onNavigateToRoute(
-                    MainRouteAudioPlay(
-                        bookUrl = bookUrl,
-                        inBookshelf = inBookshelf,
-                    )
-                )
-            },
-            onNavigateToBookInfo = { name, author, bookUrl, origin, coverPath ->
-                onNavigateToRoute(MainRouteBookInfo(name, author, bookUrl, origin, coverPath))
-            },
-            onNavigateToExploreShow = { title, sourceUrl, exploreUrl ->
-                onNavigateToRoute(MainRouteExploreShow(title, sourceUrl, exploreUrl))
-            },
-            onOpenCharacterDetail = { bookUrl, characterId ->
-                onNavigateToRoute(MainRouteBookCharacterDetail(bookUrl, characterId))
-            },
-            onOpenCharacterNetwork = { bookUrl ->
-                onNavigateToRoute(MainRouteBookCharacterNetwork(bookUrl))
-            },
-            onOpenCharacterList = { bookUrl ->
-                onNavigateToRoute(MainRouteBookCharacterList(bookUrl))
-            },
-            onOpenKnowledgeList = { bookUrl ->
-                onNavigateToRoute(MainRouteBookKnowledgeList(bookUrl))
-            },
-            onOpenEventList = { bookUrl ->
-                onNavigateToRoute(MainRouteBookEventList(bookUrl))
-            },
-            sharedTransitionScope = sharedTransitionScope,
-            animatedVisibilityScope = LocalNavAnimatedContentScope.current,
-            sharedCoverKey = route.sharedCoverKey ?: bookCoverSharedElementKey(route.bookUrl),
+        val context = LocalContext.current
+        val viewModel = koinViewModel<BookDetailViewModel>(
+            key = "BookDetail:${route.bookUrl}",
+            parameters = { parametersOf(route.bookUrl) },
         )
+        BookDetailScreen(
+            state = viewModel.uiState.collectAsStateWithLifecycle().value,
+            onIntent = viewModel::onIntent,
+        )
+        LaunchedEffect(viewModel) {
+            viewModel.effects.collect { effect ->
+                when (effect) {
+                    BookDetailEffect.NavigateBack, BookDetailEffect.CloseAfterRemoval ->
+                        onNavigateBack()
+
+                    is BookDetailEffect.ShowMessage -> context.toastOnUi(effect.text)
+                    is BookDetailEffect.OpenReader -> onNavigateToRoute(
+                        MainRouteReadBook(bookUrl = effect.bookId, inBookshelf = true)
+                    )
+
+                    is BookDetailEffect.OpenTocManage ->
+                        onNavigateToRoute(MainRouteTocManage(effect.bookId))
+
+                    is BookDetailEffect.OpenInsights ->
+                        onNavigateToRoute(MainRouteBookCharacterList(effect.bookId))
+
+                    is BookDetailEffect.OpenBookDetail -> onNavigateToRoute(
+                        MainRouteBookInfo(name = null, author = null, bookUrl = effect.bookId)
+                    )
+
+                    // 下面这些去处随重设计一并重做，尚未落地。见
+                    // docs/dev/catalog-behavior-inventory.md §4.1。
+                    is BookDetailEffect.Share,
+                    is BookDetailEffect.OpenReadAloud,
+                    is BookDetailEffect.OpenChangeSource,
+                    is BookDetailEffect.OpenGroupPicker,
+                    is BookDetailEffect.OpenCoverPicker,
+                    is BookDetailEffect.OpenInfoEditor,
+                    is BookDetailEffect.OpenRemarkEditor,
+                    is BookDetailEffect.OpenVariableEditor,
+                        -> context.toastOnUi("该功能正在重做，暂不可用")
+                }
+            }
+        }
+    }
+
+    entry<MainRouteTocManage> { route ->
+        val context = LocalContext.current
+        val viewModel = koinViewModel<TocManageViewModel>(
+            key = "TocManage:${route.bookUrl}",
+            parameters = { parametersOf(route.bookUrl) },
+        )
+        var pendingDeleteCount by rememberSaveable { mutableStateOf<Int?>(null) }
+        TocManageScreen(
+            state = viewModel.uiState.collectAsStateWithLifecycle().value,
+            onIntent = viewModel::onIntent,
+        )
+        LaunchedEffect(viewModel) {
+            viewModel.effects.collect { effect ->
+                when (effect) {
+                    TocManageEffect.NavigateBack -> onNavigateBack()
+                    TocManageEffect.OpenSearch -> context.toastOnUi("该功能正在重做，暂不可用")
+                    is TocManageEffect.ShowMessage -> context.toastOnUi(effect.text)
+                    is TocManageEffect.ConfirmDeleteCache -> pendingDeleteCount = effect.chapterCount
+                }
+            }
+        }
+        pendingDeleteCount?.let { count ->
+            AlertDialog(
+                onDismissRequest = { pendingDeleteCount = null },
+                title = { Text("删除已选缓存") },
+                text = { Text("$count 章的正文缓存会被清除，需要时可重新下载。") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        pendingDeleteCount = null
+                        viewModel.confirmDeleteSelectedCache()
+                    }) { Text("删除") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { pendingDeleteCount = null }) { Text("取消") }
+                },
+            )
+        }
+    }
+
+    entry<MainRouteSourceHub> {
+        val context = LocalContext.current
+        val viewModel = koinViewModel<SourceHubViewModel>()
+        SourceHubScreen(
+            state = viewModel.uiState.collectAsStateWithLifecycle().value,
+            onIntent = viewModel::onIntent,
+        )
+        LaunchedEffect(viewModel) {
+            viewModel.effects.collect { effect ->
+                when (effect) {
+                    SourceHubEffect.NavigateBack -> onNavigateBack()
+                    SourceHubEffect.OpenSearch -> onNavigateToRoute(MainRouteSearch(key = null))
+                    SourceHubEffect.OpenImport ->
+                        onNavigateToRoute(MainRouteBookSourceManage())
+
+                    is SourceHubEffect.OpenEntry -> when (effect.id) {
+                        SourceHubEntryId.BookSources ->
+                            onNavigateToRoute(MainRouteBookSourceManage())
+
+                        SourceHubEntryId.RssSources ->
+                            onNavigateToRoute(MainRouteRssSourceManage)
+
+                        else -> context.toastOnUi("该功能正在重做，暂不可用")
+                    }
+                }
+            }
+        }
     }
 
     entry<MainRouteBookCharacterDetail> { route ->

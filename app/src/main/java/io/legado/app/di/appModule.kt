@@ -42,6 +42,10 @@ import io.legado.app.data.repository.BookshelfRepository
 import io.legado.app.data.repository.BookshelfSettingsRepository
 import io.legado.app.feature.ai.impl.AiDefaultModelHost
 import io.legado.app.feature.bookshelf.impl.BookshelfBookRemovalHost
+import io.legado.app.feature.catalog.impl.CatalogBookshelfHost
+import io.legado.app.feature.catalog.impl.CatalogChapterCacheHost
+import io.legado.app.feature.catalog.impl.CatalogReadAloudPreferencesHost
+import io.legado.app.feature.catalog.impl.CatalogRelatedBooksHost
 import io.legado.app.feature.catalog.impl.CatalogSourceRemovalHost
 import io.legado.app.feature.bookshelf.impl.BookshelfPreferencesHost
 import io.legado.app.feature.rss.impl.RssSourceRemovalHost
@@ -256,7 +260,6 @@ import io.legado.app.ui.book.import.local.ImportBookViewModel
 import io.legado.app.ui.book.import.remote.RemoteBookViewModel
 import io.legado.app.ui.book.import.remote.ServerConfigViewModel
 import io.legado.app.ui.book.import.remote.ServersViewModel
-import io.legado.app.ui.book.info.BookInfoViewModel
 import io.legado.app.ui.book.info.edit.BookInfoEditViewModel
 import io.legado.app.ui.book.knowledge.BookCharacterDetailViewModel
 import io.legado.app.ui.book.knowledge.BookCharacterListViewModel
@@ -509,6 +512,10 @@ val appModule = module {
     single<ExploreRepository> { get<ExploreRepositoryImpl>() }
     single<ExploreBooksGateway> { get<ExploreRepositoryImpl>() }
     single<CatalogSourceRemovalHost> { AppCatalogSourceRemovalHost() }
+    single<CatalogChapterCacheHost> { AppCatalogChapterCacheHost(get(), get(), get()) }
+    single<CatalogBookshelfHost> { AppCatalogBookshelfHost(get(), get(), get(), get()) }
+    single<CatalogRelatedBooksHost> { AppCatalogRelatedBooksHost() }
+    single<CatalogReadAloudPreferencesHost> { AppCatalogReadAloudPreferencesHost(get()) }
     singleOf(::RssRepository)
     single<RssSourceScriptHost> { AppRssSourceScriptHost() }
     single<RssSourceRemovalHost> { AppRssSourceRemovalHost(get()) }
@@ -644,7 +651,6 @@ val appModule = module {
     viewModelOf(::RemoteBookViewModel)
     viewModelOf(::ServerConfigViewModel)
     viewModelOf(::ServersViewModel)
-    viewModelOf(::BookInfoViewModel)
     viewModel {
         WebViewModel(
             application = get(),

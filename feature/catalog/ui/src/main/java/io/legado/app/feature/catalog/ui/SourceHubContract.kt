@@ -28,7 +28,8 @@ enum class SourceHubEntryId {
     DictRules,
     ContentHighlight,
     TagHighlight,
-    RssRules,
+    /** 规则订阅（`ruleSubs`），与「订阅源」是两回事，命名与 `SourceCatalogKind` 对齐。 */
+    RuleSubscription,
 }
 
 @Immutable
@@ -60,6 +61,14 @@ sealed interface SourceHubIntent {
     data class OpenEntry(val id: SourceHubEntryId) : SourceHubIntent
 }
 
+/** 本页没有自己的写操作，除消息外全是去处。 */
+sealed interface SourceHubEffect {
+    data object NavigateBack : SourceHubEffect
+    data object OpenSearch : SourceHubEffect
+    data object OpenImport : SourceHubEffect
+    data class OpenEntry(val id: SourceHubEntryId) : SourceHubEffect
+}
+
 /** 画板 D-00 的原始数据，用于预览与对稿。 */
 val SourceHubPreviewState = SourceHubUiState(
     importSummary = "粘贴 · 文件 · 扫码 · 内置库 → 统一审核",
@@ -82,7 +91,7 @@ val SourceHubPreviewState = SourceHubUiState(
                 // 并把作用对象写进摘要——摘要不只是数量，也是这一条规则管什么的说明（解 L7）。
                 SourceHubEntryUi(SourceHubEntryId.ContentHighlight, "正文高亮", "6 条 · 作用于正文文本"),
                 SourceHubEntryUi(SourceHubEntryId.TagHighlight, "标签高亮", "4 条 · 作用于书架标签"),
-                SourceHubEntryUi(SourceHubEntryId.RssRules, "订阅规则", "2 条 · 与「订阅源」的区别见页首说明"),
+                SourceHubEntryUi(SourceHubEntryId.RuleSubscription, "订阅规则", "2 条 · 与「订阅源」的区别见页首说明"),
             ),
         ),
     ),

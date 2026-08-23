@@ -214,7 +214,7 @@ private fun SourceHubEntryId.icon(): ImageVector = when (this) {
     SourceHubEntryId.DictRules -> Icons.Outlined.Translate
     SourceHubEntryId.ContentHighlight -> Icons.Outlined.BorderColor
     SourceHubEntryId.TagHighlight -> Icons.AutoMirrored.Outlined.Label
-    SourceHubEntryId.RssRules -> Icons.Outlined.Subscriptions
+    SourceHubEntryId.RuleSubscription -> Icons.Outlined.Subscriptions
 }
 
 @Preview(name = "D-00 源与规则枢纽 · 日光", widthDp = 390, heightDp = 844)

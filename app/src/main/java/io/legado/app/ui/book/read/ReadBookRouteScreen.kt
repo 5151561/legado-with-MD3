@@ -50,7 +50,6 @@ import io.legado.app.model.ReadBook
 import io.legado.app.model.SourceCallBack
 import io.legado.app.model.translation.TranslationChapterStatus
 import io.legado.app.feature.reader.ui.ReaderRouteScreen as FeatureReaderRouteScreen
-import io.legado.app.ui.book.info.BookInfoActivity
 import io.legado.app.ui.book.read.page.ContentTextView
 import io.legado.app.ui.book.read.page.ReadView
 import io.legado.app.ui.book.read.page.ReaderEventListener
@@ -134,6 +133,7 @@ fun ReadBookRouteScreen(
     onOpenVoiceCasting: (bookUrl: String) -> Unit = {},
     onOpenTtsEnginesAndVoices: () -> Unit = {},
     onOpenTtsCache: () -> Unit = {},
+    onOpenBookInfo: (name: String?, author: String?, bookUrl: String) -> Unit = { _, _, _ -> },
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val aiState by viewModel.aiState.collectAsStateWithLifecycle()
@@ -292,12 +292,6 @@ fun ReadBookRouteScreen(
         uri?.let { viewModel.onIntent(ReadBookIntent.ExportHighlightRulesToFile(it)) }
     }
 
-    val bookInfoLauncher = rememberLauncherForActivityResult(
-        StartActivityContract(BookInfoActivity::class.java)
-    ) { result ->
-        viewModel.onIntent(ReadBookIntent.BookInfoResult(result.resultCode == android.app.Activity.RESULT_OK))
-    }
-
     AutoSuggestDayNightObserver(
         viewModel = viewModel,
         autoSuggestDayNight = readPreferences.autoSuggestDayNight,
@@ -329,11 +323,7 @@ fun ReadBookRouteScreen(
                                 tocLauncher.launch(effect.bookUrl)
                             }
                             is ReadBookEffect.OpenBookInfo -> {
-                                bookInfoLauncher.launch {
-                                    putExtra("name", effect.name)
-                                    putExtra("author", effect.author)
-                                    putExtra("bookUrl", effect.bookUrl)
-                                }
+                                onOpenBookInfo(effect.name, effect.author, effect.bookUrl)
                             }
                             is ReadBookEffect.ShowLogin -> {
                                 context.startActivity(
@@ -640,11 +630,7 @@ fun ReadBookRouteScreen(
                 onOpenFullBookInfo = {
                     state.book?.let { book ->
                         viewModel.onIntent(ReadBookIntent.DismissSheet)
-                        bookInfoLauncher.launch {
-                            putExtra("name", book.name)
-                            putExtra("author", book.author)
-                            putExtra("bookUrl", book.bookUrl)
-                        }
+                        onOpenBookInfo(book.name, book.author, book.bookUrl)
                     }
                 },
                 bookSource = state.bookSource,

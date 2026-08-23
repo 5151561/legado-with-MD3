@@ -171,4 +171,25 @@ interface BookKnowledgeDao {
 
     @Query("delete from book_knowledge_entries where id = :entryId")
     suspend fun deleteKnowledgeEntry(entryId: String)
+
+    /**
+     * 书籍详情页「人物 · 知识 · 事件」入口的三个计数（画板 S-04）。
+     *
+     * 人物与事件沿用列表查询的口径，排除已删除的记录；否则详情页会数出一个
+     * 点进去看不到的数字。
+     */
+    @Query(
+        """
+        select count(*) from book_character_profiles
+        where bookUrl = :bookUrl
+          and status != ${BookCharacterProfile.STATUS_DELETED}
+        """
+    )
+    suspend fun countCharacterProfiles(bookUrl: String): Int
+
+    @Query("select count(*) from book_knowledge_entries where bookUrl = :bookUrl")
+    suspend fun countKnowledgeEntries(bookUrl: String): Int
+
+    @Query("select count(*) from book_character_events where bookUrl = :bookUrl")
+    suspend fun countCharacterEvents(bookUrl: String): Int
 }

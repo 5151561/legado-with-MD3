@@ -14,12 +14,12 @@ import io.legado.app.R
 import io.legado.app.base.BaseComposeActivity
 import io.legado.app.constant.AppConst
 import io.legado.app.receiver.NetworkChangedListener
-import io.legado.app.ui.book.info.BookInfoActivity
 import io.legado.app.ui.book.info.READER_RESULT_DELETED
 import io.legado.app.ui.book.read.sheet.ReaderBookSheetRoute
 import io.legado.app.ui.book.read.sheet.ReaderBookSheetTab
 import io.legado.app.ui.login.SourceLoginType
 import io.legado.app.ui.main.MainActivity
+import io.legado.app.ui.main.MainIntent
 import io.legado.app.utils.NetworkUtils
 import io.legado.app.utils.StartActivityContract
 import io.legado.app.utils.openUrl
@@ -51,15 +51,6 @@ class ReadMangaActivity : BaseComposeActivity(imageBg = false) {
             }
         }
 
-    private val bookInfoActivity =
-        registerForActivityResult(StartActivityContract(BookInfoActivity::class.java)) {
-            if (it.resultCode == RESULT_OK) {
-                setResult(READER_RESULT_DELETED)
-                finish()
-            } else {
-                readerViewModel.onIntent(MangaReaderIntent.ReloadContent)
-            }
-        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         isRestoredFromSavedState = savedInstanceState != null
@@ -177,14 +168,21 @@ class ReadMangaActivity : BaseComposeActivity(imageBg = false) {
         else finish()
     }
 
+    /**
+     * 书籍详情已并入 MainActivity 的路由（重设计画板 S-04），不再是独立 Activity，
+     * 因此改用既有的 [MainIntent.createBookInfoIntent] 深链进去，不再取回结果。
+     */
     private fun openBookInfoActivity() {
         readerViewModel.uiState.value.let {
             if (it.bookUrl.isEmpty()) return
-            bookInfoActivity.launch {
-                putExtra("name", it.bookName)
-                putExtra("author", it.bookAuthor)
-                putExtra("bookUrl", it.bookUrl)
-            }
+            startActivity(
+                MainIntent.createBookInfoIntent(
+                    context = this,
+                    name = it.bookName,
+                    author = it.bookAuthor,
+                    bookUrl = it.bookUrl,
+                )
+            )
         }
     }
 

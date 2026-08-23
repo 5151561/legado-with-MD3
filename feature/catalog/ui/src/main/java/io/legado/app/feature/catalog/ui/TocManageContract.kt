@@ -71,6 +71,15 @@ sealed interface TocManageIntent {
     data object DeleteSelectedCache : TocManageIntent
 }
 
+sealed interface TocManageEffect {
+    data object NavigateBack : TocManageEffect
+    data object OpenSearch : TocManageEffect
+    data class ShowMessage(val text: String) : TocManageEffect
+
+    /** 删除缓存的二次确认由上层弹，确认后回 [TocManageIntent.DeleteSelectedCache]。 */
+    data class ConfirmDeleteCache(val chapterCount: Int) : TocManageEffect
+}
+
 /** 画板 S-06b v2 的原始数据，用于预览与对稿。 */
 val TocManagePreviewState = TocManageUiState(
     subtitle = "雪落长安 · 386 章",

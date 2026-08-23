@@ -66,45 +66,6 @@ import io.legado.app.core.designsystem.component.AppText
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun WebFileSheet(
-    show: Boolean,
-    files: List<BookInfoWebFile>,
-    title: String,
-    onDismissRequest: () -> Unit,
-    onSelect: (BookInfoWebFile) -> Unit,
-) {
-    AppModalBottomSheet(show = show, onDismissRequest = onDismissRequest, title = title) {
-        if (files.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp), contentAlignment = Alignment.Center
-            ) {
-                Text(text = stringResource(R.string.empty))
-            }
-        } else {
-            LazyColumn(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(files, key = { it.name }) { file ->
-                    GlassCard(onClick = { onSelect(file) }) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Icon(if (file.name.endsWith("zip") || file.name.endsWith("rar") || file.name.endsWith("7z")) Icons.Outlined.FolderZip else Icons.Outlined.Image, null)
-                            Text(text = file.name, modifier = Modifier.weight(1f), style = LegadoTheme.typography.bodyMedium)
-                        }
-                    }
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-    }
-}
-
-@Composable
 fun GroupSelectSheet(
     show: Boolean,
     groups: List<BookGroup>,

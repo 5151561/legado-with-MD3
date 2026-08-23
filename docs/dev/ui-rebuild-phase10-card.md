@@ -1,6 +1,6 @@
 # Phase 10 迁移卡：全新 UI 重做与旧 UI 删除
 
-> 状态：规划中，尚未开工。
+> 状态：线 A 进行中（catalog 已完成行为盘点与 api 扩面），线 B 部分完成。
 > 日期：2026-08-22
 > 上游计划：[`compose-ui-module-migration-plan.md`](./compose-ui-module-migration-plan.md) 第 5 节 Phase 10
 > 取代：原「组件按需下沉与既有 Compose UI 迁入」路线（已作废，理由见第 1 节）
@@ -67,10 +67,11 @@
 
 第 2 步完成前不删任何旧 UI。不因"反正要重写"而放宽。
 
-## 5. 线 A 首个 feature：书架
+## 5. 线 A 的书架扩面清单
 
-书架先行——已有正式 `impl`，基础最好。当前 `bookshelf:api` 只覆盖查询、分组、删除、排序，
-需扩面的能力（来自旧 UI 行为盘点）：
+> 顺序已调整，书架不再是线 A 的第一个 feature，见第 7 节。本节的清单继续有效。
+
+当前 `bookshelf:api` 只覆盖查询、分组、删除、排序，需扩面的能力（来自旧 UI 行为盘点）：
 
 | 能力 | 归属 | 说明 |
 |---|---|---|
@@ -112,8 +113,18 @@
 
 ## 7. 顺序
 
-书架 → rss / catalog / ai（均已有 impl）→ settings / readaloud（需先解除各自实现 blocker）
-→ **阅读器最后**。
+**已调整（2026-08-23）**：catalog 先行，书架顺延。
+
+原顺序「书架先行」的依据是它 impl 基础最好。但首批落地的七块画板里没有书架页，
+四块（D-00、S-04/S-04a、S-06a、S-06b）落在 catalog——先扩书架的 api 会得到一段
+暂时没有 UI 消费的契约，而画板已经在等 catalog。catalog 同样已有正式 impl，
+无实现 blocker，前提不劣于书架。
+
+调整后：catalog → 书架（设计出书架页时）→ rss / ai（均已有 impl）
+→ settings / readaloud（需先解除各自实现 blocker）→ **阅读器最后**。
+
+catalog 的行为盘点见 [`catalog-behavior-inventory.md`](./catalog-behavior-inventory.md)。
+书架扩面时，第 5 节记的 tag 规则重放回归风险继续有效。
 
 阅读器不因"全 App 重做"绕过 Phase 4 决策门：`ReadView` 是 View 实现，
 重做涉及分页、翻页、手势、选区、缓存与朗读，parity、帧率、内存与无障碍门禁继续有效，
