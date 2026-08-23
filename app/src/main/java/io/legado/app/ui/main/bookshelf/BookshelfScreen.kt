@@ -95,6 +95,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -1425,6 +1426,9 @@ fun BookshelfPage(
             state = gridState,
             modifier = Modifier
                 .fillMaxSize()
+                // benchmark 用 By.res("bookshelf_list") 定位本网格，见 baselineProfile 模块。
+                // 依赖 BaseComposeActivity 根节点开启的 testTagsAsResourceId。
+                .testTag("bookshelf_list")
                 .semantics { contentDescription = listContentDescription }
                 .then(
                     with(sharedTransitionScope) {

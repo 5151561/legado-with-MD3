@@ -21,3 +21,12 @@ dependencies {
 kotlin {
     jvmToolchain(21)
 }
+
+gradlePlugin {
+    plugins {
+        register("composeCompiler") {
+            id = "legado.compose.compiler"
+            implementationClass = "io.legado.buildlogic.ComposeCompilerConventionPlugin"
+        }
+    }
+}

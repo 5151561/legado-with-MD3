@@ -39,8 +39,9 @@ class BaselineProfileGenerator {
             pressHome()
             startActivityAndWait()
 
-            // 等书架加载完成。
-            val bookshelfSelector = By.desc("bookshelf_list")
+            // 等书架加载完成。testTag 经根节点的 testTagsAsResourceId 映射成 resource-id，
+            // 所以这里用 By.res 而不是 By.desc——书架网格的 contentDescription 是本地化的“书架”。
+            val bookshelfSelector = By.res("bookshelf_list")
             device.wait(Until.hasObject(bookshelfSelector), 10000)
             device.waitForIdle()
             Thread.sleep(2000)

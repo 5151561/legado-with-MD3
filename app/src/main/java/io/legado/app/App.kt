@@ -62,6 +62,7 @@ import io.legado.app.feature.rss.ui.rssUiModule
 import io.legado.app.feature.settings.ui.settingsUiModule
 import io.legado.app.help.AppFreezeMonitor
 import io.legado.app.help.AppWebDav
+import io.legado.app.help.BenchmarkFixtures
 import io.legado.app.help.CrashHandler
 import io.legado.app.help.DefaultData
 import io.legado.app.help.DispatchersMonitor
@@ -144,6 +145,12 @@ class App : Application(), SingletonImageLoader.Factory {
             )
         }
         val legacyDatabase = appDb
+        // benchmark 变体的书架夹具。同步补齐（另起线程只为绕开 Room 的主线程检查），
+        // 必须在界面出来之前完成，否则前几轮迭代量到的是空书架。release 下是空操作。
+        if (BuildConfig.BENCHMARK_FIXTURES) {
+            BenchmarkFixtures.suppressFirstRunUi(this)
+            Thread { BenchmarkFixtures.seedBlocking(legacyDatabase) }.apply { start(); join() }
+        }
         BookModelRuntimeRegistry.runtime = LegacyBookModelRuntime
         DictRuleRuntimeRegistry.runtime = LegacyDictRuleRuntime
         BookChapterModelRuntimeRegistry.runtime = LegacyBookChapterModelRuntime
