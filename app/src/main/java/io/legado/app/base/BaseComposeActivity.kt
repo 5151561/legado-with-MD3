@@ -13,6 +13,8 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.os.LocaleListCompat
 import androidx.core.view.WindowCompat
@@ -91,6 +93,10 @@ abstract class BaseComposeActivity(
                 Box(
                     Modifier
                         .fillMaxSize()
+                        // 让 Modifier.testTag 映射成无障碍节点的 viewIdResourceName，
+                        // uiautomator 才能用 By.res 精确定位 Compose 节点（benchmark 用）。
+                        // 只影响语义树的 id 字段，不产生朗读内容。
+                        .semantics { testTagsAsResourceId = true }
                         .eyeProtectionColorFilter(
                             enabled = eyeProtectionActive,
                             intensity = themeSettings.colorTemperature,

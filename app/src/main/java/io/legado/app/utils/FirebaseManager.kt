@@ -21,7 +21,9 @@ object FirebaseManager {
     private fun applyState(context: Context, enabled: Boolean) {
         if (enabled) {
             if (FirebaseApp.getApps(context).isEmpty()) {
-                FirebaseApp.initializeApp(context)
+                // 没有 google-services 配置时返回 null（benchmark 变体即如此），
+                // 此时不能再调 FirebaseAnalytics.getInstance，会抛“Default FirebaseApp is not initialized”。
+                if (FirebaseApp.initializeApp(context) == null) return
             }
             FirebaseAnalytics.getInstance(context).setAnalyticsCollectionEnabled(true)
         } else {

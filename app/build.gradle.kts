@@ -2,7 +2,7 @@ import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
-    alias(libs.plugins.compose.compiler)
+    id("legado.compose.compiler")
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.kotlin.serialization)
@@ -12,6 +12,32 @@ plugins {
 }
 
 apply(from = "download.gradle")
+
+// androidx.baselineprofile 会从 release/noR8 派生出 benchmarkXxx / nonMinifiedXxx 这几个
+// buildType，且不加 applicationIdSuffix——默认会用 io.legato.kazusa 顶掉设备上自用的 release
+// 应用（签名多半还对不上，表现为装不上或要求先卸载）。这里把它们挪到独立包名并存。
+//
+// 不能用 buildTypes 里设 applicationIdSuffix：插件是 create 之后再 initWith(release)，
+// 会把先设好的后缀覆盖回 null。只能在 variant 层改。
+androidComponents {
+    onVariants { variant ->
+        val buildType = variant.buildType ?: return@onVariants
+        if (buildType.startsWith("benchmark") || buildType.startsWith("nonMinified")) {
+            variant.applicationId.set("${android.defaultConfig.applicationId}.benchmark")
+        }
+    }
+}
+
+// google-services.json 只登记了 io.legato.kazusa 和 .debug 两个 client，改包名后
+// processGoogleServices 会失败。benchmark 变体不需要 Firebase——跑基准时上报分析数据
+// 本身就是噪声——直接跳过该任务，不往 Firebase 配置里塞假 client。
+// 配套：FirebaseManager 已能容忍缺省 FirebaseApp 缺失。
+tasks.matching {
+    it.name.contains("GoogleServices") &&
+        (it.name.contains("Benchmark") || it.name.contains("NonMinified"))
+}.configureEach {
+    enabled = false
+}
 
 
 val versionPropsFile = file("version.properties")
@@ -90,6 +116,14 @@ android {
             "boolean",
             "USE_COMPOSE_AI_FEATURE",
             providers.gradleProperty("aiFeatureEnabled").getOrElse("false"),
+        )
+
+        // benchmark 变体用：应用启动时自补书架夹具。见 help/BenchmarkFixtures.kt——
+        // CompilationMode 每轮都会卸载重装被测应用，外部灌进去的数据活不过一轮。
+        buildConfigField(
+            "boolean",
+            "BENCHMARK_FIXTURES",
+            providers.gradleProperty("benchmarkFixtures").getOrElse("false"),
         )
 
         buildConfigField("String", "Cronet_Version", "\"${project.findProperty("CronetVersion")}\"")
