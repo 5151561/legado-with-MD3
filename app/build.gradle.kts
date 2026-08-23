@@ -253,6 +253,9 @@ dependencies {
     implementation(project(":feature:bookshelf:ui"))
     implementation(project(":feature:settings:api"))
     implementation(project(":feature:settings:ui"))
+    // 仅 debug：重设计画板画廊（app/src/debug 的 RedesignGalleryActivity）依赖它。
+    // 首页尚未接进生产导航，release 包不需要这个模块。
+    debugImplementation(project(":feature:home:ui"))
     implementation(project(":feature:catalog:api"))
     implementation(project(":feature:catalog:impl"))
     implementation(project(":feature:catalog:ui"))

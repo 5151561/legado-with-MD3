@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
+        <!--
+          重设计画板画廊：自带 launcher 图标，不改 MainActivity / MainNavGraph 任何一行。
+          页面接进生产路由后，本 activity 与 src/debug 下的源码一并删除。
+        -->
+        <activity
+            android:name="io.legado.app.debug.RedesignGalleryActivity"
+            android:exported="true"
+            android:label="@string/redesign_gallery_label"
+            android:theme="@style/AppTheme.Transparent">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name="io.legado.app.debug.DebugScenarioActivity"
             android:exported="true"
