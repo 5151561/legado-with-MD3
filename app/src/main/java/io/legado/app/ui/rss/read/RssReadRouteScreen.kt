@@ -51,7 +51,6 @@ import io.legado.app.R
 import io.legado.app.constant.AppConst
 import io.legado.app.help.http.CookieManager
 import io.legado.app.ui.login.SourceLoginType
-import io.legado.app.ui.main.MainActivity
 import io.legado.app.ui.theme.LegadoTheme
 import io.legado.app.ui.widget.components.AppScaffold
 import io.legado.app.ui.widget.components.AppTextField
@@ -277,13 +276,7 @@ fun RssReadRouteScreen(
                                     leadingIcon = { MenuItemIcon(Icons.AutoMirrored.Filled.Login) },
                                     onClick = {
                                         dismiss()
-                                        context.startActivity(
-                                            MainActivity.createSourceLoginIntent(
-                                                context,
-                                                SourceLoginType.RssSource,
-                                                viewModel.rssSource?.sourceUrl,
-                                            )
-                                        )
+                                        context.toastOnUi("订阅源登录还没重做")
                                     }
                                 )
                                 }

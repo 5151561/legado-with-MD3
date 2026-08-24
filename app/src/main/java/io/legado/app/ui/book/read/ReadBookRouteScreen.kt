@@ -61,7 +61,6 @@ import io.legado.app.ui.book.read.sheet.TextSelectMenuConfigSheet
 import io.legado.app.ui.book.searchContent.SearchContentResult
 import io.legado.app.ui.book.toc.TocActivityResult
 import io.legado.app.ui.login.SourceLoginType
-import io.legado.app.ui.main.MainActivity
 import io.legado.app.ui.replace.ReplaceEditRoute
 import io.legado.app.ui.replace.ReplaceRuleActivity
 import io.legado.app.ui.theme.LocalAppUiConfiguration
@@ -312,12 +311,7 @@ fun ReadBookRouteScreen(
                         when (effect) {
                             // Launcher-dependent effects — handled directly by route
                             is ReadBookEffect.OpenSourceEdit -> {
-                                sourceEditLauncher.launch(
-                                    MainActivity.createBookSourceEditIntent(
-                                        context,
-                                        effect.sourceUrl
-                                    )
-                                )
+                                context.toastOnUi("书源编辑还没重做")
                             }
                             is ReadBookEffect.OpenChapterList -> {
                                 tocLauncher.launch(effect.bookUrl)
@@ -326,20 +320,10 @@ fun ReadBookRouteScreen(
                                 onOpenBookInfo(effect.name, effect.author, effect.bookUrl)
                             }
                             is ReadBookEffect.ShowLogin -> {
-                                context.startActivity(
-                                    MainActivity.createSourceLoginIntent(
-                                        context,
-                                        SourceLoginType.ReadingBook
-                                    )
-                                )
+                                context.toastOnUi("书源登录还没重做")
                             }
                             is ReadBookEffect.OpenWebView -> {
-                                context.startActivity(
-                                    MainActivity.createWebViewIntent(
-                                        context, effect.title, effect.url, effect.sourceOrigin,
-                                        effect.sourceName, effect.sourceType, html = effect.html,
-                                    )
-                                )
+                                context.toastOnUi("内置浏览器还没重做")
                             }
                             is ReadBookEffect.RunSourceCustomButton -> {
                                 (context as? AppCompatActivity)?.let { activity ->
@@ -506,12 +490,12 @@ fun ReadBookRouteScreen(
         ReaderFirstFrameTracker(
             startedAtNanos = requestedStart.takeIf { it > 0L }
                 ?: SystemClock.elapsedRealtimeNanos(),
-            renderer = if (BuildConfig.USE_COMPOSE_READER_FEATURE) "compose" else "legacy",
+            renderer = "legacy",
         )
     }
 
     Box(Modifier.fillMaxSize()) {
-        if (!BuildConfig.USE_COMPOSE_READER_FEATURE) {
+        run {
             key(controller) {
                 ReadBookViewLayer(
                     modifier = Modifier,
@@ -532,18 +516,6 @@ fun ReadBookRouteScreen(
             preferences = readPreferences,
             isDarkTheme = isDarkTheme,
         ) {
-            if (BuildConfig.USE_COMPOSE_READER_FEATURE) {
-                DisposableEffect(controller) {
-                    controller.attachComposeRenderer()
-                    onDispose { controller.detachComposeRenderer() }
-                }
-                FeatureReaderRouteScreen(
-                    onToggleMenu = controller::toggleMenu,
-                    onViewportChanged = controller::updateComposeViewport,
-                    onFirstContentDrawn = firstFrameTracker::report,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
             ReadBookMenuBar(
                 state = state,
                 preferences = readPreferences,

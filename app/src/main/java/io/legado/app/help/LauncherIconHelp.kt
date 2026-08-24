@@ -2,15 +2,15 @@ package io.legado.app.help
 
 import android.content.ComponentName
 import android.content.pm.PackageManager
-import io.legado.app.ui.main.Launcher0
-import io.legado.app.ui.main.Launcher1
-import io.legado.app.ui.main.Launcher2
-import io.legado.app.ui.main.Launcher3
-import io.legado.app.ui.main.Launcher4
-import io.legado.app.ui.main.Launcher5
-import io.legado.app.ui.main.Launcher6
-import io.legado.app.ui.main.LauncherW
-import io.legado.app.ui.main.MainActivity
+import io.legado.app.ui.shell.Launcher0
+import io.legado.app.ui.shell.Launcher1
+import io.legado.app.ui.shell.Launcher2
+import io.legado.app.ui.shell.Launcher3
+import io.legado.app.ui.shell.Launcher4
+import io.legado.app.ui.shell.Launcher5
+import io.legado.app.ui.shell.Launcher6
+import io.legado.app.ui.shell.LauncherW
+import io.legado.app.ui.shell.ShellActivity
 import splitties.init.appCtx
 
 /**
@@ -53,13 +53,13 @@ object LauncherIconHelp {
         }
         if (hasEnabled) {
             packageManager.setComponentEnabledSetting(
-                ComponentName(appCtx, MainActivity::class.java.name),
+                ComponentName(appCtx, ShellActivity::class.java.name),
                 PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                 PackageManager.DONT_KILL_APP
             )
         } else {
             packageManager.setComponentEnabledSetting(
-                ComponentName(appCtx, MainActivity::class.java.name),
+                ComponentName(appCtx, ShellActivity::class.java.name),
                 PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
                 PackageManager.DONT_KILL_APP
             )

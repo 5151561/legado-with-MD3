@@ -59,8 +59,8 @@ import io.legado.app.data.entities.SearchBook
 import io.legado.app.data.entities.SearchKeyword
 import io.legado.app.domain.model.BookShelfState
 import io.legado.app.domain.model.MatchMode
-import io.legado.app.ui.main.bookCoverSharedElementKey
-import io.legado.app.ui.main.bookshelf.BookShelfItem
+import io.legado.app.ui.widget.components.card.bookCoverSharedElementKey
+import io.legado.app.ui.book.shelf.BookShelfItem
 import io.legado.app.ui.theme.LegadoTheme
 import io.legado.app.ui.theme.adaptiveContentPadding
 import io.legado.app.ui.theme.adaptiveContentPaddingOnlyVertical

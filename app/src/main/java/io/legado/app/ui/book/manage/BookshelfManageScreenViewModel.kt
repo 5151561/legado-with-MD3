@@ -34,7 +34,7 @@ import io.legado.app.service.ExportBookService
 import io.legado.app.ui.config.bookshelfConfig.BookshelfConfig
 import io.legado.app.ui.config.bookshelfConfig.BookshelfManageScreenConfig
 import io.legado.app.ui.config.otherConfig.OtherConfig
-import io.legado.app.ui.main.bookshelf.toLightBook
+import io.legado.app.ui.book.shelf.toLightBook
 import io.legado.app.utils.cnCompare
 import io.legado.app.utils.move
 import kotlinx.coroutines.Dispatchers

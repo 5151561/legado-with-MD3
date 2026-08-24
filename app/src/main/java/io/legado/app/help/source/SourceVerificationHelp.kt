@@ -6,7 +6,6 @@ import io.legado.app.exception.NoStackTraceException
 import io.legado.app.help.CacheManager
 import io.legado.app.help.IntentData
 import io.legado.app.ui.association.VerificationCodeActivity
-import io.legado.app.ui.main.MainActivity
 import io.legado.app.utils.isMainThread
 import io.legado.app.utils.startActivity
 import splitties.init.appCtx
@@ -85,13 +84,9 @@ object SourceVerificationHelp {
     ) {
         source ?: throw NoStackTraceException("startBrowser parameter source cannot be null")
         require(url.length < 64 * 1024) { "startBrowser parameter url too long" }
-        IntentData.put(getVerificationResultKey(source), Thread.currentThread())
-        appCtx.startActivity(
-            MainActivity.createWebViewIntent(
-                appCtx, title, url, source.getKey(), source.getTag(), source.getSourceType(),
-                saveResult == true, refetchAfterSuccess != false, html,
-            )
-        )
+        // 承载网页验证的 WebView 页尚未重做，新外壳里没有落点。这里直接失败而不是
+        // 打开外壳——调用方是在后台线程上等结果的，静默跳走会让它一直等下去。
+        throw NoStackTraceException("网页验证尚未重做，暂时无法完成该书源的验证")
     }
 
 

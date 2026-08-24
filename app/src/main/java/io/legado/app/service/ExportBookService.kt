@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import io.legado.app.ui.shell.ShellIntents
 import io.legado.app.R
 import io.legado.app.base.BaseService
 import io.legado.app.constant.AppConst
@@ -30,7 +31,6 @@ import io.legado.app.help.book.getExportFileName
 import io.legado.app.help.book.isLocalModified
 import io.legado.app.model.ReadBook
 import io.legado.app.model.localBook.LocalBook
-import io.legado.app.ui.main.MainActivity
 import io.legado.app.utils.FileDoc
 import io.legado.app.utils.FileUtils
 import io.legado.app.utils.HtmlFormatter
@@ -187,7 +187,7 @@ class ExportBookService : BaseService(), KoinComponent {
             .setSubText(getString(R.string.export_book))
             .setContentIntent(
                 activityPendingIntent(
-                    MainActivity.createCacheIntent(this),
+                    ShellIntents.openApp(this),
                     "cacheActivity"
                 )
             )

@@ -21,6 +21,7 @@ roborazzi {
 
 dependencies {
     implementation(project(":core:designsystem"))
+    implementation(project(":core:navigation"))
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.material3)

@@ -16,6 +16,10 @@ dependencies {
     implementation(
         "org.jetbrains.kotlin:compose-compiler-gradle-plugin:${libs.versions.kotlin.get()}"
     )
+    // feature ui 模块声明自己的 @Serializable 路由，序列化插件因此是 UI 约定的一部分。
+    implementation(
+        "org.jetbrains.kotlin:kotlin-serialization:${libs.versions.kotlin.get()}"
+    )
 }
 
 kotlin {

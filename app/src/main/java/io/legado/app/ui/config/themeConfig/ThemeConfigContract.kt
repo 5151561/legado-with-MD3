@@ -17,7 +17,6 @@ data class ThemeConfigUiState(
 
 sealed interface ThemeConfigSheet {
     data class BackgroundImage(val target: BackgroundImageTarget) : ThemeConfigSheet
-    data object MainNavigation : ThemeConfigSheet
     data object TopBottomBar : ThemeConfigSheet
     data object LauncherIcon : ThemeConfigSheet
     data object DividerColor : ThemeConfigSheet
@@ -60,17 +59,8 @@ sealed interface ThemeConfigIntent {
     data class SetSwipeAnimation(val enabled: Boolean) : ThemeConfigIntent
     data class SetShowBottomView(val visible: Boolean) : ThemeConfigIntent
     data class SetTabletInterface(val value: String) : ThemeConfigIntent
-    data class SetLabelVisibilityMode(val value: String) : ThemeConfigIntent
     data class SetDynamicColors(val enabled: Boolean) : ThemeConfigIntent
-    data class SetMainDestinationVisible(
-        val route: String,
-        val visible: Boolean,
-    ) : ThemeConfigIntent
-    data class SetMainNavigationOrder(val routes: String) : ThemeConfigIntent
-    data class SetDefaultHomePage(val route: String) : ThemeConfigIntent
     data class SelectLauncherIcon(val value: String) : ThemeConfigIntent
-    data class SelectNavigationIcon(val destination: String, val path: String) : ThemeConfigIntent
-    data class RequestNavigationIcon(val destination: String) : ThemeConfigIntent
     data class RequestBackgroundImage(val dark: Boolean) : ThemeConfigIntent
     data class SelectBackground(val uri: String, val dark: Boolean) : ThemeConfigIntent
     data class RemoveBackground(val dark: Boolean) : ThemeConfigIntent
@@ -97,7 +87,6 @@ sealed interface ThemeConfigEffect {
     data object NotifyMain : ThemeConfigEffect
     data class ChangeLauncherIcon(val value: String) : ThemeConfigEffect
     data object OpenFontFolder : ThemeConfigEffect
-    data class OpenNavigationIcon(val destination: String) : ThemeConfigEffect
     data class OpenBackgroundImage(val dark: Boolean) : ThemeConfigEffect
     data class OpenContainerBackgroundImage(val target: ContainerBackgroundTarget, val dark: Boolean) : ThemeConfigEffect
     data class ShowToast(val stringRes: Int) : ThemeConfigEffect

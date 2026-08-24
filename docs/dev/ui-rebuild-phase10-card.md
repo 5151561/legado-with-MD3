@@ -1,7 +1,7 @@
 # Phase 10 迁移卡：全新 UI 重做与旧 UI 删除
 
-> 状态：线 A 进行中（catalog 已完成行为盘点与 api 扩面），线 B 部分完成。
-> 日期：2026-08-22
+> 状态：线 A 进行中（catalog、settings 已扩面），线 B 部分完成，**线 C 已换骨架**（见第 10 节）。
+> 日期：2026-08-22（第 10 节 2026-08-24 追加）
 > 上游计划：[`compose-ui-module-migration-plan.md`](./compose-ui-module-migration-plan.md) 第 5 节 Phase 10
 > 取代：原「组件按需下沉与既有 Compose UI 迁入」路线（已作废，理由见第 1 节）
 
@@ -146,3 +146,79 @@ catalog 的行为盘点见 [`catalog-behavior-inventory.md`](./catalog-behavior-
 
 线 A 与线 B 各自可独立回退。线 C 未完成前旧 UI 保持默认，关闭 feature 开关即回退。
 数据库、持久化格式与 SSOT 全程不变。
+
+## 10. 换骨架（2026-08-24）
+
+### 10.1 前提再次变更
+
+原线 C 的做法是「把重做好的页面逐块换进旧外壳的 tab / 路由表」。产品判断旧外壳
+**从骨架上就是错的**，逐块替换等于在错的骨架上继续加东西，因此改为：
+
+**新建外壳，旧外壳整块删除，新外壳只装重做过的界面。**
+
+「只装重做过的」是明确选择，代价也已确认接受：阅读器、书架、搜索、书源管理等尚未重做的
+界面在新外壳里**不存在**，接下来一段时间应用读不了书。
+
+### 10.2 新骨架修掉的四处结构病灶
+
+| 病灶 | 旧外壳 | 新外壳 |
+|---|---|---|
+| 一级 tab | `HorizontalPager` + 手写 per-page `LifecycleOwner`，全应用只有一条回退栈 | 每条一级路由一条 `NavBackStack`，状态与生命周期归导航层 |
+| 路由表 | `MainNavGraph.kt` 1480 行、约 60 个 entry，`:app` 因此认识每个 feature 的内部 | 每个 feature 在自己的 `ui` 模块注册 entry，外壳只做装配 |
+| 主题 | `LegadoTheme` 与 `:core:designsystem` 并存 | 外壳内只有 `ProvideAppTheme`，旧主题只在尚未重做的旧页面内部存活 |
+| 自适应 | 无 | 紧凑宽度底栏 / 中等与展开宽度侧栏，`AppNavigationRail` 随之落地 |
+
+新增/改动的模块：
+
+- `:core:navigation` 从 1 行的标记接口扩成真协议：`AppRoute`、`TopLevelRoute`、
+  `AppNavigationState`（多回退栈 + 「从首页退出」）、`AppNavigator`。
+- `:core:designsystem` 新增 `AppNavigationRail`。**取值是从 `AppNavigationBar` 推导的**——
+  X-01 / X-02 尚未从画板墙导入，导入后须逐项复核。
+- `legado.feature.ui` 约定插件加上 kotlinx-serialization：feature 在自己的 `ui` 模块里
+  声明 `@Serializable` 路由，没有这个插件时能编译却在运行期报「Serializer not found」。
+- 外壳落在 `app/src/main/java/io/legado/app/ui/shell/`。
+
+### 10.3 灰度开关制度随旧外壳一并废止
+
+七个 `USE_COMPOSE_*_FEATURE` 开关、对应的 Gradle property、登记表
+`config/compose-feature-migrations.properties` 与校验任务 `verifyFeatureMigrationGovernance`
+**全部删除**。理由：灰度的前提是「新旧两条路径并存、可切回」，新外壳里旧路径不存在，
+没有可灰度的对象。第 8 节「删除条件」中依赖开关与登记表的条款随之作废；
+模块依赖方向与配置架构护栏（`verifyConfigArchitecture`）继续有效。
+
+### 10.4 新外壳当前装了什么
+
+| 位置 | 内容 |
+|---|---|
+| 首页 / 书架 / 发现 / 订阅 | 占位页，写明画板号与卡点，清单集中在 `ShellRoutes.kt` |
+| 我的（P-01） | 真数据。主题三选一与 Web 服务开关可用 |
+| 源与规则枢纽（D-00） | 可达。九类中只有书源、订阅源有去处，其余提示未重做 |
+| 书籍详情（S-04）/ 目录管理（S-06b） | 路由已注册，但暂无入口——要等书架或搜索重做 |
+
+### 10.5 本次一并删除
+
+- `app/src/main/java/io/legado/app/ui/main/` 整个包（旧外壳）及其单测。
+- 设置主页 C-01：**它是 P0 v1 画板墙的稿子**，v2 画板墙里没有它。screen、contract、
+  ViewModel、截图基线，以及只为它扩的 `settings:api` 摘要面与 `SettingsSummaryHost` 一并删除。
+  v2 的设置页出稿后重建。
+- 旧外壳的可配置一级导航（顺序、显示、自定义图标）：新外壳的导航栏由设计决定，不可配置。
+- `MangaReaderRouteScreen`（只被旧路由表使用）、`DebugScenarioActivity`（靠旧深链驱动）。
+
+### 10.6 已知回归
+
+`MainActivity` 那套「路由塞 extra」的深链工厂随旧外壳删除。受影响处一律改为**显式提示**
+或退回 `ShellIntents.openApp`，不静默失败：
+
+- 打开一本书（`startActivityForBook`）、TTS / 缓存 / 音频三个服务的通知点击、桌面快捷方式。
+- 书源验证的网页流程（`SourceVerificationHelp.startBrowser`）直接抛错——
+  调用方在后台线程等结果，静默跳走会让它一直等下去。
+- 书源管理 / 书源编辑 / 书源登录 / 搜索 / 内置浏览器 / 发现分类 / 订阅阅读等入口。
+
+`ReadBookRouteScreen` 的双渲染器分支收敛成单渲染器（旧 `ReadView`），
+`ReaderPhase4BoundaryTest` 的对应用例同步改成「只能有一个」。
+
+### 10.7 下一步
+
+1. `home:api` + `impl` → 首页 M-01 / M-01a，把起始 tab 从占位换成真页面。
+2. v2 设置画板出稿后重建设置主页。
+3. 书架 → 搜索 → 阅读器，按第 7 节顺序继续；阅读器的 Phase 4 决策门继续有效。

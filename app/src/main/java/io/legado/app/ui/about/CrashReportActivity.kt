@@ -2,9 +2,9 @@ package io.legado.app.ui.about
 
 import android.content.Intent
 import androidx.compose.runtime.Composable
+import io.legado.app.ui.shell.ShellIntents
 import io.legado.app.base.BaseComposeActivity
 import io.legado.app.help.CrashHandler
-import io.legado.app.ui.main.MainActivity
 import io.legado.app.utils.sendToClip
 
 class CrashReportActivity : BaseComposeActivity() {
@@ -27,7 +27,7 @@ class CrashReportActivity : BaseComposeActivity() {
 
     private fun restartApp() {
         startActivity(
-            Intent(this, MainActivity::class.java)
+            ShellIntents.openApp(this)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         )
         finish()

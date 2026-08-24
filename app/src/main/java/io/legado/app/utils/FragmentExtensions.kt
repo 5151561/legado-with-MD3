@@ -18,7 +18,6 @@ import io.legado.app.help.book.isAudio
 import io.legado.app.help.book.isImage
 import io.legado.app.help.book.isLocal
 import io.legado.app.ui.config.readMangaConfig.ReadMangaConfig
-import io.legado.app.ui.main.MainActivity
 import io.legado.app.ui.widget.dialog.TextDialog
 
 inline fun <reified T : DialogFragment> Fragment.showDialogFragment(
@@ -49,23 +48,12 @@ inline fun <reified T : Activity> Fragment.startActivity(
     startActivity(Intent(requireContext(), T::class.java).apply(configIntent))
 }
 
+/** 见 `Context.startActivityForBook`：阅读器还没重做，这里只提示。 */
 fun Fragment.startActivityForBook(
-    book: Book,
-    configIntent: Intent.() -> Unit = {},
+    @Suppress("UNUSED_PARAMETER") book: Book,
+    @Suppress("UNUSED_PARAMETER") configIntent: Intent.() -> Unit = {},
 ) {
-    val intent = when {
-        book.isAudio -> MainActivity.createAudioPlayIntent(requireActivity(), book.bookUrl)
-        !book.isLocal && book.isImage && ReadMangaConfig.showMangaUi ->
-            MainActivity.createReadMangaIntent(requireActivity(), book.bookUrl)
-
-        else -> MainActivity.createReadBookIntent(requireActivity(), book.bookUrl)
-    }
-    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    if (book.isAudio || (!book.isLocal && book.isImage && ReadMangaConfig.showMangaUi)) {
-        intent.putExtra("bookUrl", book.bookUrl)
-    }
-    intent.apply(configIntent)
-    startActivity(intent)
+    requireContext().toastOnUi("阅读器还没重做")
 }
 
 fun Fragment.showHelp(fileName: String) {

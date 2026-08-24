@@ -82,42 +82,6 @@ android {
         versionCode = System.getenv("COMMIT_NUMBER")?.toInt()?.let { 10000 + it } ?: 32640
         versionName = System.getenv("APP_VERSION_NAME") ?: projectVersionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField(
-            "boolean",
-            "USE_COMPOSE_BOOKSHELF_FEATURE",
-            providers.gradleProperty("bookshelfFeatureEnabled").getOrElse("false"),
-        )
-        buildConfigField(
-            "boolean",
-            "USE_COMPOSE_SETTINGS_FEATURE",
-            providers.gradleProperty("settingsFeatureEnabled").getOrElse("false"),
-        )
-        buildConfigField(
-            "boolean",
-            "USE_COMPOSE_CATALOG_FEATURE",
-            providers.gradleProperty("catalogFeatureEnabled").getOrElse("false"),
-        )
-        buildConfigField(
-            "boolean",
-            "USE_COMPOSE_RSS_FEATURE",
-            providers.gradleProperty("rssFeatureEnabled").getOrElse("false"),
-        )
-        buildConfigField(
-            "boolean",
-            "USE_COMPOSE_READALOUD_FEATURE",
-            providers.gradleProperty("readAloudFeatureEnabled").getOrElse("false"),
-        )
-        buildConfigField(
-            "boolean",
-            "USE_COMPOSE_READER_FEATURE",
-            providers.gradleProperty("readerFeatureEnabled").getOrElse("false"),
-        )
-        buildConfigField(
-            "boolean",
-            "USE_COMPOSE_AI_FEATURE",
-            providers.gradleProperty("aiFeatureEnabled").getOrElse("false"),
-        )
-
         // benchmark 变体用：应用启动时自补书架夹具。见 help/BenchmarkFixtures.kt——
         // CompilationMode 每轮都会卸载重装被测应用，外部灌进去的数据活不过一轮。
         buildConfigField(
@@ -252,6 +216,7 @@ dependencies {
     implementation(project(":feature:bookshelf:impl"))
     implementation(project(":feature:bookshelf:ui"))
     implementation(project(":feature:settings:api"))
+    implementation(project(":feature:settings:impl"))
     implementation(project(":feature:settings:ui"))
     // 仅 debug：重设计画板画廊（app/src/debug 的 RedesignGalleryActivity）依赖它。
     // 首页尚未接进生产导航，release 包不需要这个模块。

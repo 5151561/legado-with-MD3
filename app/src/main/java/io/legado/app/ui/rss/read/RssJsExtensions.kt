@@ -14,7 +14,6 @@ import io.legado.app.help.JsExtensions
 import io.legado.app.model.analyzeRule.AnalyzeRule
 import io.legado.app.ui.association.AddToBookshelfDialog
 import io.legado.app.ui.login.SourceLoginType
-import io.legado.app.ui.main.MainActivity
 import io.legado.app.ui.widget.dialog.PhotoDialog
 import io.legado.app.utils.isJsonObject
 import io.legado.app.utils.showDialogFragment
@@ -59,9 +58,8 @@ open class RssJsExtensions(activity: AppCompatActivity?, source: BaseSource?) : 
 
     @JavascriptInterface
     fun searchBook(key: String, searchScope: String?) {
-        activityRef.get()?.let {
-            it.startActivity(MainActivity.createSearchIntent(it, key, searchScope))
-        }
+        // 搜索页尚未重做，见 ShellIntents。
+        activityRef.get()?.toastOnUi("搜索还没重做")
     }
 
     @JavascriptInterface
@@ -100,27 +98,11 @@ open class RssJsExtensions(activity: AppCompatActivity?, source: BaseSource?) : 
                     }
                     when (toSource) {
                         is BookSource -> {
-                            withContext(Main) {
-                                activity.startActivity(
-                                    MainActivity.createSourceLoginIntent(
-                                        activity,
-                                        SourceLoginType.BookSource,
-                                        toSource.bookSourceUrl
-                                    )
-                                )
-                            }
+                            withContext(Main) { activity.toastOnUi("书源登录还没重做") }
                         }
 
                         is RssSource -> {
-                            withContext(Main) {
-                                activity.startActivity(
-                                    MainActivity.createSourceLoginIntent(
-                                        activity,
-                                        SourceLoginType.RssSource,
-                                        toSource.sourceUrl
-                                    )
-                                )
-                            }
+                            withContext(Main) { activity.toastOnUi("书源登录还没重做") }
                         }
                     }
                 }
@@ -137,15 +119,7 @@ open class RssJsExtensions(activity: AppCompatActivity?, source: BaseSource?) : 
                         } ?: url
                     }
                     val sourceUrl = toSource.sourceUrl
-                    withContext(Main) {
-                        activity.startActivity(
-                            MainActivity.createRssSortIntent(
-                                context = activity,
-                                sourceUrl = sourceUrl,
-                                sortUrl = sortUrl
-                            )
-                        )
-                    }
+                    withContext(Main) { activity.toastOnUi("该页面还没重做") }
                 }
 
                 "rss" -> {
@@ -164,16 +138,7 @@ open class RssJsExtensions(activity: AppCompatActivity?, source: BaseSource?) : 
                         readTime = System.currentTimeMillis()
                     )
                     appDb.rssReadRecordDao.insertRecord(rssReadRecord)
-                    withContext(Main) {
-                        activity.startActivity(
-                            MainActivity.createRssReadIntent(
-                                context = activity,
-                                title = title,
-                                origin = sourceUrl,
-                                openUrl = link
-                            )
-                        )
-                    }
+                    withContext(Main) { activity.toastOnUi("该页面还没重做") }
                 }
 
                 "search" -> {
@@ -194,16 +159,7 @@ open class RssJsExtensions(activity: AppCompatActivity?, source: BaseSource?) : 
                         appDb.bookSourceDao.getBookSource(o)
                     } ?: (source as? BookSource) ?: return@launch
                     val sourceUrl = toSource.bookSourceUrl
-                    withContext(Main) {
-                        activity.startActivity(
-                            MainActivity.createExploreShowIntent(
-                                context = activity,
-                                exploreName = title,
-                                sourceUrl = sourceUrl,
-                                exploreUrl = url
-                            )
-                        )
-                    }
+                    withContext(Main) { activity.toastOnUi("该页面还没重做") }
                 }
             }
         }

@@ -7,7 +7,7 @@ import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import io.legado.app.R
 import io.legado.app.receiver.SharedReceiverActivity
-import io.legado.app.ui.main.MainActivity
+import io.legado.app.ui.shell.ShellIntents
 
 object ShortCuts {
 
@@ -18,7 +18,7 @@ object ShortCuts {
     }
 
     private fun buildBookShelfShortCutInfo(context: Context): ShortcutInfoCompat {
-        val bookShelfIntent = MainActivity.createHomeIntent(context).apply {
+        val bookShelfIntent = ShellIntents.openApp(context).apply {
             action = Intent.ACTION_VIEW
         }
         return ShortcutInfoCompat.Builder(context, "bookshelf")
@@ -30,17 +30,15 @@ object ShortCuts {
     }
 
     private fun buildReadBookShortCutInfo(context: Context): ShortcutInfoCompat {
-        val bookShelfIntent = MainActivity.createHomeIntent(context).apply {
-            action = Intent.ACTION_VIEW
-        }
-        val readBookIntent = MainActivity.createReadBookIntent(context).apply {
+        // 「继续阅读」的落点是阅读器，尚未重做；快捷方式暂时只回到应用本身。见 ShellIntents。
+        val bookShelfIntent = ShellIntents.openApp(context).apply {
             action = Intent.ACTION_VIEW
         }
         return ShortcutInfoCompat.Builder(context, "lastRead")
             .setShortLabel(context.getString(R.string.last_read))
             .setLongLabel(context.getString(R.string.last_read))
             .setIcon(IconCompat.createWithResource(context, R.mipmap.ic_st_rec))
-            .setIntents(arrayOf(bookShelfIntent, readBookIntent))
+            .setIntent(bookShelfIntent)
             .build()
     }
 

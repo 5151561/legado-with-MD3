@@ -5,4 +5,5 @@ import org.koin.dsl.module
 
 val settingsUiModule = module {
     viewModelOf(::SettingsViewModel)
+    viewModelOf(::ProfileViewModel)
 }

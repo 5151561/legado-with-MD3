@@ -45,8 +45,6 @@ import io.legado.app.help.config.AppConfig
 import io.legado.app.help.config.AppConfigStore
 import io.legado.app.help.config.SettingsWriter
 import io.legado.app.ui.config.readMangaConfig.ReadMangaConfig
-import io.legado.app.ui.main.MainActivity
-import io.legado.app.ui.main.bookshelf.BookShelfItem
 import kotlinx.coroutines.runBlocking
 import splitties.systemservices.clipboardManager
 import splitties.systemservices.connectivityManager
@@ -62,42 +60,18 @@ inline fun <reified A : Activity> Context.startActivity(configIntent: Intent.() 
     startActivity(intent)
 }
 
+/**
+ * 打开一本书。
+ *
+ * 阅读器、听书与漫画阅读都还没按重设计重做，新外壳里没有它们的落点，
+ * 因此这里只提示而不跳转——静默跳回首页会让人以为是点击没生效。
+ * 重做后在这里改回具名跳转，不要恢复「路由塞 extra」那套（见 `ShellIntents`）。
+ */
 fun Context.startActivityForBook(
-    book: Book,
-    configIntent: Intent.() -> Unit = {},
+    @Suppress("UNUSED_PARAMETER") book: Book,
+    @Suppress("UNUSED_PARAMETER") configIntent: Intent.() -> Unit = {},
 ) {
-    val intent = when {
-        book.isAudio -> MainActivity.createAudioPlayIntent(this, book.bookUrl)
-        book.isImage && ReadMangaConfig.showMangaUi ->
-            MainActivity.createReadMangaIntent(this, book.bookUrl)
-
-        else -> MainActivity.createReadBookIntent(this, book.bookUrl)
-    }
-    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    if (book.isAudio || (book.isImage && ReadMangaConfig.showMangaUi)) {
-        intent.putExtra("bookUrl", book.bookUrl)
-    }
-    intent.apply(configIntent)
-    startActivity(intent)
-}
-
-fun Context.startActivityForBook(
-    book: BookShelfItem,
-    configIntent: Intent.() -> Unit = {},
-) {
-    val intent = when {
-        book.isAudio -> MainActivity.createAudioPlayIntent(this, book.bookUrl)
-        book.isImage && ReadMangaConfig.showMangaUi ->
-            MainActivity.createReadMangaIntent(this, book.bookUrl)
-
-        else -> MainActivity.createReadBookIntent(this, book.bookUrl)
-    }
-    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    if (book.isAudio || (book.isImage && ReadMangaConfig.showMangaUi)) {
-        intent.putExtra("bookUrl", book.bookUrl)
-    }
-    intent.apply(configIntent)
-    startActivity(intent)
+    toastOnUi("阅读器还没重做")
 }
 
 inline fun <reified T : Service> Context.startService(configIntent: Intent.() -> Unit = {}) {

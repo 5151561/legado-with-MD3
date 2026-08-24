@@ -45,6 +45,7 @@ import io.legado.app.data.dao.SearchContentHistoryDao
 import io.legado.app.data.dao.SearchKeywordDao
 import io.legado.app.data.dao.ServerDao
 import io.legado.app.data.dao.TagGroupRuleDao
+import io.legado.app.data.dao.ProfileCountsDao
 import io.legado.app.data.dao.SourceCatalogDao
 import io.legado.app.data.dao.TxtTocRuleDao
 import io.legado.app.data.entities.AiArtifact
@@ -219,6 +220,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract val highlightTagRuleDao: HighlightTagRuleDao
     abstract val tagGroupRuleDao: TagGroupRuleDao
     abstract val sourceCatalogDao: SourceCatalogDao
+    abstract val profileCountsDao: ProfileCountsDao
     abstract val aiProfileDao: AiProfileDao
     abstract val aiArtifactDao: AiArtifactDao
     abstract val aiChatDao: AiChatDao

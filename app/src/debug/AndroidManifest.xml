@@ -2,8 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
         <!--
-          重设计画板画廊：自带 launcher 图标，不改 MainActivity / MainNavGraph 任何一行。
-          页面接进生产路由后，本 activity 与 src/debug 下的源码一并删除。
+          重设计画板画廊：自带 launcher 图标。
+          仍留着的理由：M-01 / M-01a 首页与 S-06a 阅读器内目录还没接进新外壳，
+          这里是它们在真机上唯一的入口。三块都接上后，本 activity 与它的源码一并删除。
         -->
         <activity
             android:name="io.legado.app.debug.RedesignGalleryActivity"
@@ -15,10 +16,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name="io.legado.app.debug.DebugScenarioActivity"
-            android:exported="true"
-            android:theme="@style/AppTheme.Transparent" />
         <provider
             android:name="io.legado.app.debug.DebugThemeAssetProvider"
             android:authorities="${applicationId}.debug-theme-assets"

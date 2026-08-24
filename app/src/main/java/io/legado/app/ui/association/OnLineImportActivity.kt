@@ -6,7 +6,7 @@ import io.legado.app.R
 import io.legado.app.base.VMBaseActivity
 import io.legado.app.databinding.ActivityTranslucenceBinding
 import io.legado.app.lib.dialogs.alert
-import io.legado.app.ui.main.MainActivity
+import io.legado.app.ui.shell.ShellIntents
 import io.legado.app.utils.showDialogFragment
 import io.legado.app.utils.viewbindingdelegate.viewBinding
 
@@ -109,7 +109,7 @@ class OnLineImportActivity :
     }
 
     private fun openComposeBookSourceImport(source: String) {
-        startActivity(MainActivity.createBookSourceManageIntent(this, source))
+        startActivity(ShellIntents.openApp(this))
         finish()
     }
 

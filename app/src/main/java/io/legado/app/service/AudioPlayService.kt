@@ -22,6 +22,7 @@ import androidx.media.AudioFocusRequestCompat
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import io.legado.app.ui.shell.ShellIntents
 import io.legado.app.R
 import io.legado.app.base.BaseService
 import io.legado.app.constant.AppConst
@@ -41,7 +42,6 @@ import io.legado.app.model.analyzeRule.AnalyzeUrl
 import io.legado.app.model.analyzeRule.AnalyzeUrl.Companion.getMediaItem
 import io.legado.app.receiver.MediaButtonReceiver
 import io.legado.app.ui.config.readConfig.ReadConfig
-import io.legado.app.ui.main.MainActivity
 import io.legado.app.utils.activityPendingIntent
 import io.legado.app.utils.postEvent
 import io.legado.app.utils.printOnDebug
@@ -631,7 +631,7 @@ class AudioPlayService : BaseService(),
             .setContentText(nSubtitle)
             .setContentIntent(
                 activityPendingIntent(
-                    MainActivity.createAudioPlayIntent(this@AudioPlayService),
+                    ShellIntents.openApp(this@AudioPlayService),
                     "activity",
                 )
             )

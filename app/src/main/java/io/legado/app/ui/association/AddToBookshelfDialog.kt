@@ -21,7 +21,7 @@ import io.legado.app.databinding.DialogAddToBookshelfBinding
 import io.legado.app.exception.NoStackTraceException
 import io.legado.app.model.analyzeRule.AnalyzeUrl
 import io.legado.app.model.webBook.WebBook
-import io.legado.app.ui.main.MainActivity
+import io.legado.app.ui.shell.ShellIntents
 import io.legado.app.utils.GSON
 import io.legado.app.utils.NetworkUtils
 import io.legado.app.utils.fromJsonObject
@@ -82,16 +82,9 @@ class AddToBookshelfDialog() : BaseDialogFragment(R.layout.dialog_add_to_bookshe
         }
         viewModel.load(bookUrl) {
             viewModel.saveSearchBook(it) {
-                startActivity(
-                    MainActivity.createBookInfoIntent(
-                        context = requireContext(),
-                        name = it.name,
-                        author = it.author,
-                        bookUrl = it.bookUrl,
-                        origin = it.origin,
-                        coverPath = it.coverUrl
-                    )
-                )
+                // 书籍详情（画板 S-04）已经重做，但它是外壳内的路由而不是独立 Activity；
+                // 外壳长出深链匹配之前，这里只能回到应用本身。见 ShellIntents。
+                startActivity(ShellIntents.openApp(requireContext()))
                 dismiss()
             }
         }

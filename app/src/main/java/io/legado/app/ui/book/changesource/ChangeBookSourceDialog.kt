@@ -34,7 +34,6 @@ import io.legado.app.help.config.AppConfig
 import io.legado.app.lib.dialogs.alert
 import io.legado.app.model.ReadBook
 import io.legado.app.ui.book.search.SearchScope
-import io.legado.app.ui.main.MainActivity
 import io.legado.app.ui.widget.dialog.WaitDialog
 import io.legado.app.ui.widget.recycler.VerticalDivider
 import io.legado.app.utils.applyTint
@@ -104,7 +103,8 @@ class ChangeBookSourceDialog() : BaseBottomSheetDialogFragment(R.layout.dialog_b
 
     override fun onFragmentCreated(view: View, savedInstanceState: Bundle?) {
         //binding.toolBar.setBackgroundColor(primaryColor)
-        viewModel.initData(arguments, callBack?.oldBook, MainActivity.hasActiveReadBookRoute)
+        // 新外壳里没有阅读器路由，因此恒为 false。阅读器重做后由它自己提供这个信号。
+        viewModel.initData(arguments, callBack?.oldBook, false)
         showTitle()
         initMenu()
         initRecyclerView()
@@ -343,9 +343,7 @@ class ChangeBookSourceDialog() : BaseBottomSheetDialogFragment(R.layout.dialog_b
             }
 
             R.id.menu_start_stop -> viewModel.startOrStopSearch()
-            R.id.menu_source_manage -> startActivity(
-                MainActivity.createBookSourceManageIntent(requireContext())
-            )
+            R.id.menu_source_manage -> toastOnUi("书源管理还没重做")
             R.id.menu_close -> dismissAllowingStateLoss()
             R.id.menu_refresh_list -> viewModel.startRefreshList()
             else -> if (item?.groupId == R.id.source_group && !item.isChecked) {
@@ -459,9 +457,7 @@ class ChangeBookSourceDialog() : BaseBottomSheetDialogFragment(R.layout.dialog_b
     }
 
     override fun editSource(searchBook: SearchBook) {
-        editSourceResult.launch(
-            MainActivity.createBookSourceEditIntent(requireContext(), searchBook.origin)
-        )
+        toastOnUi("书源编辑还没重做")
     }
 
     override fun disableSource(searchBook: SearchBook) {

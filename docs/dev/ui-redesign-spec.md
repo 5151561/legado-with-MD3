@@ -225,7 +225,6 @@ P-01 是第一个使用它的重设计页面，截图基线立刻把它照了出
 
 | 画板 | 模块 | 文件 |
 |---|---|---|
-| C-01 设置主页 | `:feature:settings:ui` | `SettingsHomeScreen.kt` + `SettingsHomeContract.kt` |
 | M-01 v2 首页 | `:feature:home:ui` | `HomeDashboardScreen.kt` + `HomeDashboardContract.kt` |
 | M-01a v2 首页区块设置 | `:feature:home:ui` | `HomeSectionsScreen.kt` + `HomeSectionsContract.kt` |
 | P-01 v2 我的 | `:feature:settings:ui` | `ProfileScreen.kt` + `ProfileContract.kt` |

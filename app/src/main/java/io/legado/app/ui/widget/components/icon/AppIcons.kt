@@ -29,7 +29,6 @@ import androidx.compose.material.icons.outlined.RssFeed
 import androidx.compose.material.icons.outlined.Sell
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
-import io.legado.app.ui.main.MainDestination
 
 object AppIcons {
 
@@ -99,14 +98,4 @@ object AppIcons {
 
 
 
-    @Composable
-    fun mainDestination(destination: MainDestination, selected: Boolean): ImageVector {
-        return when (destination) {
-            MainDestination.Home -> if (selected) Icons.Default.Home else Icons.Outlined.Home
-            MainDestination.Bookshelf -> if (selected) Icons.AutoMirrored.Filled.LibraryBooks else Icons.AutoMirrored.Outlined.LibraryBooks
-            MainDestination.Explore -> if (selected) Icons.Default.Explore else Icons.Outlined.Explore
-            MainDestination.Rss -> if (selected) Icons.Default.RssFeed else Icons.Outlined.RssFeed
-            MainDestination.My -> if (selected) Icons.Default.Person else Icons.Outlined.Person
-        }
-    }
 }

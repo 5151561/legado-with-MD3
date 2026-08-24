@@ -47,7 +47,6 @@ import io.legado.app.ui.book.changesource.ChangeBookSourceComposeViewModel
 import io.legado.app.ui.book.changesource.ChangeBookSourceEffect
 import io.legado.app.ui.book.changesource.ChangeSourceMigrationOptionsSheet
 import io.legado.app.ui.book.search.ScopeSelectSheet
-import io.legado.app.ui.main.MainActivity
 import io.legado.app.ui.theme.LegadoTheme
 import io.legado.app.ui.widget.components.AppTextField
 import io.legado.app.ui.widget.components.EmptyMessage
@@ -262,11 +261,7 @@ fun ChangeSourceSheet(
                         RoundDropdownMenuItem(
                             text = stringResource(R.string.book_source_manage),
                             onClick = {
-                                context.startActivity(
-                                    MainActivity.createBookSourceManageIntent(
-                                        context
-                                    )
-                                )
+                                context.toastOnUi("书源管理还没重做")
                                 dismiss()
                             }
                         )
@@ -399,12 +394,7 @@ fun ChangeSourceSheet(
                                 text = stringResource(R.string.edit),
                                 onClick = {
                                     onDismiss()
-                                    editSourceResult.launch(
-                                        MainActivity.createBookSourceEditIntent(
-                                            context,
-                                            item.origin
-                                        )
-                                    )
+                                    context.toastOnUi("书源编辑还没重做")
                                 }
                             )
                             RoundDropdownMenuItem(

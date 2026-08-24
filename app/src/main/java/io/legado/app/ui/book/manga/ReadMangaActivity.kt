@@ -18,11 +18,10 @@ import io.legado.app.ui.book.info.READER_RESULT_DELETED
 import io.legado.app.ui.book.read.sheet.ReaderBookSheetRoute
 import io.legado.app.ui.book.read.sheet.ReaderBookSheetTab
 import io.legado.app.ui.login.SourceLoginType
-import io.legado.app.ui.main.MainActivity
-import io.legado.app.ui.main.MainIntent
 import io.legado.app.utils.NetworkUtils
 import io.legado.app.utils.StartActivityContract
 import io.legado.app.utils.openUrl
+import io.legado.app.utils.toastOnUi
 import io.legado.app.utils.share
 import io.legado.app.utils.toggleSystemBar
 import kotlinx.coroutines.flow.collectLatest
@@ -94,26 +93,9 @@ class ReadMangaActivity : BaseComposeActivity(imageBg = false) {
             }
             MangaReaderEffect.OpenBookInfo -> openBookInfoActivity()
             is MangaReaderEffect.OpenChapterUrl -> openCurrentChapterUrl(effect.externalBrowser)
-            is MangaReaderEffect.OpenSourceLogin -> startActivity(
-                MainActivity.createSourceLoginIntent(
-                    this,
-                    SourceLoginType.BookSource,
-                    effect.sourceUrl,
-                )
-            )
-            is MangaReaderEffect.OpenSourceEdit -> sourceEditActivity.launch(
-                MainActivity.createBookSourceEditIntent(this, effect.sourceUrl)
-            )
-            is MangaReaderEffect.OpenPaymentUrl -> startActivity(
-                MainActivity.createWebViewIntent(
-                    this,
-                    getString(R.string.chapter_pay),
-                    effect.url,
-                    effect.sourceOrigin,
-                    effect.sourceName,
-                    effect.sourceType,
-                )
-            )
+            is MangaReaderEffect.OpenSourceLogin -> toastOnUi("书源登录还没重做")
+            is MangaReaderEffect.OpenSourceEdit -> toastOnUi("书源编辑还没重做")
+            is MangaReaderEffect.OpenPaymentUrl -> toastOnUi("网页付费页还没重做")
             is MangaReaderEffect.SetWindowBrightness -> {
                 if (effect.auto) resetWindowToSystemBrightness()
                 else updateWindowBrightness(effect.brightness)
@@ -168,22 +150,9 @@ class ReadMangaActivity : BaseComposeActivity(imageBg = false) {
         else finish()
     }
 
-    /**
-     * 书籍详情已并入 MainActivity 的路由（重设计画板 S-04），不再是独立 Activity，
-     * 因此改用既有的 [MainIntent.createBookInfoIntent] 深链进去，不再取回结果。
-     */
+    /** 书籍详情（画板 S-04）是新外壳内的路由，外壳长出深链匹配之前这里去不了。 */
     private fun openBookInfoActivity() {
-        readerViewModel.uiState.value.let {
-            if (it.bookUrl.isEmpty()) return
-            startActivity(
-                MainIntent.createBookInfoIntent(
-                    context = this,
-                    name = it.bookName,
-                    author = it.bookAuthor,
-                    bookUrl = it.bookUrl,
-                )
-            )
-        }
+        toastOnUi("书籍详情还没接上深链")
     }
 
     private fun openCurrentChapterUrl(externalBrowser: Boolean) {
@@ -193,16 +162,7 @@ class ReadMangaActivity : BaseComposeActivity(imageBg = false) {
             openUrl(chapterUrl)
             return
         }
-        startActivity(
-            MainActivity.createWebViewIntent(
-                this,
-                state.chapterName,
-                chapterUrl,
-                state.sourceUrl,
-                state.sourceName,
-                state.sourceType,
-            )
-        )
+        toastOnUi("内置浏览器还没重做")
     }
 
     private fun resetWindowToSystemBrightness() {

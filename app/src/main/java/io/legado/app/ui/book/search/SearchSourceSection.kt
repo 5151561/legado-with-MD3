@@ -24,7 +24,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.legado.app.R
 import io.legado.app.data.entities.SearchBook
-import io.legado.app.ui.main.bookCoverSharedElementKey
+import io.legado.app.ui.widget.components.card.bookCoverSharedElementKey
 import io.legado.app.ui.theme.LegadoTheme
 import io.legado.app.ui.theme.adaptiveHorizonalPadding
 import io.legado.app.ui.theme.adaptiveHorizontalPadding

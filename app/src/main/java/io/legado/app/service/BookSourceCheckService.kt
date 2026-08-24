@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.lifecycleScope
+import io.legado.app.ui.shell.ShellIntents
 import io.legado.app.R
 import io.legado.app.base.BaseService
 import io.legado.app.constant.AppConst
@@ -14,7 +15,6 @@ import io.legado.app.constant.NotificationId
 import io.legado.app.domain.gateway.BookSourceCheckGateway
 import io.legado.app.domain.usecase.StartBookSourceCheckUseCase
 import io.legado.app.help.IntentData
-import io.legado.app.ui.main.MainActivity
 import io.legado.app.utils.activityPendingIntent
 import io.legado.app.utils.servicePendingIntent
 import io.legado.app.utils.startForegroundServiceCompat
@@ -72,7 +72,7 @@ class BookSourceCheckService : BaseService() {
             .setContentTitle(getString(R.string.check_book_source))
             .setContentIntent(
                 activityPendingIntent(
-                    MainActivity.createBookSourceManageIntent(this),
+                    ShellIntents.openApp(this),
                     "bookSourceCheck",
                 )
             )

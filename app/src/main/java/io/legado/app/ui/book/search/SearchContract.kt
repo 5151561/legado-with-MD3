@@ -6,7 +6,7 @@ import io.legado.app.data.entities.SearchBook
 import io.legado.app.data.entities.SearchKeyword
 import io.legado.app.domain.model.BookShelfState
 import io.legado.app.domain.model.MatchMode
-import io.legado.app.ui.main.bookshelf.BookShelfItem
+import io.legado.app.ui.book.shelf.BookShelfItem
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentListOf

@@ -504,19 +504,7 @@ fun ReadBookScreen(
         ReadBookSheet.ReadAloudPlayer -> ReadAloudPage.Player
         else -> null
     }
-    if (BuildConfig.USE_COMPOSE_READALOUD_FEATURE &&
-        state.activeSheet is ReadBookSheet.ReadAloudPlayer
-    ) {
-        FeatureReadAloudRouteScreen(
-            onBack = dismissSheet,
-            onOpenVoices = { onIntent(ReadBookIntent.OpenTtsEnginesAndVoices) },
-            onOpenCache = { onIntent(ReadBookIntent.OpenTtsCache) },
-            onOpenSettings = {
-                onIntent(ReadBookIntent.ShowSheet(ReadBookSheet.ReadAloudConfig))
-            },
-            onSwitchToClassic = { onIntent(ReadBookIntent.OpenClassicReadAloudControls) },
-        )
-    } else {
+    run {
         ReadAloudScreen(
             page = readAloudPage,
             state = state,

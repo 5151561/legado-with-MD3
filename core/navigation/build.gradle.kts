@@ -1,5 +1,5 @@
 plugins {
-    id("legado.android.library")
+    id("legado.android.compose")
 }
 
 android {
@@ -7,5 +7,11 @@ android {
 }
 
 dependencies {
+    api(platform(libs.androidx.compose.bom))
     api(libs.androidx.navigation3.runtime)
+
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.kotlinx.coroutines.core)
+
+    testImplementation(libs.junit)
 }

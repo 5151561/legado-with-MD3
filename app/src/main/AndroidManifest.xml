@@ -37,7 +37,7 @@
         tools:ignore="AllowBackup,GoogleAppIndexingWarning,UnusedAttribute">
         <!-- 图标0 -->
         <activity
-            android:name=".ui.main.LauncherW"
+            android:name=".ui.shell.LauncherW"
             android:enabled="false"
             android:configChanges="locale|layoutDirection|uiMode|screenLayout"
             android:exported="true"
@@ -53,7 +53,7 @@
                 android:resource="@xml/spen_remote_actions" />
         </activity>
         <activity
-            android:name=".ui.main.Launcher0"
+            android:name=".ui.shell.Launcher0"
             android:enabled="false"
             android:configChanges="locale|layoutDirection|uiMode|screenLayout"
             android:exported="true"
@@ -70,7 +70,7 @@
         </activity>
         <!-- 图标1 -->
         <activity
-            android:name=".ui.main.Launcher1"
+            android:name=".ui.shell.Launcher1"
             android:enabled="false"
             android:configChanges="locale|layoutDirection|uiMode|screenLayout"
             android:exported="true"
@@ -87,7 +87,7 @@
         </activity>
         <!-- 图标2 -->
         <activity
-            android:name=".ui.main.Launcher2"
+            android:name=".ui.shell.Launcher2"
             android:enabled="false"
             android:configChanges="locale|layoutDirection|uiMode|screenLayout"
             android:exported="true"
@@ -104,7 +104,7 @@
         </activity>
         <!-- 图标3 -->
         <activity
-            android:name=".ui.main.Launcher3"
+            android:name=".ui.shell.Launcher3"
             android:enabled="false"
             android:configChanges="locale|layoutDirection|uiMode|screenLayout"
             android:exported="true"
@@ -121,7 +121,7 @@
         </activity>
         <!-- 图标4 -->
         <activity
-            android:name=".ui.main.Launcher4"
+            android:name=".ui.shell.Launcher4"
             android:enabled="false"
             android:configChanges="locale|layoutDirection|uiMode|screenLayout"
             android:exported="true"
@@ -138,7 +138,7 @@
         </activity>
         <!-- 图标5 -->
         <activity
-            android:name=".ui.main.Launcher5"
+            android:name=".ui.shell.Launcher5"
             android:enabled="false"
             android:configChanges="locale|layoutDirection|uiMode|screenLayout"
             android:exported="true"
@@ -155,7 +155,7 @@
         </activity>
         <!-- 图标6 -->
         <activity
-            android:name=".ui.main.Launcher6"
+            android:name=".ui.shell.Launcher6"
             android:enabled="false"
             android:configChanges="locale|layoutDirection|uiMode|screenLayout"
             android:exported="true"
@@ -172,7 +172,7 @@
         </activity>
         <!-- 主界面 -->
         <activity
-            android:name=".ui.main.MainActivity"
+            android:name=".ui.shell.ShellActivity"
             android:alwaysRetainTaskState="true"
             android:configChanges="locale|layoutDirection|uiMode|screenLayout"
             android:enableOnBackInvokedCallback="true"

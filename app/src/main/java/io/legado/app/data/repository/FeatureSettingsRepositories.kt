@@ -24,6 +24,7 @@ import io.legado.app.help.config.AppConfigStore
 import io.legado.app.help.config.compatDsBoolean
 import io.legado.app.help.config.compatDsFloat
 import io.legado.app.help.config.compatDsInt
+import io.legado.app.help.config.compatDsLong
 import io.legado.app.help.config.compatDsString
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -261,7 +262,11 @@ internal fun Preferences.toBackupSettings(): BackupSettings = BackupSettings(
     onlyLatestBackup = compatDsBoolean(PreferKey.onlyLatestBackup) ?: true,
     backupSyncMode = compatDsString(PreferKey.backupSyncMode) ?: "both",
     backupPath = compatDsString(PreferKey.backupPath),
+    lastBackupAtMillis = compatDsLong(LAST_BACKUP_KEY) ?: 0L,
 )
+
+/** `LocalPreferences.LAST_BACKUP` 的键名。写入 owner 在 `Backup`/`Restore`，这里只读。 */
+private const val LAST_BACKUP_KEY = "last_backup"
 
 internal fun BackupSettings.toPrefMap(): Map<String, Any?> = mapOf(
     PreferKey.webDavUrl to webDavUrl,

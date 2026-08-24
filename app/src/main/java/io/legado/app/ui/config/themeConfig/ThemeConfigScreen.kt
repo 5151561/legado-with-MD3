@@ -268,13 +268,6 @@ fun ThemeConfigScreen(
                 }
 
                 SplicedColumnGroup(title = stringResource(R.string.main_activity)) {
-                    ClickableSettingItem(
-                        title = stringResource(R.string.main_navigation_settings),
-                        description = stringResource(R.string.main_navigation_settings_summary),
-                        onClick = {
-                            onIntent(ThemeConfigIntent.ShowSheet(ThemeConfigSheet.MainNavigation))
-                        },
-                    )
                     SwitchSettingItem(
                         title = stringResource(R.string.show_status),
                         checked = appShell.showStatusBar,
@@ -760,22 +753,6 @@ fun ThemeConfigScreen(
         onSelectDark = { requestImage(true) },
         onRemoveLight = { removeImage(false) },
         onRemoveDark = { removeImage(true) },
-    )
-
-    MainNavigationSettingsSheet(
-        show = state.activeSheet == ThemeConfigSheet.MainNavigation,
-        settings = appShell,
-        onDismissRequest = { onIntent(ThemeConfigIntent.DismissSheet) },
-        onSetVisible = { route, visible ->
-            onIntent(ThemeConfigIntent.SetMainDestinationVisible(route, visible))
-        },
-        onSetOrder = { onIntent(ThemeConfigIntent.SetMainNavigationOrder(it)) },
-        onSetDefault = { onIntent(ThemeConfigIntent.SetDefaultHomePage(it)) },
-        onRequestNavigationIcon = { onIntent(ThemeConfigIntent.RequestNavigationIcon(it)) },
-        onClearNavigationIcon = { onIntent(ThemeConfigIntent.SelectNavigationIcon(it, "")) },
-        onSetLabelVisibilityMode = {
-            onIntent(ThemeConfigIntent.SetLabelVisibilityMode(it))
-        },
     )
 
     TopBottomBarSettingsSheet(

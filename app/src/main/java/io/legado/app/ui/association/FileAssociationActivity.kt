@@ -16,7 +16,7 @@ import io.legado.app.lib.dialogs.alert
 import io.legado.app.lib.permission.Permissions
 import io.legado.app.lib.permission.PermissionsCompat
 import io.legado.app.ui.file.HandleFileContract
-import io.legado.app.ui.main.MainActivity
+import io.legado.app.ui.shell.ShellIntents
 import io.legado.app.utils.FileUtils
 import io.legado.app.utils.buildMainHandler
 import io.legado.app.utils.canRead
@@ -84,7 +84,7 @@ class FileAssociationActivity :
         viewModel.successLive.observe(this) {
             when (it.first) {
                 "bookSource" -> {
-                    startActivity(MainActivity.createBookSourceManageIntent(this, it.second))
+                    startActivity(ShellIntents.openApp(this))
                     finish()
                 }
                 "rssSource" -> showDialogFragment(ImportRssSourceDialog(it.second, true))

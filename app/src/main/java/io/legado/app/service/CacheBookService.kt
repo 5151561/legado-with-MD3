@@ -3,6 +3,7 @@ package io.legado.app.service
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.lifecycleScope
+import io.legado.app.ui.shell.ShellIntents
 import io.legado.app.R
 import io.legado.app.base.BaseService
 import io.legado.app.constant.AppConst
@@ -19,7 +20,6 @@ import io.legado.app.model.cache.CacheDownloadSource
 import io.legado.app.model.cache.ChapterSelection
 import io.legado.app.model.webBook.WebBook
 import io.legado.app.ui.config.otherConfig.OtherConfig
-import io.legado.app.ui.main.MainActivity
 import io.legado.app.utils.LogUtils
 import io.legado.app.utils.activityPendingIntent
 import io.legado.app.utils.servicePendingIntent
@@ -83,7 +83,7 @@ class CacheBookService : BaseService() {
             .setContentTitle(getString(R.string.offline_cache))
             .setContentIntent(
                 activityPendingIntent(
-                    MainActivity.createCacheIntent(this),
+                    ShellIntents.openApp(this),
                     "cacheActivity"
                 )
             )

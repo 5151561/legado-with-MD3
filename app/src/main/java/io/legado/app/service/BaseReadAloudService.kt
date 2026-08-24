@@ -25,6 +25,7 @@ import androidx.core.app.NotificationCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.media.AudioFocusRequestCompat
 import androidx.media.AudioManagerCompat
+import io.legado.app.ui.shell.ShellIntents
 import io.legado.app.R
 import io.legado.app.base.BaseService
 import io.legado.app.constant.AppConst
@@ -57,7 +58,6 @@ import io.legado.app.model.ReadAloudSessionStore
 import io.legado.app.model.ReadBook
 import io.legado.app.receiver.MediaButtonReceiver
 import io.legado.app.ui.book.read.page.entities.TextChapter
-import io.legado.app.ui.main.MainActivity
 import io.legado.app.utils.LogUtils
 import io.legado.app.utils.activityPendingIntent
 import io.legado.app.utils.getPrefBoolean
@@ -1184,7 +1184,7 @@ abstract class BaseReadAloudService : BaseService(),
     }
 
     private fun readAloudActivityPendingIntent(): PendingIntent? = activityPendingIntent(
-        MainActivity.createReadBookIntent(this, readAloud = true),
+        ShellIntents.openApp(this),
         "activity",
     )
 

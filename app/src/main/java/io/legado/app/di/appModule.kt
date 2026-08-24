@@ -44,6 +44,9 @@ import io.legado.app.feature.ai.impl.AiDefaultModelHost
 import io.legado.app.feature.bookshelf.impl.BookshelfBookRemovalHost
 import io.legado.app.feature.catalog.impl.CatalogBookshelfHost
 import io.legado.app.feature.catalog.impl.CatalogChapterCacheHost
+import io.legado.app.feature.settings.impl.SettingsAppVersionHost
+import io.legado.app.feature.settings.impl.SettingsAppearanceHost
+import io.legado.app.feature.settings.impl.SettingsWebServiceHost
 import io.legado.app.feature.catalog.impl.CatalogReadAloudPreferencesHost
 import io.legado.app.feature.catalog.impl.CatalogRelatedBooksHost
 import io.legado.app.feature.catalog.impl.CatalogSourceRemovalHost
@@ -309,15 +312,6 @@ import io.legado.app.ui.dict.DictViewModel
 import io.legado.app.ui.dict.rule.DictRuleViewModel
 import io.legado.app.ui.highlightTagRule.HighlightTagRuleViewModel
 import io.legado.app.ui.login.SourceLoginViewModel
-import io.legado.app.ui.main.MainRouteSearchContent
-import io.legado.app.ui.main.MainViewModel
-import io.legado.app.ui.main.bookshelf.BookshelfViewModel
-import io.legado.app.ui.main.bookshelf.autoGroup.AiAutoGroupViewModel
-import io.legado.app.ui.main.explore.ExploreViewModel
-import io.legado.app.ui.main.home.HomeViewModel
-import io.legado.app.ui.main.homepage.HomepageViewModel
-import io.legado.app.ui.main.my.MyViewModel
-import io.legado.app.ui.main.rss.RssViewModel
 import io.legado.app.ui.replace.ReplaceEditRoute
 import io.legado.app.ui.replace.ReplaceRuleViewModel
 import io.legado.app.ui.replace.edit.ReplaceEditViewModel
@@ -339,6 +333,7 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
+import splitties.init.appCtx
 
 val appModule = module {
 
@@ -511,6 +506,9 @@ val appModule = module {
     single { ExploreRepositoryImpl(get()) }
     single<ExploreRepository> { get<ExploreRepositoryImpl>() }
     single<ExploreBooksGateway> { get<ExploreRepositoryImpl>() }
+    single<SettingsAppearanceHost> { AppSettingsAppearanceHost(get(), get(), appCtx) }
+    single<SettingsWebServiceHost> { AppSettingsWebServiceHost(appCtx, get()) }
+    single<SettingsAppVersionHost> { AppSettingsVersionHost() }
     single<CatalogSourceRemovalHost> { AppCatalogSourceRemovalHost() }
     single<CatalogChapterCacheHost> { AppCatalogChapterCacheHost(get(), get(), get()) }
     single<CatalogBookshelfHost> { AppCatalogBookshelfHost(get(), get(), get(), get()) }
@@ -588,12 +586,6 @@ val appModule = module {
     viewModelOf(::ReadRecordViewModel)
     viewModelOf(::ReadRecordOverviewViewModel)
     viewModelOf(::ExploreShowViewModel)
-    viewModelOf(::MyViewModel)
-    viewModelOf(::BookshelfViewModel)
-    viewModelOf(::AiAutoGroupViewModel)
-    viewModelOf(::MainViewModel)
-    viewModelOf(::HomeViewModel)
-    viewModelOf(::HomepageViewModel)
     viewModelOf(::AboutViewModel)
     viewModelOf(::GroupViewModel)
     viewModelOf(::ReplaceRuleViewModel)
@@ -791,8 +783,6 @@ val appModule = module {
     viewModelOf(::ChangeBookSourceComposeViewModel)
     viewModelOf(::ChangeBookSourceViewModel)
     viewModelOf(::ChangeChapterSourceViewModel)
-    viewModelOf(::ExploreViewModel)
-    viewModelOf(::RssViewModel)
     viewModelOf(::SearchViewModel)
     viewModelOf(::BookCacheManageViewModel)
     viewModel {
@@ -821,14 +811,4 @@ val appModule = module {
         )
     }
 
-    viewModel { (route: MainRouteSearchContent) ->
-        SearchContentViewModel(
-            bookUrl = route.bookUrl,
-            initialSearchWord = route.searchWord,
-            searchResultIndex = route.searchResultIndex,
-            bookRepository = get(),
-            searchContentRepository = get(),
-            themeSettingsGateway = get(),
-        )
-    }
 }

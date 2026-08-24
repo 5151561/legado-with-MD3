@@ -39,20 +39,24 @@ class ReaderPhase4BoundaryTest {
     }
 
     @Test
-    fun `compile flag selects exactly one renderer`() {
+    fun `reader route creates exactly one renderer`() {
         val route = projectFile(
             "app/src/main/java/io/legado/app/ui/book/read/ReadBookRouteScreen.kt"
         ).readText().withoutComments()
 
+        // 灰度开关随旧外壳一并删除（新外壳没有灰度，新 UI 就是唯一的 UI）。
+        // 双渲染器的门禁因此收紧成「只能有一个」：旧 ReadView 建，Compose 渲染器不建。
         assertTrue(
-            "旧 ReadView 必须只在 flag 关闭时创建",
-            Regex("""if\s*\(\s*!BuildConfig\.USE_COMPOSE_READER_FEATURE\s*\)\s*\{[\s\S]*?ReadBookViewLayer\(""")
-                .containsMatchIn(route),
+            "旧 ReadView 必须仍然是唯一被创建的渲染器",
+            route.contains("ReadBookViewLayer("),
         )
         assertTrue(
-            "Compose renderer 必须只在 flag 开启时创建",
-            Regex("""if\s*\(\s*BuildConfig\.USE_COMPOSE_READER_FEATURE\s*\)\s*\{[\s\S]*?FeatureReaderRouteScreen\(""")
-                .containsMatchIn(route),
+            "Compose 渲染器尚未接入新外壳，不该出现在阅读路由里",
+            !route.contains("FeatureReaderRouteScreen("),
+        )
+        assertTrue(
+            "灰度开关已删除，不该再出现",
+            !route.contains("USE_COMPOSE_READER_FEATURE"),
         )
     }
 
