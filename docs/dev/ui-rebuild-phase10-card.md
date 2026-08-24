@@ -217,6 +217,31 @@ catalog 的行为盘点见 [`catalog-behavior-inventory.md`](./catalog-behavior-
 `ReadBookRouteScreen` 的双渲染器分支收敛成单渲染器（旧 `ReadView`），
 `ReaderPhase4BoundaryTest` 的对应用例同步改成「只能有一个」。
 
+### 10.8 换骨架后的三处修正
+
+1. **entry 的 ViewModel 作用域**。`AppNavigationState.toDecoratedEntries` 的装饰器列表漏了
+   `rememberViewModelStoreNavEntryDecorator`——旧壳的 `NavDisplay` 是带着它的。缺它时 entry 内的
+   `koinViewModel()` 解析到 `ShellActivity` 的 `ViewModelStore`：条目出栈后 ViewModel 不 `clear()`，
+   `viewModelScope` 里的收集继续跑，再次进入同一目的地拿到的是上一次的状态
+   （`BookDetailViewModel` 按 bookUrl 建 key，浏览多少本就留多少个）。`NavDisplay` 的默认装饰器
+   里没有它，自定义 `entryDecorators` 时必须自己列。`:core:navigation` 因此引入
+   `lifecycle-viewmodel-navigation3`。
+2. **一级导航栏归外壳**。原先底栏作为 `bottomBar` 槽位穿参进 `settingsEntries` →
+   `ProfileRouteScreen` → `ProfileScreen`：底栏显不显示取决于装配时有没有传参，外壳的布局也
+   因此出现在 feature 的公开签名里。改为外壳在 `NavDisplay` 之外自己摆底栏与侧栏，可见性由
+   `AppNavigationState.isAtRoot`（当前 tab 是否停在根上）决定。`HomeDashboardScreen` 的同名槽位
+   暂留——它还没进外壳，删它会动到截图基线，随首页接入时一并去掉。
+3. **装配只做一次**。`entryProvider` 原先每次重组重建，跟着让 `rememberDecoratedNavEntries`
+   重建条目；现在 `remember` 住。
+
+`AppNavigator` 补了 6 条单测（`core/navigation/src/test`），锁住此前只写在 KDoc 里的四条行为：
+「从首页退出」、二级栈先于 tab 出栈、一级路由不入栈、重复选中发 reselect。
+
+**未做**：把 `AppNavigationState` / `AppNavigator` 提到 ViewModel。它要解决的是「非 UI 代码
+（Intent、通知）怎么下发导航」，而新壳里深链落点已整块删除，今天没有生产者；且
+`rememberNavBackStack` 的进程死亡恢复要改写成 `SavedStateHandle` 序列化，是换实现而不是补漏洞。
+等首页或书架成为第一个深链落点时连同 `onNewIntent` 一起做。
+
 ### 10.7 下一步
 
 1. `home:api` + `impl` → 首页 M-01 / M-01a，把起始 tab 从占位换成真页面。

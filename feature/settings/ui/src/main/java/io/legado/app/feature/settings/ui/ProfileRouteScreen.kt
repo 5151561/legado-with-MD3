@@ -14,14 +14,11 @@ import org.koin.androidx.compose.koinViewModel
  * 页面本身不认识任何路由：它只发 [ProfileEntryId]，去处由宿主决定。
  * [ProfileEntryId.WebService] 是唯一不会到达 [onOpenEntry] 的一项——
  * 它在页面上就地开关，不去任何地方。
- *
- * @param bottomBar 一级导航栏由 App 外壳提供。
  */
 @Composable
 fun ProfileRouteScreen(
     onOpenEntry: (ProfileEntryId) -> Unit,
     modifier: Modifier = Modifier,
-    bottomBar: @Composable () -> Unit = {},
     viewModel: ProfileViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -38,6 +35,5 @@ fun ProfileRouteScreen(
         state = state,
         onIntent = viewModel::onIntent,
         modifier = modifier,
-        bottomBar = bottomBar,
     )
 }

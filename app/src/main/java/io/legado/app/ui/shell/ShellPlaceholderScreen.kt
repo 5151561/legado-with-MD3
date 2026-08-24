@@ -27,7 +27,6 @@ import io.legado.app.core.designsystem.theme.AppTheme
 fun ShellPlaceholderScreen(
     info: PlaceholderInfo,
     modifier: Modifier = Modifier,
-    bottomBar: @Composable () -> Unit = {},
 ) {
     val c = AppTheme.colorScheme
     val dimens = AppTheme.dimens
@@ -60,6 +59,5 @@ fun ShellPlaceholderScreen(
                 )
             }
         }
-        bottomBar()
     }
 }

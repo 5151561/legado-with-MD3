@@ -3,6 +3,7 @@ package io.legado.app.core.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
@@ -38,17 +39,35 @@ class AppNavigationState internal constructor(
         get() = backStacks[selected] ?: error("没有为 ${selected.id} 建回退栈")
 
     /**
+     * 当前一级路由是否停在自己的根上。
+     *
+     * 外壳据此决定一级导航栏显不显示——这件事由导航状态回答，不由「装配 entry 时
+     * 有没有传槽位」回答。
+     */
+    val isAtRoot: Boolean
+        get() = currentStack.size == 1
+
+    /**
      * 把导航状态转成带 `SaveableStateHolder` 的 [NavEntry]。
      *
-     * 每条一级路由有各自的 `SaveableStateHolder`——共用一个会让不同 tab 里
-     * 同名的 `rememberSaveable` 互相覆盖。
+     * 每条一级路由有各自的 `SaveableStateHolder` 与 `ViewModelStore`——共用一个会让
+     * 不同 tab 里同名的 `rememberSaveable` 互相覆盖。
+     *
+     * `rememberViewModelStoreNavEntryDecorator` 不是可选项：没有它，entry 内的
+     * `koinViewModel()` 会解析到宿主 Activity 的 `ViewModelStore`，于是 ViewModel
+     * 在条目出栈后不被 `clear()`，`viewModelScope` 里的收集一直跑着，再次进入同一
+     * 目的地拿到的是上一次的状态。`NavDisplay` 的默认装饰器里没有它，自定义
+     * `entryDecorators` 时必须自己列上。
      */
     @Composable
     fun toDecoratedEntries(entryProvider: (NavKey) -> NavEntry<NavKey>): List<NavEntry<NavKey>> {
         val decorated = backStacks.mapValues { (_, stack) ->
             rememberDecoratedNavEntries(
                 backStack = stack,
-                entryDecorators = listOf(rememberSaveableStateHolderNavEntryDecorator()),
+                entryDecorators = listOf(
+                    rememberSaveableStateHolderNavEntryDecorator(),
+                    rememberViewModelStoreNavEntryDecorator(),
+                ),
                 entryProvider = entryProvider,
             )
         }

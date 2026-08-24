@@ -208,32 +208,36 @@ private fun ArtboardHost(entry: GalleryEntry, onBack: () -> Unit) {
 
         GalleryEntry.Profile -> {
             var state by remember { mutableStateOf(ProfilePreviewState) }
-            ProfileScreen(
-                state = state,
-                onIntent = { intent ->
-                    when (intent) {
-                        is ProfileIntent.SelectThemeMode ->
-                            state = state.copy(themeMode = intent.mode)
+            // 「我的」不再有 bottomBar 槽位——导航栏归外壳，画廊在这里自己摆一条。
+            Column(Modifier.fillMaxSize()) {
+                ProfileScreen(
+                    modifier = Modifier.weight(1f),
+                    state = state,
+                    onIntent = { intent ->
+                        when (intent) {
+                            is ProfileIntent.SelectThemeMode ->
+                                state = state.copy(themeMode = intent.mode)
 
-                        is ProfileIntent.SetToggle -> state = state.copy(
-                            groups = state.groups.map { group ->
-                                group.copy(
-                                    entries = group.entries.map { row ->
-                                        if (row.id == intent.id) {
-                                            row.copy(trailing = ProfileTrailing.Toggle(intent.checked))
-                                        } else {
-                                            row
-                                        }
-                                    }.toImmutableList(),
-                                )
-                            }.toImmutableList(),
-                        )
+                            is ProfileIntent.SetToggle -> state = state.copy(
+                                groups = state.groups.map { group ->
+                                    group.copy(
+                                        entries = group.entries.map { row ->
+                                            if (row.id == intent.id) {
+                                                row.copy(trailing = ProfileTrailing.Toggle(intent.checked))
+                                            } else {
+                                                row
+                                            }
+                                        }.toImmutableList(),
+                                    )
+                                }.toImmutableList(),
+                            )
 
-                        is ProfileIntent.OpenEntry -> Unit
-                    }
-                },
-                bottomBar = { GalleryNavigationBar(selectedId = "me") },
-            )
+                            is ProfileIntent.OpenEntry -> Unit
+                        }
+                    },
+                )
+                GalleryNavigationBar(selectedId = "me")
+            }
         }
 
         GalleryEntry.SourceHub -> SourceHubScreen(

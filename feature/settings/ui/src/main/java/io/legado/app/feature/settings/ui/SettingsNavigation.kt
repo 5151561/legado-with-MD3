@@ -1,6 +1,5 @@
 package io.legado.app.feature.settings.ui
 
-import androidx.compose.runtime.Composable
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import io.legado.app.core.navigation.TopLevelRoute
@@ -23,11 +22,9 @@ data object ProfileRoute : TopLevelRoute {
 fun EntryProviderScope<NavKey>.settingsEntries(
     onNotRebuilt: (String) -> Unit,
     onOpenSourceHub: () -> Unit,
-    bottomBar: @Composable () -> Unit,
 ) {
     entry<ProfileRoute> {
         ProfileRouteScreen(
-            bottomBar = bottomBar,
             onOpenEntry = { id ->
                 when (id) {
                     ProfileEntryId.Settings -> onNotRebuilt("设置")

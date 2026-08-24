@@ -1,12 +1,11 @@
 package io.legado.app.ui.shell
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -57,6 +56,10 @@ import kotlinx.coroutines.launch
  * 4. **一级导航随宽度换形态**：紧凑宽度用底栏，中等与展开宽度用侧栏
  *    （画板 X-01 平板三栏 / X-02 折叠屏双栏）。
  *
+ * 一级导航栏（底栏与侧栏）由外壳自己摆，都在 `NavDisplay` 之外：**页面不接收导航栏槽位**。
+ * 底栏显不显示由导航状态回答（`isAtRoot`，即当前 tab 停在自己的根上），不由「装配 entry
+ * 时有没有传槽位」回答——后者会让外壳的布局出现在每个 feature 的公开签名里。
+ *
  * 尚未重做的一级页面走 [ShellPlaceholderScreen]，清单集中在 [ShellPlaceholderRoutes]。
  */
 @Composable
@@ -69,41 +72,35 @@ fun ShellScreen(modifier: Modifier = Modifier) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    val onNotRebuilt: (String) -> Unit = { name ->
-        scope.launch { snackbarHostState.showSnackbar("$name 还没重做") }
-    }
-    val onMessage: (String) -> Unit = { text ->
-        scope.launch { snackbarHostState.showSnackbar(text) }
+    // 装配只做一次：entryProvider 每次重组重建会让 rememberDecoratedNavEntries 跟着重建条目。
+    val entryProvider = remember(navigator, scope, snackbarHostState) {
+        val onNotRebuilt: (String) -> Unit = { name ->
+            scope.launch { snackbarHostState.showSnackbar("$name 还没重做") }
+        }
+        val onMessage: (String) -> Unit = { text ->
+            scope.launch { snackbarHostState.showSnackbar(text) }
+        }
+        entryProvider {
+            settingsEntries(
+                onNotRebuilt = onNotRebuilt,
+                onOpenSourceHub = { navigator.goTo(SourceHubRoute) },
+            )
+            catalogEntries(
+                onBack = navigator::goBack,
+                onNavigate = navigator::goTo,
+                onMessage = onMessage,
+                onNotRebuilt = onNotRebuilt,
+            )
+            ShellPlaceholderRoutes.forEach { (route, info) ->
+                entry(route) { ShellPlaceholderScreen(info = info) }
+            }
+        }
     }
 
-    // 侧栏形态下导航栏不再占据底部，因此一级页面的 bottomBar 槽位留空。
     val compact = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass ==
         WindowWidthSizeClass.COMPACT
-    val bottomBar: @Composable () -> Unit = {
-        if (compact) {
-            ShellNavigationBar(
-                selectedId = state.selected.id,
-                onSelect = { id -> navigator.select(routeOf(id)) },
-            )
-        }
-    }
-
-    val entryProvider = entryProvider {
-        settingsEntries(
-            onNotRebuilt = onNotRebuilt,
-            onOpenSourceHub = { navigator.goTo(SourceHubRoute) },
-            bottomBar = bottomBar,
-        )
-        catalogEntries(
-            onBack = navigator::goBack,
-            onNavigate = navigator::goTo,
-            onMessage = onMessage,
-            onNotRebuilt = onNotRebuilt,
-        )
-        ShellPlaceholderRoutes.forEach { (route, info) ->
-            entry(route) { ShellPlaceholderScreen(info = info, bottomBar = bottomBar) }
-        }
-    }
+    // 侧栏形态下一级导航不占底部；二级目的地上底栏收起。
+    val showBottomBar = compact && state.isAtRoot
 
     Row(modifier = modifier.fillMaxSize()) {
         if (!compact) {
@@ -113,18 +110,27 @@ fun ShellScreen(modifier: Modifier = Modifier) {
                 modifier = Modifier.windowInsetsPadding(WindowInsets.systemBars),
             )
         }
-        Box(Modifier.weight(1f)) {
-            NavDisplay(
-                entries = state.toDecoratedEntries(entryProvider),
-                onBack = { navigator.goBack() },
-                modifier = Modifier.fillMaxSize(),
-            )
-            SnackbarHost(
-                hostState = snackbarHostState,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(WindowInsets.navigationBars.asPaddingValues()),
-            )
+        Column(Modifier.weight(1f)) {
+            Box(Modifier.weight(1f)) {
+                NavDisplay(
+                    entries = state.toDecoratedEntries(entryProvider),
+                    onBack = { navigator.goBack() },
+                    modifier = Modifier.fillMaxSize(),
+                )
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    // 底栏在场时由底栏给手势条让位，snackbar 再让一次会浮空。
+                    modifier = Modifier.align(Alignment.BottomCenter).let {
+                        if (showBottomBar) it else it.windowInsetsPadding(WindowInsets.navigationBars)
+                    },
+                )
+            }
+            if (showBottomBar) {
+                ShellNavigationBar(
+                    selectedId = state.selected.id,
+                    onSelect = { id -> navigator.select(routeOf(id)) },
+                )
+            }
         }
     }
 }

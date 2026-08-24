@@ -54,15 +54,12 @@ import kotlinx.collections.immutable.persistentListOf
  * 行样式与设置主页（画板 C-01）不同：这里是不带分组卡的平铺行、22dp 裸图标，
  * 靠一条 1dp 分隔线断组。两种行样式在设计稿里都存在，且各自只用于一处，
  * 因此本页的行留在本文件内，不下沉进 kit。
- *
- * @param bottomBar 一级导航栏由宿主提供，理由同首页（画板 M-01）。
  */
 @Composable
 fun ProfileScreen(
     state: ProfileUiState,
     onIntent: (ProfileIntent) -> Unit,
     modifier: Modifier = Modifier,
-    bottomBar: @Composable () -> Unit = {},
 ) {
     val c = AppTheme.colorScheme
     val dimens = AppTheme.dimens
@@ -98,8 +95,6 @@ fun ProfileScreen(
                 }
             }
         }
-
-        bottomBar()
     }
 }
 
